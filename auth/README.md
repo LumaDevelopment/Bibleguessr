@@ -1,8 +1,10 @@
-- Store salted + hashed passwords in database
+- Store salted + hashed passwords in the database
 - Consider what information should be stored about a user
-- Authentication server distributes tokens (maybe OAuth) that expire, contain information about user, etc.
+- Require the user to make a 12-character password with symbols. Hash with SHA256.
+- No password expiration.
+- Authentication server distributes tokens (maybe OAuth) that expire, contain information about the user, etc.
 - Authentication tokens are set in browser cookies
-- Password is hashed, sent to database, database compares, and then if there’s a match then return the token.
-- Maybe associate token with IP so if token is used from different IP then invalidate it.
-- Built-in database encryption, probably MongoDB is best.
+- Password is hashed, sent to the database, database compares, and then returns the token if there’s a match.
+- Maybe associate the token with IP, so if the token is used from a different IP, then invalidate it.
+- Built-in database encryption, probably MongoDB, is best.
 - https://auth0.com/pricing 
