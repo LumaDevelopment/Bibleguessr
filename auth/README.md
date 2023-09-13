@@ -7,4 +7,5 @@
 - Password is hashed, sent to the database, database compares, and then returns the token if there’s a match.
 - Maybe associate the token with IP, so if the token is used from a different IP, then invalidate it.
 - Built-in database encryption, probably MongoDB, is best.
+-   MongoDB will be used for both account data and account authentication.
 - https://auth0.com/pricing 
