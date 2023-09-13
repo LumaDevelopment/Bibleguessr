@@ -1,0 +1,8 @@
+- Store salted + hashed passwords in database
+- Consider what information should be stored about a user
+- Authentication server distributes tokens (maybe OAuth) that expire, contain information about user, etc.
+- Authentication tokens are set in browser cookies
+- Password is hashed, sent to database, database compares, and then if there’s a match then return the token.
+- Maybe associate token with IP so if token is used from different IP then invalidate it.
+- Built-in database encryption, probably MongoDB is best.
+- https://auth0.com/pricing 
