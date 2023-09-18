@@ -210,11 +210,11 @@ public class MainVerticle extends AbstractVerticle {
    */
   public void throwInternalServerError(HttpServerRequest request) {
 
-      if (request == null) {
-        return;
-      }
+    if (request == null) {
+      return;
+    }
 
-      request.response().setStatusCode(500).end();
+    request.response().setStatusCode(500).end();
 
   }
 

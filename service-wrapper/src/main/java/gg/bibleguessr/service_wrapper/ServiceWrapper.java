@@ -63,6 +63,14 @@ public class ServiceWrapper {
    */
   private final Map<String, Microservice> runningMicroservices;
 
+  /**
+   * Keep track of a request types associated
+   * with microservices that are currently running.
+   * This is a map from Request class to
+   * the Microservice object.
+   */
+  private final Map<Class<? extends Request>, Microservice> reqTypeToService;
+
   // WEB OPERATIONS
 
   /**
@@ -97,6 +105,7 @@ public class ServiceWrapper {
     this.configFile = configFile;
     this.config = null;
     this.runningMicroservices = new HashMap<>();
+    this.reqTypeToService = new HashMap<>();
 
     this.vertx = null;
     this.mainVerticle = null;
@@ -105,9 +114,26 @@ public class ServiceWrapper {
 
   /* ---------- PUBLIC METHODS ---------- */
 
+  /**
+   * Finds the appropriate microservice to execute the
+   * given request, then passes off the request to
+   * that microservice to be executed.
+   *
+   * @param request The request to execute.
+   * @return The response to the request, or null
+   * if some sort of error occurs.
+   */
   public Response executeRequest(Request request) {
-    // TODO execute request
-    return null;
+
+    Microservice executor = reqTypeToService.get(request.getClass());
+
+    if (executor == null) {
+      logger.error("Received request that has no matching executor!");
+      return null;
+    }
+
+    return executor.executeRequest(request);
+
   }
 
   /**
@@ -287,6 +313,11 @@ public class ServiceWrapper {
     // Now, just keep track that this service
     // is running, and log it
     runningMicroservices.put(service.getID(), service);
+
+    for (Class<? extends Request> requestType : service.getRequestTypes()) {
+      reqTypeToService.put(requestType, service);
+    }
+
     logger.info("Successfully started {}!", getCleanServiceName(service));
 
   }
@@ -332,6 +363,13 @@ public class ServiceWrapper {
     // Unregister the microservice's paths from
     // MainVerticle
     mainVerticle.unregisterMicroserviceRequests(service);
+
+    // TODO shutdown RabbitMQ ops
+
+    // Remove the request types from reqTypeToService map
+    for (Class<? extends Request> requestType : service.getRequestTypes()) {
+      reqTypeToService.remove(requestType);
+    }
 
     // Shutdown the microservice and log
     service.shutdown();

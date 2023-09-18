@@ -43,6 +43,16 @@ public abstract class Microservice {
   /* ---------- METHODS ---------- */
 
   /**
+   * Execute a request that is handled by this Microservice.
+   * Request objects are passed into this Microservice by
+   * the ServiceWrapper.
+   *
+   * @param request The request to execute.
+   * @return The response to the request.
+   */
+  public abstract Response executeRequest(Request request);
+
+  /**
    * Gets the ID of this microservice.
    *
    * @return The ID of this microservice.

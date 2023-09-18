@@ -123,7 +123,7 @@ public abstract class Request {
     // Attempt to create new instance of clazz
     T request;
     try {
-      request = clazz.newInstance();
+      request = clazz.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // Instantiation failure likely means mis-architectured Request.
       LoggerFactory

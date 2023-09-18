@@ -1,5 +1,9 @@
 # Request/Response Specifications
 
+## Notes
+
+- Response parameters are always Strings.
+
 ## Error Codes
 
 Vert.x will respond with the following error codes, depending on the situation:
@@ -14,12 +18,13 @@ Vert.x will respond with the following error codes, depending on the situation:
 
 ### Example Request
 
-- **ID:** `example-request`
+- **Request Path:** `example-request`
 - **Vert.x Path:** `/example-service/example-request`
 - **Request Parameters:**
   - `uuid` (String) (Optional) - Unique request identifier.
   - `msg` (String) - Message of this request.
 - **Response Parameters:**
-  - `uuid` (String) (Optional) - Matches UUID from request. Only useful for something like RabbitMQ where we can't
+  - `uuid` (Optional) - Matches UUID from request. Only useful for something like RabbitMQ where we can't
     deliver a direct response to a request.
-  - `isEmpty` (Boolean) - Whether the message of the request is empty or not.
+  - `lengthDivisibleBy2` - Whether the length of the message of the request is evenly divisible by 2. Can be `true`
+    or `false`.
