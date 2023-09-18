@@ -6,11 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Main service wrapping library class. This allows a Bibleguessr
+ * Main service wrapping library class. This allows a BibleGuessr
  * microservice to communicate over HTTP, RabbitMQ, or plain Java
  * without having to worry about the details of each. This class
  * also handles the configuration of the service wrapper, and
@@ -34,6 +36,8 @@ public class ServiceWrapper {
 
   /* ---------- VARIABLES ---------- */
 
+  // CORE VARIABLES
+
   /**
    * The logger which all class statements
    * are routed through.
@@ -53,13 +57,21 @@ public class ServiceWrapper {
   private ServiceWrapperConfig config;
 
   /**
+   * Keep track of all microservices that are
+   * currently running. This is a map from
+   * microservice ID to the actual Microservice object.
+   */
+  private final Map<String, Microservice> runningMicroservices;
+
+  // WEB OPERATIONS
+
+  /**
    * Vertx instance used for our web-server operations.
    */
   private Vertx vertx;
 
   /**
-   * MainVerticle (Vertx agent) so we can add valid
-   * paths.
+   * MainVerticle (Vertx agent), stored so we can add valid paths.
    */
   private MainVerticle mainVerticle;
 
@@ -81,10 +93,11 @@ public class ServiceWrapper {
    */
   public ServiceWrapper(File configFile) {
 
-    this.configFile = configFile;
     this.logger = LoggerFactory.getLogger(LOGGER_NAME);
-
+    this.configFile = configFile;
     this.config = null;
+    this.runningMicroservices = new HashMap<>();
+
     this.vertx = null;
     this.mainVerticle = null;
 
@@ -95,6 +108,25 @@ public class ServiceWrapper {
   public Response executeRequest(Request request) {
     // TODO execute request
     return null;
+  }
+
+  /**
+   * Gets a clean/user-presentable name for a Microservice.
+   * Handled like this just in case we want to modify in the
+   * future.
+   *
+   * @param service The service to get clean name for
+   * @return The name of the service, or a null string if
+   * the parameter is null.
+   */
+  public String getCleanServiceName(Microservice service) {
+
+    if (service == null) {
+      return "<NULL>";
+    }
+
+    return service.getClass().getSimpleName();
+
   }
 
   /**
@@ -197,8 +229,8 @@ public class ServiceWrapper {
       try {
         latch.await();
       } catch (InterruptedException e) {
-          logger.error("Interrupted while waiting for main verticle to start.", e);
-          return false;
+        logger.error("Interrupted while waiting for main verticle to start.", e);
+        return false;
       }
 
       return success.get();
@@ -209,6 +241,15 @@ public class ServiceWrapper {
 
   }
 
+  /**
+   * Runs the given microservice. This involves
+   * configuration management, hosting with Vert.x
+   * and registering request paths (if Vert.x is
+   * enabled), and setting up RabbitMQ (if RabbitMQ
+   * is enabled).
+   *
+   * @param service The microservice to run.
+   */
   public void run(Microservice service) {
 
     // Get configuration sorted out
@@ -218,6 +259,12 @@ public class ServiceWrapper {
       throw new RuntimeException("Configuration file does not exist, see logs for more information.");
     }
 
+    // See if a microservice is already running with this ID
+    if (runningMicroservices.containsKey(service.getID())) {
+      logger.error("ServiceWrapper was asked to run a microservice, but there is already a microservice with that ID running!");
+      return;
+    }
+
     if (config.hostWithVertx()) {
 
       // Initialize Vertx instance
@@ -225,7 +272,9 @@ public class ServiceWrapper {
 
       if (vertxLaunched) {
 
-        // TODO add all microservice request paths to MainVerticle
+        // Register all microservice request paths
+        // with the main verticle.
+        mainVerticle.registerMicroserviceRequests(service);
 
       } else {
         logger.error("Vertx could not be launched!");
@@ -235,15 +284,58 @@ public class ServiceWrapper {
 
     // TODO RabbitMQ support
 
+    // Now, just keep track that this service
+    // is running, and log it
+    runningMicroservices.put(service.getID(), service);
+    logger.info("Successfully started {}!", getCleanServiceName(service));
+
   }
 
+  /**
+   * Shuts down all microservices that the wrapper is
+   * currently running. Shuts down Vert.x and RabbitMQ
+   * operations.
+   */
   public void shutdown() {
 
+    // Shut down all Microservices
+    for (Microservice service : runningMicroservices.values()) {
+      service.shutdown();
+    }
+
+    // Shut down all web hosting.
     if (vertx != null) {
       vertx.close();
     }
 
     // TODO Shutdown RabbitMQ
+
+  }
+
+  /**
+   * Stops the microservice with the given ID. It's request
+   * paths are unregistered from the MainVerticle, and
+   * it's shutdown() method is called.
+   *
+   * @param microserviceID The ID of the microservice to stop.
+   */
+  public void stop(String microserviceID) {
+
+    // Shuts down individual microservice.
+    Microservice service = runningMicroservices.remove(microserviceID);
+
+    if (service == null) {
+      logger.warn("ServiceWrapper was asked to stop a microservice that is not running.");
+      return;
+    }
+
+    // Unregister the microservice's paths from
+    // MainVerticle
+    mainVerticle.unregisterMicroserviceRequests(service);
+
+    // Shutdown the microservice and log
+    service.shutdown();
+    logger.info("Successfully shut down {}.", getCleanServiceName(service));
 
   }
 

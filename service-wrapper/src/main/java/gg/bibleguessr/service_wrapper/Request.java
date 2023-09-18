@@ -5,39 +5,91 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 /**
- * Abstract class giving some of the functionality of a request
+ * Abstract class giving some functionality of a request
  * and defining functionality that the user must implement.
  * ALL SUBCLASSES MUST HAVE BLANK CONSTRUCTOR.
  */
 public abstract class Request {
 
+  /* ---------- CONSTANTS ---------- */
+
+  /**
+   * The name of the parameter that contains the
+   * Request UUID. Just a courtesy thing, can
+   * be handled manually by Request implementer.
+   */
+  public static final String UUID_PARAMETER_NAME = "uuid";
+
   /* ---------- VARIABLES ---------- */
 
-  protected final String id;
+  /**
+   * A sort of condensed version of the name,
+   * used for constructing webserver paths.
+   */
+  protected final String requestPath;
+
+  /**
+   * The unique identifier of this Request instance.
+   */
+  protected String uuid;
 
   /* ---------- CONSTRUCTORS ---------- */
 
   /**
-   * Request that takes in an ID. Should be called by
+   * Request that takes in the unique path of
+   * the request. Should be called by
    * subclass blank constructor.
    *
-   * @param id the ID of this request
+   * @param requestPath the path of the request
    */
-  public Request(String id) {
-    this.id = id;
+  public Request(String requestPath) {
+
+    if (requestPath == null) {
+      throw new RuntimeException("Request path cannot be null!");
+    }
+
+    this.requestPath = requestPath;
+    this.uuid = "";
+
   }
 
   /* ---------- METHODS ---------- */
 
   /**
-   * Get the path of this Request type by concatenating
-   * the microservice ID and this request ID.
+   * Get the path of the request, used
+   * for the construction of webserver paths.
    *
-   * @param microservice the microservice this request falls under
-   * @return the path of this Request type
+   * @return the path of the request.
    */
-  public String getPath(Microservice microservice) {
-    return "/" + microservice.getID() + "/" + id;
+  public String getRequestPath() {
+    return requestPath;
+  }
+
+  /**
+   * Gets the unique identifier of this request
+   * object.
+   *
+   * @return The unique identifier of this request
+   * object, or null if the Request object has no UUID.
+   */
+  public String getUUID() {
+
+    if (!isIdentifiable()) {
+      return null;
+    }
+
+    return uuid;
+
+  }
+
+  /**
+   * Determines whether this Request is identifiable by
+   * checking if it has a UUID set.
+   *
+   * @return Whether this request object is identifiable
+   */
+  public boolean isIdentifiable() {
+    return this.uuid != null && !this.uuid.isBlank();
   }
 
   /**
@@ -56,10 +108,10 @@ public abstract class Request {
    * Request subclass. If the parse fails, returns null. If the
    * parse succeeds, returns the new instance.
    *
-   * @param clazz the class of the Request subclass to parse into
+   * @param clazz      the class of the Request subclass to parse into
    * @param parameters the parameters to parse
+   * @param <T>        the Request subclass to parse into
    * @return the new instance of the given Request subclass
-   * @param <T> the Request subclass to parse into
    */
   public static <T extends Request> T parse(Class<T> clazz, Map<String, String> parameters) {
 
@@ -80,6 +132,12 @@ public abstract class Request {
       throw new RuntimeException(e);
     }
 
+    // Attempt to set the UUID of the request.
+    // If the parameters map doesn't have a
+    // UUID, then the setUUID() function will
+    // handle that automatically
+    request.setUUID(parameters.remove(UUID_PARAMETER_NAME));
+
     // Attempt to parse request
     boolean success = request.parse(parameters);
 
@@ -91,6 +149,22 @@ public abstract class Request {
     } else {
       return null;
     }
+
+  }
+
+  /**
+   * Sets the unique identifier of this
+   * Request object.
+   *
+   * @param uuid The new unique identifier
+   */
+  public void setUUID(String uuid) {
+
+    if (uuid == null) {
+      return;
+    }
+
+    this.uuid = uuid;
 
   }
 
