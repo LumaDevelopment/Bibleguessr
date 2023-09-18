@@ -24,7 +24,7 @@ public abstract class Microservice {
 
   /**
    * Initializes this Microservice object. Calls
-   * initializeRequestTypesList().
+   * initializeRequestTypesMap().
    *
    * @param id The ID of the service.
    */
@@ -37,7 +37,7 @@ public abstract class Microservice {
     this.id = id;
 
     this.requestTypes = new HashMap<>();
-    initializeRequestTypes();
+    initializeRequestTypesMap();
 
   }
 
@@ -85,7 +85,7 @@ public abstract class Microservice {
    * Gets the types of requests that are associated
    * with this microservice.
    *
-   * @return List of microservice request types.
+   * @return Collection of microservice request types.
    */
   public Collection<Class<? extends Request>> getRequestTypes() {
     return requestTypes.values();
@@ -104,9 +104,9 @@ public abstract class Microservice {
 
   /**
    * Adds all request types associated with this
-   * Microservice to the requestTypes list.
+   * Microservice to the request types map.
    */
-  public abstract void initializeRequestTypes();
+  public abstract void initializeRequestTypesMap();
 
   /**
    * All operations that need to be done when the

@@ -20,6 +20,11 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Manages all RabbitMQ operations. Notably,
+ * connecting to the server, all message handling
+ * related tasks, and posting message responses.
+ */
 public class RabbitMQMgr {
 
   /* ---------- CONSTANTS ---------- */
@@ -122,7 +127,7 @@ public class RabbitMQMgr {
 
     // Concurrency handling
     CountDownLatch latch = new CountDownLatch(1);
-    AtomicBoolean success = new AtomicBoolean(false);
+    AtomicBoolean atomicSuccess = new AtomicBoolean(false);
 
     client.addConnectionEstablishedCallback(promise -> {
       client.exchangeDeclare(config.rabbitMQExchangeName(), "direct", true, false)
@@ -258,7 +263,8 @@ public class RabbitMQMgr {
               config.rabbitMQResponsesQueue(),
               properties,
               messageBuffer,
-              event -> {} // don't need to do anything here
+              event -> {
+              } // don't need to do anything here
             );
 
           });
@@ -270,7 +276,7 @@ public class RabbitMQMgr {
 
           if (asyncResultHandler.succeeded()) {
             // Mark the client as running
-            success.set(true);
+            atomicSuccess.set(true);
           } else {
             // Failure, log it, then continue
             logger.error("Failed to set up a consumer for the requests queue!", asyncResultHandler.cause());
@@ -289,12 +295,14 @@ public class RabbitMQMgr {
       return false;
     }
 
-    if (success.get()) {
+    boolean success = atomicSuccess.get();
+
+    if (success) {
       running = true;
       logger.info("RabbitMQ client started successfully!");
     }
 
-    return success.get();
+    return success;
 
   }
 
