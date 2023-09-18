@@ -3,6 +3,9 @@
 ## Notes
 
 - Response parameters are always Strings.
+- RabbitMQ requires you to include the microservice ID and request path in your message JSON. This is so that the
+  RabbitMQ consumer knows which microservice to send the response to. To see what JSON keys the consumer will look for,
+  reference `ServiceWrapperConfig`'s `rabbitMQMicroserviceIDField` and `rabbitMQRequestPathField` fields.
 
 ## Error Codes
 

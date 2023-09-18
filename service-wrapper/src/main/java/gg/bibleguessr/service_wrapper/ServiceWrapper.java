@@ -1,6 +1,7 @@
 package gg.bibleguessr.service_wrapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,9 @@ public class ServiceWrapper {
    */
   private MainVerticle mainVerticle;
 
+  // RABBITMQ OPERATIONS
+  private RabbitMQMgr rabbitMQMgr;
+
   /* ---------- CONSTRUCTORS ---------- */
 
   /**
@@ -109,6 +113,8 @@ public class ServiceWrapper {
 
     this.vertx = null;
     this.mainVerticle = null;
+
+    this.rabbitMQMgr = null;
 
   }
 
@@ -166,6 +172,18 @@ public class ServiceWrapper {
   }
 
   /**
+   * If a microservice with the given ID is running,
+   * return it.
+   *
+   * @param microserviceID The ID of the microservice
+   * @return The microservice with the given ID, or
+   * null if no such microservice is running.
+   */
+  public Microservice getRunningMicroservice(String microserviceID) {
+    return runningMicroservices.get(microserviceID);
+  }
+
+  /**
    * Attempts to initialize Vert.x, then returns it.
    *
    * @return The Vert.x instance.
@@ -190,6 +208,7 @@ public class ServiceWrapper {
     }
 
     ObjectMapper mapper = new ObjectMapper();
+    mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
     try {
 
@@ -223,6 +242,28 @@ public class ServiceWrapper {
     }
 
     return true;
+
+  }
+
+  /**
+   * Attempts to start RabbitMQ operations if
+   * they haven't been started already.
+   *
+   * @return Whether RabbitMQ is successfully running
+   * by the end of this method.
+   */
+  public boolean initializeRabbitMQ() {
+
+    // Make sure RabbitMQ isn't already initialized
+    if (this.rabbitMQMgr == null) {
+      this.rabbitMQMgr = new RabbitMQMgr(this);
+    }
+
+    if (rabbitMQMgr.isRunning()) {
+      return true;
+    }
+
+    return rabbitMQMgr.start();
 
   }
 
@@ -301,6 +342,7 @@ public class ServiceWrapper {
       return;
     }
 
+    // HTTP support
     if (config.hostWithVertx()) {
 
       // Initialize Vertx instance
@@ -318,7 +360,23 @@ public class ServiceWrapper {
 
     }
 
-    // TODO RabbitMQ support
+    // RabbitMQ support
+    if (config.hostWithRabbitMQ()) {
+
+      boolean rabbitMQLaunched = initializeRabbitMQ();
+
+      if (!rabbitMQLaunched) {
+        logger.error("RabbitMQ could not be launched!");
+      }
+
+      // If RabbitMQ is launched successfully, we
+      // don't need to do anything else here.
+      // RabbitMQMgr's message consumer will automatically
+      // tap into ServiceWrapper to get the right
+      // Microservice and Request class for the requests
+      // it receives.
+
+    }
 
     // Now, just keep track that this service
     // is running, and log it
@@ -349,7 +407,10 @@ public class ServiceWrapper {
       vertx.close();
     }
 
-    // TODO Shutdown RabbitMQ
+    // Shut down RabbitMQ.
+    if (rabbitMQMgr != null) {
+      rabbitMQMgr.stop();
+    }
 
   }
 
@@ -374,7 +435,7 @@ public class ServiceWrapper {
     // MainVerticle
     mainVerticle.unregisterMicroserviceRequests(service);
 
-    // TODO shutdown RabbitMQ ops
+    // Nothing RabbitMQ related to shut down here.
 
     // Remove the request types from reqTypeToService map
     for (Class<? extends Request> requestType : service.getRequestTypes()) {

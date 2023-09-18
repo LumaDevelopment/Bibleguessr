@@ -1,7 +1,7 @@
 package gg.bibleguessr.service_wrapper;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
 
 public abstract class Microservice {
 
@@ -14,10 +14,11 @@ public abstract class Microservice {
   protected final String id;
 
   /**
-   * LinkedList that keeps track of all Request types
-   * that belong to this Microservice.
+   * A map from request path to Request types. Keeps
+   * track of all Request types that belong to this
+   * Microservice.
    */
-  protected final List<Class<? extends Request>> requestTypes;
+  private final HashMap<String, Class<? extends Request>> requestTypes;
 
   /* ---------- CONSTRUCTORS ---------- */
 
@@ -35,8 +36,8 @@ public abstract class Microservice {
 
     this.id = id;
 
-    this.requestTypes = new LinkedList<>();
-    initializeRequestTypesList();
+    this.requestTypes = new HashMap<>();
+    initializeRequestTypes();
 
   }
 
@@ -62,20 +63,50 @@ public abstract class Microservice {
   }
 
   /**
+   * Gets the type of request that is associated
+   * with the given request path.
+   *
+   * @param requestPath The path of the request.
+   * @return The type of request associated with
+   * the given path, or null if no such request
+   * exists.
+   */
+  public Class<? extends Request> getRequestTypeFromPath(String requestPath) {
+
+    if (requestPath == null) {
+      return null;
+    }
+
+    return requestTypes.get(requestPath);
+
+  }
+
+  /**
    * Gets the types of requests that are associated
    * with this microservice.
    *
    * @return List of microservice request types.
    */
-  public List<Class<? extends Request>> getRequestTypes() {
-    return requestTypes;
+  public Collection<Class<? extends Request>> getRequestTypes() {
+    return requestTypes.values();
+  }
+
+  /**
+   * Adds this request type to the list of request types
+   * of this microservice.
+   *
+   * @param requestType The request type to add.
+   */
+  public void initializeRequestType(Class<? extends Request> requestType) {
+    Request request = Request.requestObjFromClass(requestType);
+    requestTypes.put(request.getRequestPath(), requestType);
   }
 
   /**
    * Adds all request types associated with this
    * Microservice to the requestTypes list.
    */
-  public abstract void initializeRequestTypesList();
+  public abstract void initializeRequestTypes();
 
   /**
    * All operations that need to be done when the

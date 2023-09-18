@@ -108,8 +108,8 @@ public class ExampleService extends Microservice {
    * we can handle. For this service, only one.
    */
   @Override
-  public void initializeRequestTypesList() {
-    requestTypes.add(ExampleRequest.class);
+  public void initializeRequestTypes() {
+    initializeRequestType(ExampleRequest.class);
   }
 
   /**

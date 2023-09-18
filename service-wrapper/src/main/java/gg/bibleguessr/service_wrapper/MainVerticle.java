@@ -117,20 +117,13 @@ public class MainVerticle extends AbstractVerticle {
 
     for (Class<? extends Request> requestClazz : service.getRequestTypes()) {
 
-      try {
+      // Create new instance of the request so that we
+      // can obtain its ID
+      Request request = Request.requestObjFromClass(requestClazz);
 
-        // Create new instance of the request so that we
-        // can obtain its ID
-        Request request = requestClazz.getDeclaredConstructor().newInstance();
-
-        // Construct the appropriate request path using microservice ID
-        // and request ID
-        paths.put(getRequestPath(service, request), requestClazz);
-
-      } catch (Exception e) {
-        // Log failure, but don't need to skip all the other requests
-        logger.error("Failed to register request type " + requestClazz.getSimpleName() + "!", e);
-      }
+      // Construct the appropriate request path using microservice ID
+      // and request ID
+      paths.put(getRequestPath(service, request), requestClazz);
 
     }
 

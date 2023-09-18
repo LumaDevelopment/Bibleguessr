@@ -121,16 +121,7 @@ public abstract class Request {
     }
 
     // Attempt to create new instance of clazz
-    T request;
-    try {
-      request = clazz.getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
-      // Instantiation failure likely means mis-architectured Request.
-      LoggerFactory
-        .getLogger(clazz.getSimpleName())
-        .error("Failed to instantiate Request, make sure all Request subclasses have a blank constructor!");
-      throw new RuntimeException(e);
-    }
+    T request = (T) requestObjFromClass(clazz);
 
     // Attempt to set the UUID of the request.
     // If the parameters map doesn't have a
@@ -149,6 +140,37 @@ public abstract class Request {
     } else {
       return null;
     }
+
+  }
+
+  /**
+   * Create a new Request object from the given
+   * request class. Will throw a RuntimeException
+   * if the initialization fails, because
+   * initialization should always work. Typically,
+   * any issue here is caused because a Request
+   * subclass doesn't have a 0-arg constructor.
+   *
+   * @param requestClazz The class of the Request subclass to instantiate
+   * @return The new Request object
+   */
+  public static Request requestObjFromClass(Class<? extends Request> requestClazz) {
+
+    Request request;
+
+    try {
+      request = requestClazz.getDeclaredConstructor().newInstance();
+    } catch (Exception e) {
+      LoggerFactory
+        .getLogger(Request.class.getSimpleName())
+        .error(
+          "Failed to instantiate {}, make sure all Request subclasses have a blank constructor!",
+          requestClazz.getSimpleName()
+        );
+      throw new RuntimeException(e);
+    }
+
+    return request;
 
   }
 
