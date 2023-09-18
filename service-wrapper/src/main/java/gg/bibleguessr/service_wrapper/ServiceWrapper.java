@@ -166,6 +166,16 @@ public class ServiceWrapper {
   }
 
   /**
+   * Attempts to initialize Vert.x, then returns it.
+   *
+   * @return The Vert.x instance.
+   */
+  public Vertx getVertx() {
+    initializeVertx();
+    return vertx;
+  }
+
+  /**
    * Attempts to load the config file into the
    * config object. If the config file does not
    * exist, attempts to write the default config.

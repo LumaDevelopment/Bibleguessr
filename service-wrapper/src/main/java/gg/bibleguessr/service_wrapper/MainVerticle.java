@@ -162,9 +162,7 @@ public class MainVerticle extends AbstractVerticle {
 
       // Load parameters into map
       Map<String, String> paramMap = new HashMap<>();
-      req.params().forEach(entry -> {
-        paramMap.put(entry.getKey(), entry.getValue());
-      });
+      req.params().forEach(entry -> paramMap.put(entry.getKey(), entry.getValue()));
 
       // Attempt to parse the request
       Request request = Request.parse(requestClass, paramMap);

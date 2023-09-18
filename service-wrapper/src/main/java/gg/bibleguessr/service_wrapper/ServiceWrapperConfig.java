@@ -10,13 +10,22 @@ package gg.bibleguessr.service_wrapper;
 public record ServiceWrapperConfig(
   boolean hostWithVertx,
   boolean hostWithRabbitMQ,
-  int vertxPort
+  int vertxPort,
+  String rabbitMQUsername,
+  String rabbitMQPassword,
+  String rabbitMQHost,
+  int rabbitMQPort
 ) {
 
   /**
-   * Gets the default configuration for the service wrapper, where
-   * {@code hostWithVertx} is {@code true}, {@code hostWithRabbitMQ}
-   * is {@code false}, and {@code vertxPort} is {@code 8888}.
+   * Gets the default configuration for the service wrapper:<br>
+   * - {@code hostWithVertx} is {@code true}<br>
+   * - {@code hostWithRabbitMQ} is {@code false}<br>
+   * - {@code vertxPort} is {@code 8888}<br>
+   * - {@code rabbitMQUsername} is blank<br>
+   * - {@code rabbitMQPassword} is blank<br>
+   * - {@code rabbitMQHost} is blank<br>
+   * - {@code rabbitMQPort} is {@code 5672}<br>
    *
    * @return The default configuration for the service wrapper
    */
@@ -24,7 +33,11 @@ public record ServiceWrapperConfig(
     return new ServiceWrapperConfig(
       true,
       false,
-      8888
+      8888,
+      "",
+      "",
+      "",
+      5672
     );
   }
 
