@@ -172,6 +172,19 @@ public class ServiceWrapper {
   }
 
   /**
+   * Gets the manager of all RabbitMQ related
+   * operations. Really shouldn't be needed
+   * outside ServiceWrapper because it has
+   * effectively 0 forward facing functionality,
+   * but the option is here!
+   *
+   * @return The RabbitMQMgr instance.
+   */
+  public RabbitMQMgr getRabbitMQMgr() {
+    return rabbitMQMgr;
+  }
+
+  /**
    * If a microservice with the given ID is running,
    * return it.
    *

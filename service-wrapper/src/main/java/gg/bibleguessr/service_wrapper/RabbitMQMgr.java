@@ -1,24 +1,19 @@
 package gg.bibleguessr.service_wrapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.BasicProperties;
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.rabbitmq.QueueOptions;
-import io.vertx.rabbitmq.RabbitMQClient;
-import io.vertx.rabbitmq.RabbitMQOptions;
+import com.rabbitmq.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.UUID;
 
 /**
  * Manages all RabbitMQ operations. Notably,
@@ -35,30 +30,235 @@ public class RabbitMQMgr {
 
   // CORE VARIABLES
 
+  /**
+   * Logging variable.
+   */
   private final Logger logger;
+
+  /**
+   * Service wrapper, used to access the config, check
+   * get Microservice objects of microservices that are
+   * currently running, and execute requests.
+   */
   private final ServiceWrapper serviceWrapper;
 
   /**
-   * Actual RabbitMQ client that allows us to
-   * communicate with the RabbitMQ server.
+   * The service wrapper config, used to access
+   * configuration variables from any point in
+   * the class.
    */
-  private RabbitMQClient client;
+  private final ServiceWrapperConfig config;
+
+  // RABBITMQ VARIABLES
+
+  /**
+   * The RabbitMQ connection. Not really interacted
+   * with much after establishing.
+   */
+  private Connection conn;
+
+  /**
+   * The RabbitMQ channel. Kind of like a client. We
+   * use this to declare the exchange, the queues,
+   * set up the request consumer, and to send
+   * responses.
+   */
+  private Channel channel;
+
+  /**
+   * The consumer we use to handle messages. Stored
+   * as an instance variable so just in case we need
+   * to use it multiple times we're not storing multiple
+   * consumer objects.
+   */
+  private DefaultConsumer consumer;
+
+  // JSON VARIABLES
+
+  /**
+   * The Jackson ObjectMapper used to parse JSON.
+   */
   private final ObjectMapper mapper;
 
+  /**
+   * Jackson writes JSON in UTF-8, so we consider
+   * it the charset to use for all RabbitMQ
+   * communications.
+   */
+  private final Charset charset = StandardCharsets.UTF_8;
+
   // STATUS VARIABLES
+
+  /**
+   * Tracks whether RabbitMQ is currently running.
+   */
   private boolean running;
 
   /* ---------- CONSTRUCTORS ---------- */
 
+  /**
+   * The one constructor to rule them all.
+   *
+   * @param serviceWrapper The service wrapper.
+   */
   public RabbitMQMgr(ServiceWrapper serviceWrapper) {
     this.logger = LoggerFactory.getLogger(LOGGER_NAME);
     this.serviceWrapper = serviceWrapper;
-    this.client = null;
+    this.config = serviceWrapper.getConfig();
+    this.conn = null;
     this.mapper = new ObjectMapper();
     this.running = false;
   }
 
   /* ---------- METHODS ---------- */
+
+  /**
+   * Returns a consumer for the requests queue. Modular for the
+   * following scenario: each microservice is configured to
+   * have a different requests and response queue name, and
+   * multiple microservices are running at once. This means
+   * that each microservice needs its own consumer, and each
+   * consumer needs to be able to handle requests for all
+   * microservices.
+   *
+   * @return A consumer for the requests queue.
+   */
+  public DefaultConsumer getRequestConsumer() {
+
+    if (consumer != null) {
+      return consumer;
+    }
+
+    consumer = new DefaultConsumer(channel) {
+      @Override
+      public void handleDelivery(String consumerTag,
+                                 Envelope envelope,
+                                 AMQP.BasicProperties properties,
+                                 byte[] body)
+        throws IOException {
+
+        // Convert byte array to String
+        String messageBody = new String(body, charset);
+        logger.debug("Received message w/ body: {}", messageBody);
+
+        // Attempt to parse as JSON
+        ObjectNode node = parseStringAsJSONObject(messageBody);
+
+        // Check if parse was successful.
+        if (node == null) {
+          logger.error("Received non-JSON message, can't parse.");
+          return;
+        }
+
+        // Grab delivery tag from message envelope, used
+        // to acknowledge or reject a message.
+        long deliveryTag = envelope.getDeliveryTag();
+
+        // Tentative JsonNode objects used to check
+        // if all the necessary information to execute
+        // the Request is present in the message
+        JsonNode microserviceIDNode = node.get(config.rabbitMQMicroserviceIDField());
+        JsonNode requestPathNode = node.get(config.rabbitMQRequestPathField());
+
+        // Check if both values are present and textual,
+        // if not, then acknowledge the message because no
+        // other service wrapper will be able to parse this.
+        if ((microserviceIDNode == null || !microserviceIDNode.isTextual()) ||
+          (requestPathNode == null || !requestPathNode.isTextual())) {
+          logger.error("Received message with no microservice ID or request path, can't execute request.");
+          channel.basicAck(deliveryTag, false);
+          return;
+        }
+
+        // Grab service ID and request path from JSON
+        String microserviceID = microserviceIDNode.asText();
+        String requestPath = requestPathNode.asText();
+
+        // Attempt to retrieve microservice from service wrapper.
+        Microservice microservice = serviceWrapper.getRunningMicroservice(microserviceID);
+
+        if (microservice == null) {
+          // We're not running the microservice this request is for.
+          // No big deal, just reject the message and
+          // let the right microservice handle it.
+          channel.basicReject(deliveryTag, true);
+          return;
+        }
+
+        // Attempt to retrieve request class
+        // from the microservice.
+        Class<? extends Request> requestClazz = microservice.getRequestTypeFromPath(requestPath);
+
+        if (requestClazz == null) {
+          // A request path has been requested for a
+          // request type that doesn't exist. Log
+          // error and acknowledge.
+          logger.error("Received request for existing microservice with path that does not exist!");
+          channel.basicAck(deliveryTag, false);
+          return;
+        }
+
+        // Standardize all fields of the JSON object into
+        // a String -> String map
+        Map<String, String> parameters = new HashMap<>();
+        for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
+
+          Map.Entry<String, JsonNode> entry = it.next();
+
+          if (entry.getKey().equals("deliveryTag") ||
+            entry.getKey().equals(config.rabbitMQMicroserviceIDField()) ||
+            entry.getKey().equals(config.rabbitMQRequestPathField())) {
+            // Entries that are not of relevancy to
+            // the Request parser.
+            continue;
+          }
+
+          // Store the key-value pair in the parameters map
+          parameters.put(entry.getKey(), entry.getValue().asText());
+
+        }
+
+        // Create new request object from the correct type
+        // and the standardized parameters.
+        Request request = Request.parse(requestClazz, parameters);
+
+        if (request == null) {
+          // Request parsing failed, log error and acknowledge.
+          logger.error("Failed to parse request!");
+          channel.basicAck(deliveryTag, false);
+          return;
+        }
+
+        // Execute the request
+        Response response = serviceWrapper.executeRequest(request);
+
+        // We somehow failed to execute the request.
+        // Leave it in the queue and hope someone else picks
+        // it up and does it better.
+        if (response == null) {
+          logger.error("Failed to execute request!");
+          channel.basicReject(deliveryTag, true);
+          return;
+        }
+
+        // Acknowledge the message, we've got a
+        // valid response to send back.
+        channel.basicAck(deliveryTag, false);
+
+        // Publish response to responses queue
+        channel.basicPublish(
+          config.rabbitMQExchangeName(),
+          config.rabbitMQResponsesQueue(),
+          null,
+          mapper.writeValueAsBytes(response.toJSONNode())
+        );
+
+      }
+    };
+
+    return consumer;
+
+  }
 
   /**
    * Returns whether the RabbitMQ client is running.
@@ -109,200 +309,86 @@ public class RabbitMQMgr {
       return true;
     }
 
-    ServiceWrapperConfig config = serviceWrapper.getConfig();
+    // If a connection is not established,
+    // then establish it.
+    if (conn == null) {
 
-    if (client == null) {
+      ConnectionFactory factory = new ConnectionFactory();
 
-      // Load options from configuration
-      RabbitMQOptions options = new RabbitMQOptions();
-      options.setUser(config.rabbitMQUsername());
-      options.setPassword(config.rabbitMQPassword());
-      options.setHost(config.rabbitMQHost());
-      options.setPort(config.rabbitMQPort());
+      // Grab connection credentials and server
+      // location from the config.
+      factory.setUsername(config.rabbitMQUsername());
+      factory.setPassword(config.rabbitMQPassword());
+      factory.setHost(config.rabbitMQHost());
+      factory.setPort(config.rabbitMQPort());
 
-      // Initialize client
-      client = RabbitMQClient.create(serviceWrapper.getVertx(), options);
+      // Set the virtual host only if it exists
+      String virtualHost = config.rabbitMQVirtualHost();
+      if (!virtualHost.isBlank()) {
+        factory.setVirtualHost(config.rabbitMQVirtualHost());
+      }
+
+      // Attempt to establish a new connection.
+      // If it fails, report failure and set
+      // conn to null.
+      try {
+        conn = factory.newConnection();
+      } catch (Exception e) {
+        conn = null;
+        String exceptionName = e.getClass().getSimpleName();
+        logger.error(exceptionName + " while trying to create a new RabbitMQ connection!", e);
+        return false;
+      }
+
+      // Attempt to create a new channel from
+      // our existing connection. If it fails,
+      // report failure and set both channel
+      // and connection to null.
+      try {
+        channel = conn.createChannel();
+      } catch (IOException e) {
+        conn = null;
+        channel = null;
+        logger.error("IOException while trying to create a new RabbitMQ channel!", e);
+        return false;
+      }
 
     }
-
-    // Concurrency handling
-    CountDownLatch latch = new CountDownLatch(1);
-    AtomicBoolean atomicSuccess = new AtomicBoolean(false);
-
-    client.addConnectionEstablishedCallback(promise -> {
-      client.exchangeDeclare(config.rabbitMQExchangeName(), "direct", true, false)
-
-        // Bind to the responses queue
-        .compose(v -> client.queueDeclare(config.rabbitMQResponsesQueue(), false, false, false))
-        .compose(declareOk -> client.queueBind(config.rabbitMQResponsesQueue(), config.rabbitMQExchangeName(), config.rabbitMQResponsesQueue()))
-
-        // Bind to the requests queue
-        .compose(v -> client.queueDeclare(config.rabbitMQRequestsQueue(), false, false, false))
-        .compose(declareOk -> client.queueBind(config.rabbitMQRequestsQueue(), config.rabbitMQExchangeName(), config.rabbitMQRequestsQueue()))
-
-        // Set up the ability to consume from the requests queue
-        .compose(v -> client.basicConsumer(config.rabbitMQResponsesQueue(), new QueueOptions().setAutoAck(false)))
-        .compose(consumer -> {
-          consumer.handler(message -> {
-
-            // Get message body
-            String messageBody = message.body().toString();
-            logger.trace("Received message w/ body: {}", messageBody);
-
-            // Attempt to parse as JSON
-            ObjectNode node = parseStringAsJSONObject(messageBody);
-
-            if (node == null) {
-              logger.error("Received non-JSON message, can't parse to determine delivery tag.");
-              return;
-            }
-
-            // Grab delivery tag from message.
-            long deliveryTag = message.envelope().getDeliveryTag();
-
-            // Tentative JsonNode objects used to check
-            // if all the necessary information to execute
-            // the Request is present in the message
-            JsonNode microserviceIDNode = node.get(config.rabbitMQMicroserviceIDField());
-            JsonNode requestPathNode = node.get(config.rabbitMQRequestPathField());
-
-            // Grab service ID and request path from JSON
-            if ((microserviceIDNode == null || !microserviceIDNode.isTextual()) ||
-              (requestPathNode == null || !requestPathNode.isTextual())) {
-              logger.error("Received message with no microservice ID or request path, can't execute request.");
-              client.basicAck(deliveryTag, false);
-              return;
-            }
-
-            String microserviceID = microserviceIDNode.asText();
-            String requestPath = requestPathNode.asText();
-
-            // Attempt to retrieve microservice
-            // from service wrapper.
-            Microservice microservice = serviceWrapper.getRunningMicroservice(microserviceID);
-
-            if (microservice == null) {
-              // We're not running the microservice this request is for.
-              // No big deal, just don't acknowledge the message and
-              // let the right microservice handle it.
-              return;
-            }
-
-            // Attempt to retrieve request class
-            // from the microservice.
-            Class<? extends Request> requestClazz = microservice.getRequestTypeFromPath(requestPath);
-
-            if (requestClazz == null) {
-              // A request path has been requested for a
-              // request type that doesn't exist. Log
-              // error and acknowledge.
-              logger.error("Received request for existing microservice with path that does not exist!");
-              client.basicAck(deliveryTag, false);
-              return;
-            }
-
-            // Parse all fields of the JSON object into
-            // a String -> String map
-            Map<String, String> parameters = new HashMap<>();
-            for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
-
-              Map.Entry<String, JsonNode> entry = it.next();
-
-              if (entry.getKey().equals("deliveryTag") ||
-                entry.getKey().equals(config.rabbitMQMicroserviceIDField()) ||
-                entry.getKey().equals(config.rabbitMQRequestPathField())) {
-                // Entries that are not of relevancy to
-                // the Request parser.
-                continue;
-              }
-
-              // Store the key-value pair in the parameters map
-              parameters.put(entry.getKey(), entry.getValue().asText());
-
-            }
-
-            Request request = Request.parse(requestClazz, parameters);
-
-            if (request == null) {
-              // Request parsing failed, log error and acknowledge.
-              logger.error("Failed to parse request!");
-              client.basicAck(deliveryTag, false);
-              return;
-            }
-
-            // Execute the request
-            Response response = serviceWrapper.executeRequest(request);
-
-            // We somehow failed to execute the request.
-            // Leave it in the queue and hope someone else picks
-            // it up and does it better.
-            if (response == null) {
-              logger.error("Failed to execute request!");
-              return;
-            }
-
-            // Define basic properties for the response
-            BasicProperties properties = new AMQP.BasicProperties.Builder()
-              .build();
-
-            Buffer messageBuffer;
-
-            try {
-              messageBuffer = Buffer.buffer(mapper.writeValueAsBytes(response.toJSONNode()));
-            } catch (JsonProcessingException e) {
-              logger.error("Could not create buffer from response JSON!", e);
-              return;
-            }
-
-            // Acknowledge the message
-            client.basicAck(deliveryTag, false);
-
-            // Publish response to responses queue
-            client.basicPublishWithDeliveryTag(
-              config.rabbitMQExchangeName(),
-              config.rabbitMQResponsesQueue(),
-              properties,
-              messageBuffer,
-              event -> {
-              } // don't need to do anything here
-            );
-
-          });
-
-          return Future.succeededFuture(consumer);
-
-        })
-        .onComplete(asyncResultHandler -> {
-
-          if (asyncResultHandler.succeeded()) {
-            // Mark the client as running
-            atomicSuccess.set(true);
-          } else {
-            // Failure, log it, then continue
-            logger.error("Failed to set up a consumer for the requests queue!", asyncResultHandler.cause());
-          }
-
-          latch.countDown();
-
-        });
-
-    });
 
     try {
-      latch.await();
-    } catch (InterruptedException e) {
-      logger.error("Interrupted while waiting for RabbitMQ client to start!");
+
+      // First, declare the exchange
+      channel.exchangeDeclare(config.rabbitMQExchangeName(), "direct", true);
+
+      // Bind to the responses queue
+      // We do this first because the moment we receive
+      // a request we need to be able to publish
+      // a response.
+      channel.queueDeclare(config.rabbitMQResponsesQueue(), false, false, false, null);
+      channel.queueBind(config.rabbitMQResponsesQueue(), config.rabbitMQExchangeName(), config.rabbitMQResponsesQueue());
+
+      // Bind to the requests queue
+      channel.queueDeclare(config.rabbitMQRequestsQueue(), false, false, false, null);
+      channel.queueBind(config.rabbitMQRequestsQueue(), config.rabbitMQExchangeName(), config.rabbitMQRequestsQueue());
+
+      // Not sure if this has to be uniquer per-wrapper
+      // or per queue, but we don't use it later, so I
+      // figured I'd just make it random.
+      String consumerTag = UUID.randomUUID().toString();
+
+      // Set up a consumer for the requests queue
+      channel.basicConsume(config.rabbitMQRequestsQueue(), false, consumerTag, getRequestConsumer());
+
+      logger.info("Successfully setup RabbitMQ!");
+      return true;
+
+    } catch (Exception e) {
+      conn = null;
+      channel = null;
+      String exceptionName = e.getClass().getSimpleName();
+      logger.error(exceptionName + " while trying to setup RabbitMQ after establishing a connection!", e);
       return false;
     }
-
-    boolean success = atomicSuccess.get();
-
-    if (success) {
-      running = true;
-      logger.info("RabbitMQ client started successfully!");
-    }
-
-    return success;
 
   }
 
@@ -311,8 +397,27 @@ public class RabbitMQMgr {
    * and sets the running status to false.
    */
   public void stop() {
-    client.stop();
+
+    // Each statement is in a separate
+    // try catch because we want the
+    // function to continue even if
+    // either of the two methods throw
+    // an error.
+
+    try {
+      channel.close();
+    } catch (Exception e) {
+      // Ignore.
+    }
+
+    try {
+      conn.close();
+    } catch (Exception e) {
+      // Ignore.
+    }
+
     running = false;
+
   }
 
 }

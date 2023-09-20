@@ -127,7 +127,7 @@ public class MainVerticle extends AbstractVerticle {
 
     }
 
-    logger.debug("Paths for microservice {} registered.", serviceWrapper.getCleanServiceName(service));
+    logger.info("Paths for microservice {} registered.", serviceWrapper.getCleanServiceName(service));
 
   }
 

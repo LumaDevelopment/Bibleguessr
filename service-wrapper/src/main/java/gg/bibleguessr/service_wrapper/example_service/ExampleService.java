@@ -71,10 +71,13 @@ public class ExampleService extends Microservice {
     Map<String, String> content = new HashMap<>();
     content.put("lengthDivisibleBy2", Boolean.toString(lengthDivisibleBy2));
 
-    logger.trace("Executed ExampleRequest. Message: \"{}\". Length divisible by 2: {}",
+    logger.debug("Executed ExampleRequest. Message: \"{}\". Length divisible by 2: {}",
       request.getMsg(), lengthDivisibleBy2);
 
-    return new Response(content);
+    // If request is not identifiable, then getUUID()
+    // will return null, and Response constructor
+    // can handle that just fine
+    return new Response(content, request.getUUID());
 
   }
 

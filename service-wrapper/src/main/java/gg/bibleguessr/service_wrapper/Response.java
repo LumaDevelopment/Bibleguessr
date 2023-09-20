@@ -42,24 +42,15 @@ public class Response {
   /* ---------- CONSTRUCTORS ---------- */
 
   /**
-   * Constructor for Response that doesn't need
-   * to be uniquely identifiable.
-   * Likely used for Vert.x.
+   * Constructor for a Response. UUID can be null
+   * if this response doesn't need to be uniquely
+   * identified. However, this is passed
+   * in/determined automatically by Request.getUUID()
    *
    * @param content The content of this Response.
-   */
-  public Response(Map<String, String> content) {
-    this(null, content);
-  }
-
-  /**
-   * Constructor for uniquely identifiable Response.
-   * Likely used for RabbitMQ.
-   *
    * @param uuid    The unique identifier of this Response.
-   * @param content The content of this Response.
    */
-  public Response(String uuid, Map<String, String> content) {
+  public Response(Map<String, String> content, String uuid) {
 
     if (content == null) {
       throw new RuntimeException("Cannot make Response instance with null content!");

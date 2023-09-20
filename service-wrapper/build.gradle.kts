@@ -26,7 +26,6 @@ dependencies {
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
   implementation("io.vertx:vertx-web-validation")
   implementation("io.vertx:vertx-web")
-  implementation("io.vertx:vertx-rabbitmq-client")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 
@@ -35,6 +34,9 @@ dependencies {
 
   // Logging provider
   implementation("org.slf4j:slf4j-simple")
+
+  // RabbitMQ
+  implementation("com.rabbitmq:amqp-client:5.18.0")
 
 }
 
