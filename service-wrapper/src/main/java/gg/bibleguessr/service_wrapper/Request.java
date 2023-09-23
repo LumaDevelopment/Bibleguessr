@@ -113,6 +113,7 @@ public abstract class Request {
    * @param <T>        the Request subclass to parse into
    * @return the new instance of the given Request subclass
    */
+  @SuppressWarnings("unchecked")
   public static <T extends Request> T parse(Class<T> clazz, Map<String, String> parameters) {
 
     if (clazz == null || parameters == null) {

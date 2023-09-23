@@ -1,7 +1,5 @@
 package gg.bibleguessr.service_wrapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,54 +205,28 @@ public class ServiceWrapper {
   }
 
   /**
-   * Attempts to load the config file into the
-   * config object. If the config file does not
-   * exist, attempts to write the default config.
+   * Checks if the config object already exists,
+   * and if so, returns it. Otherwise, attempts
+   * to read the config file and create the
+   * config object. Additionally, if the config
+   * file doesn't exist and the config class has
+   * a getDefault() method, it will be called
+   * and the default config will be written to
+   * the config file.
    *
-   * @return Whether the program should halt.
+   * @return Whether the config now is set
+   * correctly.
    */
   public boolean initializeConfig() {
 
     if (config != null) {
-      // Configuration is already present.
-      return false;
+      return true;
     }
 
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    // Attempt to create the config.
+    config = ServiceUtilities.getConfigObjFromFile(configFile, ServiceWrapperConfig.class);
 
-    try {
-
-      // Attempt to read configuration from file
-      config = mapper.readValue(configFile, ServiceWrapperConfig.class);
-
-      // If we made it to this point, it was successful, so do not halt
-      return false;
-
-    } catch (Exception readConfigEx) {
-
-      // Couldn't read from file, so get default config
-      // and attempt to write
-      config = ServiceWrapperConfig.getDefault();
-
-      try {
-
-        // Attempt to write default configuration to file
-        mapper.writeValue(configFile, config);
-
-        // Could write configuration file, inform user.
-        logger.info("Successfully wrote default configuration file. Halting program, modify and restart.");
-
-      } catch (Exception writeConfigEx) {
-
-        // Couldn't write default configuration, inform user.
-        logger.error("Error while attempting to write default config file!", writeConfigEx);
-
-      }
-
-    }
-
-    return true;
+    return config != null;
 
   }
 
@@ -342,10 +314,8 @@ public class ServiceWrapper {
    */
   public void run(Microservice service) {
 
-    // Get configuration sorted out
-    boolean halt = initializeConfig();
-
-    if (halt) {
+    // Attempt to get configuration
+    if (!initializeConfig()) {
       throw new RuntimeException("Configuration file does not exist, see logs for more information.");
     }
 

@@ -187,3 +187,4 @@ nbdist/
 ### Custom ###
 /build/
 /.idea/jarRepositories.xml
+/service_wrapper_config.json

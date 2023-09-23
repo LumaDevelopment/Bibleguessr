@@ -29,6 +29,9 @@ dependencies {
     // Apache Commons Collections, for bidirectional maps
     implementation("org.apache.commons:commons-collections4:4.4")
 
+    // Annotations
+    implementation("org.jetbrains:annotations:24.0.1")
+
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
