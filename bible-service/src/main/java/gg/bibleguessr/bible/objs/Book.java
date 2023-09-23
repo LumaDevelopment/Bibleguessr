@@ -1,9 +1,11 @@
 package gg.bibleguessr.bible.objs;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * A class that represents a Book of the Bible.
  */
-public class Book {
+public class Book implements Comparable<Book> {
 
     /* ---------- CONSTANTS ---------- */
 
@@ -337,7 +339,12 @@ public class Book {
         }
     }
 
-    /* ---------- OBJECT OVERRIDES ---------- */
+    /* ---------- OVERRIDDEN METHODS ---------- */
+
+    @Override
+    public int compareTo(@NotNull Book o) {
+        return Integer.compare(this.index(), o.index());
+    }
 
     @Override
     public boolean equals(Object obj) {

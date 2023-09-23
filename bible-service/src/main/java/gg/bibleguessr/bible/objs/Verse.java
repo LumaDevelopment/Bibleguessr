@@ -107,7 +107,7 @@ public record Verse(Chapter chapter, int number) implements Comparable<Verse> {
         return chapter.reference() + "." + String.format("%03d", number);
     }
 
-    /* ---------- OVERRIDES ---------- */
+    /* ---------- OVERRIDDEN METHODS ---------- */
 
     /**
      * Compares this Verse object to another Verse object by<br>
@@ -124,20 +124,10 @@ public record Verse(Chapter chapter, int number) implements Comparable<Verse> {
     @Override
     public int compareTo(@NotNull Verse otherVerse) {
 
-        if (this.equals(otherVerse)) {
-            return 0;
-        }
+        int chapterCompareVal = chapter().compareTo(otherVerse.chapter());
 
-        int thisBookIndex = this.chapter().book().index();
-        int otherBookIndex = otherVerse.chapter().book().index();
-        if (thisBookIndex != otherBookIndex) {
-            return Integer.compare(thisBookIndex, otherBookIndex);
-        }
-
-        int thisChapterNumber = this.chapter().number();
-        int otherChapterNumber = otherVerse.chapter().number();
-        if (thisChapterNumber != otherChapterNumber) {
-            return Integer.compare(thisChapterNumber, otherChapterNumber);
+        if (chapterCompareVal != 0) {
+            return chapterCompareVal;
         }
 
         return Integer.compare(this.number(), otherVerse.number());

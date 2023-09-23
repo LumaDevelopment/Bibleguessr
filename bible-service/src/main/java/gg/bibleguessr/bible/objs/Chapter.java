@@ -1,9 +1,11 @@
 package gg.bibleguessr.bible.objs;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * A class that represents a Chapter in a Book of the Bible.
  */
-public class Chapter {
+public class Chapter implements Comparable<Chapter> {
 
     /* ---------- VARIABLES ---------- */
 
@@ -205,7 +207,20 @@ public class Chapter {
         }
     }
 
-    /* ---------- OBJECT OVERRIDES ---------- */
+    /* ---------- OVERRIDDEN METHODS ---------- */
+
+    @Override
+    public int compareTo(@NotNull Chapter o) {
+
+        int bookCompareVal = book().compareTo(o.book());
+
+        if (bookCompareVal != 0) {
+            return bookCompareVal;
+        }
+
+        return Integer.compare(number(), o.number());
+
+    }
 
     @Override
     public boolean equals(Object obj) {
