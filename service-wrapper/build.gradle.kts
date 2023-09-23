@@ -30,7 +30,7 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 
   // JSON configuration
-  implementation("com.fasterxml.jackson.core:jackson-databind")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
 
   // Logging provider
   implementation("org.slf4j:slf4j-simple")
