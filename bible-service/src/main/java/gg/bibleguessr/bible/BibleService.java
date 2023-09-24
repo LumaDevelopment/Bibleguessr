@@ -47,11 +47,17 @@ public class BibleService extends Microservice {
      */
     private BibleServiceConfig config;
 
+    /**
+     * The class that operates reading text from different
+     * Bible versions.
+     */
+    private BibleReadingMgr bibleReadingMgr;
+
     /* ---------- CONSTRUCTORS ---------- */
 
     /**
      * Creates a new BibleService object with the
-     * default config file path.
+     * default config file path. Calls BibleService(configFile).
      */
     public BibleService() {
         this(new File(DEFAULT_CONFIG_FILE_PATH));
@@ -73,6 +79,7 @@ public class BibleService extends Microservice {
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.configFile = configFile;
         this.config = null;
+        this.bibleReadingMgr = null;
 
         initializeService();
 
@@ -112,6 +119,24 @@ public class BibleService extends Microservice {
         // Get all valid bible files in the directory
         return biblesDirectory.listFiles(bibleFileFilter);
 
+    }
+
+    /**
+     * Gets the BibleReadingMgr object for this service.
+     *
+     * @return The BibleReadingMgr object for this service.
+     */
+    public BibleReadingMgr getBibleReadingMgr() {
+        return bibleReadingMgr;
+    }
+
+    /**
+     * Gets the config object for this service.
+     *
+     * @return The config object for this service.
+     */
+    public BibleServiceConfig getConfig() {
+        return config;
     }
 
     /**
@@ -160,11 +185,13 @@ public class BibleService extends Microservice {
             throw new RuntimeException("Could not get Bible files, see logs for more information.");
         }
 
+        this.bibleReadingMgr = new BibleReadingMgr(this);
+
     }
 
     @Override
     public void shutdown() {
-
+        bibleReadingMgr.closeRandomAccessFiles();
     }
 
 }

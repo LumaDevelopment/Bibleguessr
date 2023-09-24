@@ -172,7 +172,10 @@ public class Bible {
      * and the next three characters are the chapter number,
      * separated by a period. The book abbreviations are the same
      * as OSIS, and the chapter number is padded with zeros to be
-     * three characters long.
+     * three characters long.<br>
+     * Also supports passing in a line from a Bible file
+     * (abbreviation and chapter number are retrieved
+     * using exact substrings).
      *
      * @param reference The reference of the chapter to get
      * @return The Chapter object of the chapter that has the given
@@ -208,7 +211,10 @@ public class Bible {
      * last three characters are the verse number, all separated
      * by periods. The book abbreviations are the same as OSIS,
      * and the chapter and verse numbers are padded with zeros
-     * to be three characters long.
+     * to be three characters long.<br>
+     * Also supports passing in a line from a Bible file
+     * (abbreviation and chapter/verse numbers are retrieved
+     * using exact substrings).
      *
      * @param reference The reference of the verse to get
      * @return The Verse object of the verse that has the given
@@ -226,7 +232,7 @@ public class Bible {
             }
 
             // Attempt to get verse by number in reference
-            return chapter.verse(Integer.parseInt(reference.substring(8)));
+            return chapter.verse(Integer.parseInt(reference.substring(8, 11)));
 
         } catch (Exception e) {
             // Catches IndexOutOfBoundsException
