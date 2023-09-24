@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+
+.App-container {
+    display: flex;
+    margin: none;
+    padding: none;
+    height: 100vh;
+}
+
+* {
+    font-family: 'Space Mono', monospace;
+}
+
+body {
+    margin: 0px;
+}
