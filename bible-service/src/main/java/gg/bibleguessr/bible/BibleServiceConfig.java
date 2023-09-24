@@ -26,6 +26,7 @@ public record BibleServiceConfig(
      *
      * @return The default configuration for the Bible service
      */
+    @SuppressWarnings("unused")
     public static BibleServiceConfig getDefault() {
         return new BibleServiceConfig(
                 "bibles",

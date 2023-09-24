@@ -51,6 +51,7 @@ public record ServiceWrapperConfig(
    *
    * @return The default configuration for the service wrapper
    */
+  @SuppressWarnings("unused")
   public static ServiceWrapperConfig getDefault() {
     return new ServiceWrapperConfig(
       true,

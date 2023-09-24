@@ -32,7 +32,7 @@ public class BibleService extends Microservice {
     /* ---------- VARIABLES ---------- */
 
     /**
-     * The logger this class uses to record it's
+     * The logger this class uses to record its
      * status and errors.
      */
     private final Logger logger;

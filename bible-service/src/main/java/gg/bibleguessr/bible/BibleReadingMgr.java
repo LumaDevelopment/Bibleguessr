@@ -165,6 +165,9 @@ public class BibleReadingMgr {
 
             try {
 
+                // Time calculation
+                long offsetCalculationStart = System.currentTimeMillis();
+
                 // Store the chapter offsets for this version
                 // using this version's RandomAccessFile
                 Map<Chapter, Long> chapterOffsets = new HashMap<>();
@@ -204,11 +207,16 @@ public class BibleReadingMgr {
                 // Add this version's chapter offsets to the map
                 // of all version chapter offsets
                 versionChapterOffsets.put(versionEntry.getKey(), chapterOffsets);
-                logger.info("\"{}\" offsets have been calculated.", versionEntry.getKey());
+
+                // Time calculation
+                long offsetCalculationEnd = System.currentTimeMillis();
+
+                logger.info("\"{}\" offsets have been calculated in {} s.",
+                        versionEntry.getKey(), (offsetCalculationEnd - offsetCalculationStart) / 1000.0);
 
             } catch (IOException ex) {
                 // Per version basis so that we can keep going
-                // if one ore more versions has an invalid file.
+                // if one or more versions has an invalid file.
                 logger.error("Encountered an IOException while attempting to read from the file for " +
                         "version \"" + versionEntry.getKey() + "\".", ex);
             }
@@ -229,7 +237,7 @@ public class BibleReadingMgr {
     public void closeRandomAccessFiles() {
 
         if (versionFiles == null) {
-            // This method has already ran.
+            // This method has already run.
             return;
         }
 
@@ -242,7 +250,7 @@ public class BibleReadingMgr {
             }
         }
 
-        // Set to null, so we know this method has already ran,
+        // Set to null, so we know this method has already run,
         // also to free up memory.
         versionFiles = null;
 
@@ -302,9 +310,9 @@ public class BibleReadingMgr {
      * verse do not wrap (i.e. no Revelation ->
      * Genesis type passages).
      *
-     * @param version The version of the Bible to get the text from (case-insensitive)
+     * @param version    The version of the Bible to get the text from (case-insensitive)
      * @param startVerse The start verse of the passage
-     * @param endVerse The end verse of the passage
+     * @param endVerse   The end verse of the passage
      * @return The text of the passage, or null if: any of the parameters
      * are null, the version does not exist, or the passage bounds are invalid.
      */
@@ -444,7 +452,7 @@ public class BibleReadingMgr {
      * and end verse.
      *
      * @param version The version of the Bible to get the text from (case-insensitive)
-     * @param verse The verse to get the text of
+     * @param verse   The verse to get the text of
      * @return The text of the verse, or null if an error occurs
      * (see getPassageText() doc).
      */
@@ -507,6 +515,9 @@ public class BibleReadingMgr {
 
             try {
 
+                // Time calculation
+                long verseTextReadStart = System.currentTimeMillis();
+
                 // Collect verse text for every verse in the
                 // version's file
                 Map<Verse, String> verseTexts = new HashMap<>();
@@ -538,7 +549,12 @@ public class BibleReadingMgr {
 
                 // Add this version's verse texts to the map
                 versionVerseTexts.put(versionEntry.getKey(), verseTexts);
-                logger.info("\"{}\" texts have been read into memory.", versionEntry.getKey());
+
+                // Time calculation
+                long verseTextReadEnd = System.currentTimeMillis();
+
+                logger.info("\"{}\" texts have been read into memory in {} s.",
+                        versionEntry.getKey(), (verseTextReadEnd - verseTextReadStart) / 1000.0);
 
             } catch (IOException ex) {
                 logger.error("Encountered an IOException while attempting to read from the file for " +
