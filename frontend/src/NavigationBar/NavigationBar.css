@@ -1,14 +1,25 @@
 .NavigationBar-container {
     display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    flex-direction: column;
-    width: 100%;
-    max-width: 200px;
-    background-color: #262522;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    width: 100vw;
+    background-color: black;
     padding-left: 20px;
+    position: -webkit-sticky;
+        position: sticky;
+        top: 0;
 }
 .NavigationBar-nav-item {
-    gap: 0px;
+    flex: 1;
+    gap: 5px;
+    text-align: center;
     font-size: 12px;
+    color: white;
+}
+
+.NavigationBar-nav-logo {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
 }

@@ -1,0 +1,74 @@
+.HomePage2-banner-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('image_08.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    width: 100vw;
+}
+
+.HomePage2-banner-overlay {
+    text-align: center;
+    backdrop-filter: blur(8px);
+    gap: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 30px;
+    box-shadow: 2px 2px 5px black;
+    padding: 3%;
+    color: white;
+}
+
+.HomePage2-play-button {
+    width: 300px;
+    margin: 0;
+    height: 60px;
+    background-color: #D4AF37;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 2px 5px black;
+    margin: 0 auto;
+    font-size: 25px;
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 5px;
+    transition: 0.3s ease-in-out;
+    box-shadow: 2px 2px 5px black;
+    text-shadow: 2px 2px 3px black;
+
+}
+
+.HomePage2-banner-title {
+    font-size: 7.5em;
+    margin: 0;
+    padding: 0;
+    line-height: 100px;
+    text-shadow: 2px 2px 5px black;
+}
+
+.HomePage2-guessed {
+    font-size: 2em;
+    margin: 0;
+    padding: 0;
+    text-shadow: 2px 2px 5px black;
+}
+
+.HomePage2-guessed > span {
+    color: #D4AF37;
+    text-shadow: 2px 2px 5px black;
+
+}
+
+.HomePage2-container {
+    overflow-x: none;
+    overflow-y: auto;
+    border: 10x solid red;
+}

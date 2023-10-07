@@ -3,7 +3,7 @@ import "./NavigationBar.css"
 export const NavigationBar: React.FC = () => {
     return (
         <div className="NavigationBar-container">
-            <div className="NavigationBar-nav-item">
+            <div className="NavigationBar-nav-item NavigationBar-nav-logo">
                 <h1>Logo</h1>
             </div>
             <div className="NavigationBar-nav-item">

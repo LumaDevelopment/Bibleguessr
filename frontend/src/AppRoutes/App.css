@@ -1,10 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
 
 .App-container {
-    display: flex;
+    /* display: flex; */
     margin: none;
     padding: none;
     height: 100vh;
+    overflow-x: none;
+    overflow-y: auto;
 }
 
 * {
