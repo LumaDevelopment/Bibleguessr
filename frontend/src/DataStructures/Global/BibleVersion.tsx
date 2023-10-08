@@ -1,0 +1,1 @@
+export type BibleVersion = "KVJ" | "ESV" | "NIV"
