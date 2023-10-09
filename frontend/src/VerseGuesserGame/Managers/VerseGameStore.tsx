@@ -16,10 +16,9 @@ export class VerseGameStore extends Subscribable {
     getCurrentUserScreen = (): VerseGameScreen => {
         return this.currentUserScreen
     }
-
-
     addGameSegment = (newSegment: VerseGameSegment) => {
         this.gameSegments = [...this.gameSegments, newSegment]
+        this.activeGameSegment = newSegment
         this.emitChange()
     }
     setActiveGameSegment = (newSegment: VerseGameSegment) => {

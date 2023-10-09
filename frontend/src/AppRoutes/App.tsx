@@ -4,6 +4,7 @@ import { NavigationBar } from "../NavigationBar/NavigationBar";
 import { HomePage2 } from "../HomePage2/HomePage2";
 import "../NavigationBar/NavigationBar.css"
 import "./App.css"
+import { VerseGameManager } from "../VerseGuesserGame/Screens/VerseGameManger";
 
 function App() {
   return (
@@ -11,8 +12,8 @@ function App() {
       <NavigationBar />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage2 />}>
-          </Route>
+          <Route path="/" element={<HomePage2 />}/>
+          <Route path="/play" element={<VerseGameManager />}/>
         </Routes>
       </BrowserRouter>
     </div>

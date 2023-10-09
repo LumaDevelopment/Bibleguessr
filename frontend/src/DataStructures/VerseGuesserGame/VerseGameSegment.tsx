@@ -12,10 +12,6 @@ import { Verse } from "../Global/Verse";
  */
 export class VerseGameSegment extends Subscribable {
     /**
-     * How many guesses the user has access to.
-     */
-    private allowedGuesses!: number
-    /**
      * How many surronding verses the user gets.
      */
     private allowedSurrondingVerses!: number
@@ -35,9 +31,8 @@ export class VerseGameSegment extends Subscribable {
     private usersCurrentScore: number = 4000;
 
 
-    constructor(allowedGuesses: number, allowedSurrondingVerses: number) {
+    constructor(allowedSurrondingVerses: number) {
         super();
-        this.allowedGuesses = allowedGuesses;
         this.allowedSurrondingVerses = allowedSurrondingVerses;
     }
 
@@ -68,16 +63,7 @@ export class VerseGameSegment extends Subscribable {
         this.emitChange();
     }
 
-    setAllowedGuesses = (amount: number) => {
-        this.allowedGuesses = amount;
-        this.emitChange();
-    }
-
     // Getters
-
-    getAllowedGuesses = (): number => {
-        return this.allowedGuesses;
-    }
 
     getAllowedSurrondingVerses = (): number => {
         return this.allowedSurrondingVerses;

@@ -7,9 +7,10 @@
     background-color: black;
     padding-left: 20px;
     position: -webkit-sticky;
-        position: sticky;
-        top: 0;
+    position: sticky;
+    top: 0;
 }
+
 .NavigationBar-nav-item {
     flex: 1;
     gap: 5px;
