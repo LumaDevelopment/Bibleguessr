@@ -25,9 +25,18 @@ export class VerseGameStore extends Subscribable {
         this.activeGameSegment = newSegment
         this.emitChange()
     }
-    setCurrentUserScreen = (currentUserScreen: VerseGameScreen) => {
-        this.currentUserScreen = currentUserScreen;
-        this.emitChange()
+    nextScreen = () => {
+        if (this.currentUserScreen === "INITIAL SETTINGS") {
+            this.currentUserScreen = "MAIN GUESSER"
+        }
+        this.emitChange();
+    }
+
+    previousScreen = () => {
+        if (this.currentUserScreen === "MAIN GUESSER") {
+            this.currentUserScreen = "INITIAL SETTINGS"
+        }
+        this.emitChange();
     }
 
 }

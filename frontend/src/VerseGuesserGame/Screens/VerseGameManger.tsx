@@ -14,12 +14,18 @@ export const VerseGameManager: React.FC = () => {
     }, [])
     const activeUserGameSegment: VerseGameSegment = useSyncExternalStore(gameStore.subscribe, gameStore.getActiveGameSegment)
     const currentUserScreen: VerseGameScreen = useSyncExternalStore(gameStore.subscribe, gameStore.getCurrentUserScreen)
-    console.log(currentUserScreen)
     return (
         <>
             {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings activeUserGameSegment={activeUserGameSegment} />}
-            <a className="VerseGameManager-back-button" href="/">Back</a>
-            <a className="VerseGameManager-next-button" href="#">{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</a>
+            <div className="VerseGameManager-footer">
+                <a className="VerseGameManager-button" onClick={() => {
+                    if (currentUserScreen !== "INITIAL SETTINGS") {
+                        gameStore.previousScreen()
+                    }
+                    // Todo: Fix this back logic.
+                }} href={currentUserScreen !== "INITIAL SETTINGS" ? "/" : "#"}>Back</a>
+                <a className="VerseGameManager-button" onClick={() => gameStore.nextScreen()} href="#">{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</a>
+            </div>
         </>
     )
 }

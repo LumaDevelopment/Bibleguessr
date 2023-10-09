@@ -1,3 +1,4 @@
+import { BibleVersion } from "../Global/BibleVersion";
 import { Subscribable } from "../Global/Subscribable";
 import { Verse } from "../Global/Verse";
 
@@ -11,6 +12,10 @@ import { Verse } from "../Global/Verse";
  * Every GameSegment must also be subscribable. This allows for the active game instance to keep the UI and the data structure in sync.
  */
 export class VerseGameSegment extends Subscribable {
+    /**
+     * The users selected book.
+     */
+    private currentBook: BibleVersion = "KJV"
     /**
      * How many surronding verses the user gets.
      */
@@ -48,6 +53,11 @@ export class VerseGameSegment extends Subscribable {
         this.emitChange();
     }
 
+    setCurrentBook = (book: BibleVersion) => {
+        this.currentBook = book;
+        this.emitChange();
+    }
+
     increaseGuessCount = () => {
         this.currentGuessesCount += 1;
         this.emitChange()
@@ -79,6 +89,10 @@ export class VerseGameSegment extends Subscribable {
 
     getCurrentGuessesCount = (): number => {
         return this.currentGuessesCount;
+    }
+
+    getCurrentBook = (): BibleVersion => {
+        return this.currentBook;
     }
 
 }
