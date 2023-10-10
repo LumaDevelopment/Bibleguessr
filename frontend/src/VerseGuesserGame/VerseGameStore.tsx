@@ -1,19 +1,19 @@
-import { BibleVersion } from "../../DataStructures/Global/BibleVersion";
-import { Subscribable } from "../../DataStructures/Global/Subscribable"
-import { VerseGameScreen } from "../../DataStructures/VerseGuesserGame/VerseGameScreen";
-import { VerseGameSegment } from "../../DataStructures/VerseGuesserGame/VerseGameSegment";
+import { BibleVersion } from "../DataStructures/Global/BibleVersion";
+import { Subscribable } from "../DataStructures/Global/Subscribable"
+import { VerseGameScreenSelector } from "../DataStructures/VerseGuesserGame/VerseGameScreenSelector";
+import { VerseGameSegment } from "../DataStructures/VerseGuesserGame/VerseGameSegment";
 
 export class VerseGameStore extends Subscribable {
     private gameSegments: VerseGameSegment[] = []
     private activeGameSegment!: VerseGameSegment;
-    private currentUserScreen: VerseGameScreen = "INITIAL SETTINGS"
+    private currentUserScreen: VerseGameScreenSelector = "INITIAL SETTINGS"
     getGameSegments = (): VerseGameSegment[] => {
         return this.gameSegments
     }
     getActiveGameSegment = (): VerseGameSegment => {
         return this.activeGameSegment;
     }
-    getCurrentUserScreen = (): VerseGameScreen => {
+    getCurrentUserScreen = (): VerseGameScreenSelector => {
         return this.currentUserScreen
     }
     addGameSegment = (newSegment: VerseGameSegment) => {

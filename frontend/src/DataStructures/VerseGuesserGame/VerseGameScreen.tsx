@@ -1,1 +1,0 @@
-export type VerseGameScreen = "INITIAL SETTINGS" | "MAIN GUESSER" | "END SCREEN"

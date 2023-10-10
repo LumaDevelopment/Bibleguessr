@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore } from "react"
-import { VerseGameSegment } from "../../DataStructures/VerseGuesserGame/VerseGameSegment"
-import { BibleVersion } from "../../DataStructures/Global/BibleVersion"
+import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
+import { BibleVersion } from "../../../DataStructures/Global/BibleVersion"
 
 import "./InitialSettings.css"
 
@@ -14,21 +14,6 @@ export const InitialSettings: React.FC<InitialSettingsProps> = (props) => {
 
     const currentBook = useSyncExternalStore(props.activeUserGameSegment.subscribe, props.activeUserGameSegment.getCurrentBook)
 
-    const namesToOptions = useMemo(() => {
-        let x = new Map<BibleVersion, string>();
-        x.set("ESV", "English Standard Version (ESV)")
-        x.set("KJV", "King James Version (KJV)")
-        return x;
-    }, [])
-
-    const optionsToNames = useMemo(() => {
-        let x = new Map<string, BibleVersion>();
-        x.set("English Standard Version (ESV)", "ESV")
-        x.set("King James Version (KJV)", "KJV")
-        return x;
-    }, [])
-
-
     return (
         <div className="InitialSettings-container">
             <div className="InitialSettings-header">
@@ -41,11 +26,11 @@ export const InitialSettings: React.FC<InitialSettingsProps> = (props) => {
                     props.activeUserGameSegment.setAllowedSurrondingVerses(event.target.value as unknown as number)
                 }} />
                 <p>Choose A Book</p>
-                <select value={namesToOptions.get(currentBook as BibleVersion) as string} onChange={(event) => {
-                    props.activeUserGameSegment.setCurrentBook(optionsToNames.get(event.target.value as string) as BibleVersion)
+                <select value={currentBook as BibleVersion} onChange={(event) => {
+                    props.activeUserGameSegment.setCurrentBook(event.target.value as BibleVersion)
                 }}>
-                    {(["ESV", "KJV"] as BibleVersion[]).map((book) => {
-                        return <option key={InitialSettings + "_option_" + book}>{namesToOptions.get(book)}</option>
+                    {(["King James Version", "English Standard Version"] as BibleVersion[]).map((book) => {
+                        return <option key={InitialSettings + "_option_" + book}>{book}</option>
                     })}
                 </select>
             </div>

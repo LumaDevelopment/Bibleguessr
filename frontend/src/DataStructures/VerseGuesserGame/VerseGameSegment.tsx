@@ -15,7 +15,7 @@ export class VerseGameSegment extends Subscribable {
     /**
      * The users selected book.
      */
-    private currentBook: BibleVersion = "KJV"
+    private currentBook: BibleVersion = "King James Version"
     /**
      * How many surronding verses the user gets.
      */
