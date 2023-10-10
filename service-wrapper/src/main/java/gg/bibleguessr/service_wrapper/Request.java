@@ -2,6 +2,7 @@ package gg.bibleguessr.service_wrapper;
 
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -124,11 +125,13 @@ public abstract class Request {
     // Attempt to create new instance of clazz
     T request = (T) requestObjFromClass(clazz);
 
+    parameters = new HashMap<>(parameters);
+
     // Attempt to set the UUID of the request.
     // If the parameters map doesn't have a
     // UUID, then the setUUID() function will
     // handle that automatically
-    request.setUUID(parameters.remove(UUID_PARAMETER_NAME));
+    request.setUUID(parameters.get(UUID_PARAMETER_NAME));
 
     // Attempt to parse request
     boolean success = request.parse(parameters);

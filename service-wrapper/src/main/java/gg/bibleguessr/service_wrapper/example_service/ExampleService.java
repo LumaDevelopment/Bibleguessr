@@ -36,6 +36,11 @@ public class ExampleService extends Microservice {
    */
   private final Logger logger;
 
+  /**
+   * Allows use with testing classes.
+   */
+  private boolean hasBeenStopped = false;
+
   /* ---------- CONSTRUCTOR ---------- */
 
   /**
@@ -107,6 +112,15 @@ public class ExampleService extends Microservice {
   }
 
   /**
+   * Whether this microservice has been fully stopped.
+   *
+   * @return Whether this microservice has been fully stopped.
+   */
+  public boolean hasBeenStopped() {
+    return hasBeenStopped;
+  }
+
+  /**
    * Inform ServiceWrapper all the types of requests
    * we can handle. For this service, only one.
    */
@@ -123,6 +137,7 @@ public class ExampleService extends Microservice {
    */
   @Override
   public void shutdown() {
+    hasBeenStopped = true;
     logger.info("Example Service is shutting down :(");
   }
 
