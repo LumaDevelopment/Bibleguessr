@@ -9,7 +9,15 @@ public class Version {
 
    /* -------- INSTANCE VARIABLES -------- */
 
+   /**
+    * The full name of the version.
+    */
    private final String name;
+
+   /**
+    * The map between Book objects and this
+    * Bible version's name for those books.
+    */
    private final Map<Book, String> bookNames;
 
    /* -------- CONSTRUCTOR -------- */
