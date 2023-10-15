@@ -134,7 +134,7 @@ public record Verse(Chapter chapter, int number, int universalIndex)
 
    @Override
    public int hashCode() {
-      return toString().hashCode();
+      return (chapter.book().index() + "." + chapter.number() + "." + number).hashCode();
    }
 
 }

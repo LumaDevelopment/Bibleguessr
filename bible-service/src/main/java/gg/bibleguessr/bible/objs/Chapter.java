@@ -224,14 +224,14 @@ public class Chapter implements Comparable<Chapter> {
    @Override
    public boolean equals(Object obj) {
       if (obj instanceof Chapter chapter) {
-         return chapter.book.equals(book) && chapter.number == number();
+         return chapter.book.equals(book) && chapter.number == number;
       }
       return false;
    }
 
    @Override
    public int hashCode() {
-      return toString().hashCode();
+      return (book.index() + "." + number).hashCode();
    }
 
 }

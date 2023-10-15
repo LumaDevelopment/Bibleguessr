@@ -142,7 +142,7 @@ public class BibleReadingMgr {
    private void initializeText() {
 
       // Regex to pull the book name from reference
-      Pattern pattern = Pattern.compile("^(\\D+)");
+      Pattern pattern = Pattern.compile("\\b\\d+:\\d+\\b");
 
       // Get the length of the bible file extension
       int bibleFileExtensionLength = service.getConfig().bibleFileExtension().length() + 1;
@@ -182,13 +182,28 @@ public class BibleReadingMgr {
                // verse text is the pipe character.
                String[] lineParts = line.split("\\|");
 
+               if (lineParts.length < 1 || lineParts.length > 2) {
+                  throw new RuntimeException("Bible file (" + versionFile.getName() + ") with " +
+                        "invalid formatting! Offending line: " + line);
+               }
+
                // The first part of the line is structured like
                // "Genesis 1:1", so get the book name out of this
-               // by getting the substring of the first part of the
-               // line until the last part of the reference, split
-               // by spaces.
-               Matcher matcher = pattern.matcher(lineParts[0]);
-               String bookName = matcher.group(1).trim();
+               // by finding the chapter:verse portion with regex
+               // and using substring to cut it out
+               String reference = lineParts[0];
+               Matcher matcher = pattern.matcher(reference);
+               String chapterVerseReference;
+
+               if (matcher.find()) {
+                  chapterVerseReference = matcher.group();
+               } else {
+                  throw new RuntimeException("Bible file (" + versionFile.getName() + ") with " +
+                        "invalid formatting! Offending line: " + line);
+               }
+
+               int charactersToCut = chapterVerseReference.length() + 1;
+               String bookName = reference.substring(0, reference.length() - charactersToCut);
 
                // Update book name if it is different
                if(!bookName.equals(currentBookName)) {
@@ -208,7 +223,12 @@ public class BibleReadingMgr {
                }
 
                // Insert the verse's text into the array
-               verseText[verseIndex] = lineParts[1];
+               if (lineParts.length < 2) {
+                  verseText[verseIndex] = "";
+               } else {
+                  verseText[verseIndex] = lineParts[1];
+               }
+
                verseIndex++;
 
             }

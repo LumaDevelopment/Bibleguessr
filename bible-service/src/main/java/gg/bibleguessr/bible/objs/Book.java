@@ -2,6 +2,8 @@ package gg.bibleguessr.bible.objs;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+
 /**
  * A class that represents a Book of the Bible.
  */
@@ -316,17 +318,12 @@ public class Book implements Comparable<Book> {
 
    @Override
    public boolean equals(Object obj) {
-      return obj instanceof Book && allChapters().equals(((Book) obj).allChapters());
+      return obj instanceof Book && Arrays.equals(chapters, ((Book) obj).chapters);
    }
 
    @Override
    public int hashCode() {
-      return toString().hashCode();
-   }
-
-   @Override
-   public String toString() {
-      return String.valueOf(index());
+      return index;
    }
 
 }
