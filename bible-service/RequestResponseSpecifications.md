@@ -37,3 +37,20 @@ Vert.x will respond with the following error codes, depending on the situation:
     - `dataMatrix` (Array) - An array, where each element represents one book of the bible.
         - Each element is an array, where each element represents a chapter in that book. The value of that element
           (Number/Integer) is the number of verses in that chapter.
+
+### Random Verse Request
+
+- **Request Path:** `random-verse`
+- **Vert.x Path:** `/bible/random-verse`
+- **Request Parameters:**
+    - `uuid` (Optional) - Unique request identifier.
+    - `version` - The name of the Bible version to pull the text from.
+    - `numOfContextVerses` - An integer. The number of verses to include before and after the random verse to provide
+      context. The minimum of this number is `0`, the maximum is `15550`.
+- **Response Parameters:**
+    - `uuid` (Text) (Optional) - Matches UUID from request. Only useful for something like RabbitMQ where we can't
+      deliver a direct response to a request.
+    - `error` (Integer) (On Failure) - An error code if an issue arises while executing this request.
+        - `0` - Invalid version. Either the version is blank or this service does not have the given version.
+        - `1` - Invalid number of context verses. Either the number of context verses is less than the minimum or more
+          than the maximum.

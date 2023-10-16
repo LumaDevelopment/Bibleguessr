@@ -1,8 +1,11 @@
 package gg.bibleguessr.bible;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.bible.objs.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
+import gg.bibleguessr.bible.requests.RandomVerseRequest;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
@@ -12,7 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * The BibleService class is the main class for the
@@ -36,6 +40,7 @@ public class BibleService extends Microservice {
     // Bible numerical constants
     public static final int BOOKS_IN_BIBLE = 66;
     public static final int VERSES_IN_BIBLE = 31_102;
+    public static final int MAX_CONTEXT_VERSES = 15_550;
 
     /* ---------- VARIABLES ---------- */
 
@@ -62,10 +67,11 @@ public class BibleService extends Microservice {
     private BibleReadingMgr bibleReadingMgr;
 
     /**
-     * Versions offered by this service, found out
-     * by the bible reading manager.
+     * Versions offered by this service, reported
+     * by the bible reading manager. Map from
+     * version name to object.
      */
-    private HashSet<Version> versions;
+    private Map<String, Version> versions;
 
     /**
      * The class that manages the creation of data
@@ -73,6 +79,12 @@ public class BibleService extends Microservice {
      * available versions, their book names, etc.
      */
     private FrontendBibleDataMgr frontendBibleDataMgr;
+
+    /**
+     * The object mapper that this class uses to
+     * do JSON operations.
+     */
+    private final ObjectMapper objectMapper;
 
     /* ---------- CONSTRUCTORS ---------- */
 
@@ -103,6 +115,7 @@ public class BibleService extends Microservice {
         this.bibleReadingMgr = null;
         this.versions = null;
         this.frontendBibleDataMgr = null;
+        this.objectMapper = new ObjectMapper();
 
         initializeService();
 
@@ -111,16 +124,80 @@ public class BibleService extends Microservice {
 
     /* ---------- METHODS ---------- */
 
+    /**
+     * Executes the given random verse request.
+     *
+     * @param request The request to execute.
+     * @return The response to the request.
+     */
+    public Response executeRandomVerseRequest(RandomVerseRequest request) {
+
+        // Node to insert response data into
+        ObjectNode responseContent = objectMapper.createObjectNode();
+
+        // Now that we're here, we can do a couple of parameter sanity checks
+        String versionName = request.getVersion();
+
+        // Check if the version name is valid.
+        if (versionName.isBlank() || !versions.containsKey(versionName)) {
+            responseContent.put("error", 0);
+            return new Response(responseContent, request.getUUID());
+        }
+
+        int numOfContextVerses = request.getNumOfContextVerses();
+
+        // Check if the number of context verses is valid.
+        if (numOfContextVerses < 0 || numOfContextVerses > MAX_CONTEXT_VERSES) {
+            responseContent.put("error", 1);
+            return new Response(responseContent, request.getUUID());
+        }
+
+        Version version = versions.get(versionName);
+
+        // TODO for Dan
+        // In this case, we're good to go.
+        // Steps:
+        // 1) Select a random verse.
+        // 2) Gather its context verses. Make sure to account for the
+        // case where the context would expand beyond the bounds of the
+        // Bible. (ex. Genesis 1:1 with >0 context verses)
+        // 3) Consult with Michael on how he wants us to handle multiple
+        // verses. Does he want multiple verse objects?
+        // 4) Whatever the solution, assemble one or more verse JSON
+        // objects (can create a new JSON object with
+        // objectMapper.createObjectNode()) and fill it with the
+        // information Michael needs. Text can be pulled from BibleReadingMgr,
+        // book, chapter, and verse information can be pulled from the
+        // Bible class, and once you have the Book object from
+        // the verse object, you can get its name using
+        // version.getBookNameByObject().
+        // 5) However you structure these responses, make sure to put
+        // information about them in the "Response Parameters"
+        // section of the "Random Verse Request" in RequestResponseSpecifications.md
+        // 6) Add all verse JSON objects to the responseContent object.
+
+        return new Response(responseContent, request.getUUID());
+
+    }
+
+    /**
+     * Handle all request types that are directed to this service.
+     * Should only receive types that are stated in initializeRequestTypesMap().
+     *
+     * @param request The request to execute.
+     * @return The response to the request.
+     */
     @Override
     public Response executeRequest(Request request) {
 
         if (request instanceof FrontendBibleDataRequest bibleDataReq) {
             return new Response(frontendBibleDataMgr.getBibleData(), bibleDataReq.getUUID());
+        } else if (request instanceof RandomVerseRequest randomVerseReq) {
+            return executeRandomVerseRequest(randomVerseReq);
         } else {
             // Unknown type of request
             logger.error("Received request of unknown type: {}!", request.getClass().getSimpleName());
             return null;
-
         }
 
     }
@@ -173,14 +250,33 @@ public class BibleService extends Microservice {
     }
 
     /**
+     * Attempts to get the Version object of the
+     * version with the given name.
+     *
+     * @param versionName The name of the version to get.
+     * @return The Version object of the version with the
+     * given name, or <code>null</code> if no such version
+     * exists.
+     */
+    public Version getVersionByName(String versionName) {
+
+        if (versionName == null) {
+            return null;
+        }
+
+        return versions.get(versionName);
+
+    }
+
+    /**
      * Gets all Bible versions accessible by
      * this service.
      *
      * @return All Bible versions accessible by
      * this service.
      */
-    public HashSet<Version> getVersions() {
-        return versions;
+    public Collection<Version> getVersions() {
+        return versions.values();
     }
 
     /**
@@ -218,11 +314,21 @@ public class BibleService extends Microservice {
 
     }
 
+    /**
+     * Initialize all request types that
+     * this service can handle.
+     */
     @Override
     public void initializeRequestTypesMap() {
         initializeRequestType(FrontendBibleDataRequest.class);
+        initializeRequestType(RandomVerseRequest.class);
     }
 
+    /**
+     * Initialize all aspects of the Bible service, including
+     * the configuration, the bible files, the bible reading
+     * manager, the frontend bible data manager, etc.
+     */
     private void initializeService() {
 
         // Attempt to initialize the configuration,
@@ -258,7 +364,7 @@ public class BibleService extends Microservice {
 
     @Override
     public void shutdown() {
-
+        // Nothing to do.
     }
 
 }

@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -187,14 +186,22 @@ public class BibleReadingMgr {
     }
 
     /**
-     * Gets a HashSet of all Bible versions that
+     * Gets a Map of all Bible versions that
      * this class has read.
      *
-     * @return A HashSet of all Bible versions that
+     * @return A Map of all Bible versions that
      * this class has read.
      */
-    public HashSet<Version> getBibleVersions() {
-        return new HashSet<>(bibleText.keySet());
+    public Map<String, Version> getBibleVersions() {
+
+        HashMap<String, Version> versionsMap = new HashMap<>();
+
+        for (Version version : bibleText.keySet()) {
+            versionsMap.put(version.getName(), version);
+        }
+
+        return versionsMap;
+
     }
 
     /**
