@@ -77,7 +77,7 @@ public class ExampleService extends Microservice {
     // String map. In correspondence to what is
     // detailed in RequestResponseSpecifications.md
     ObjectNode content = new ObjectMapper().createObjectNode();
-    content.put("lengthDivisibleBy2", Boolean.toString(lengthDivisibleBy2));
+    content.put("lengthDivisibleBy2", lengthDivisibleBy2);
 
     logger.debug("Executed ExampleRequest. Message: \"{}\". Length divisible by 2: {}",
       request.getMsg(), lengthDivisibleBy2);

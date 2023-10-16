@@ -2,7 +2,7 @@ package gg.bibleguessr.bible;
 
 import gg.bibleguessr.bible.objs.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
-import gg.bibleguessr.bible.requests.GetFrontendBibleDataRequest;
+import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
@@ -114,7 +114,7 @@ public class BibleService extends Microservice {
     @Override
     public Response executeRequest(Request request) {
 
-        if (request instanceof GetFrontendBibleDataRequest bibleDataReq) {
+        if (request instanceof FrontendBibleDataRequest bibleDataReq) {
             return new Response(frontendBibleDataMgr.getBibleData(), bibleDataReq.getUUID());
         } else {
             // Unknown type of request
@@ -220,7 +220,7 @@ public class BibleService extends Microservice {
 
     @Override
     public void initializeRequestTypesMap() {
-        initializeRequestType(GetFrontendBibleDataRequest.class);
+        initializeRequestType(FrontendBibleDataRequest.class);
     }
 
     private void initializeService() {

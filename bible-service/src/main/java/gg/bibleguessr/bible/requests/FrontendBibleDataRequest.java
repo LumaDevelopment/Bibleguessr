@@ -8,7 +8,7 @@ import java.util.Map;
  * The request to get the Bible Data needed by the
  * front end (version names, book names, data matrix, etc.)
  */
-public class GetFrontendBibleDataRequest extends Request {
+public class FrontendBibleDataRequest extends Request {
 
     /* ---------- CONSTANTS ---------- */
 
@@ -26,7 +26,7 @@ public class GetFrontendBibleDataRequest extends Request {
      * this request doesn't take any parameters
      * or have any other special characteristics.
      */
-    public GetFrontendBibleDataRequest() {
+    public FrontendBibleDataRequest() {
         super(REQUEST_PATH);
     }
 
