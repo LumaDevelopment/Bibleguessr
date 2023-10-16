@@ -1,6 +1,7 @@
 package gg.bibleguessr.service_wrapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class Response {
    * The content of this response. Necessary for
    * the Response to function.
    */
-  private final Map<String, String> content;
+  private final ObjectNode content;
 
   /**
    * An ObjectMapper instance variable for serializing
@@ -47,10 +48,10 @@ public class Response {
    * identified. However, this is passed
    * in/determined automatically by Request.getUUID()
    *
-   * @param content The content of this Response.
+   * @param content The content of this Response, stored as JSON.
    * @param uuid    The unique identifier of this Response.
    */
-  public Response(Map<String, String> content, String uuid) {
+  public Response(ObjectNode content, String uuid) {
 
     if (content == null) {
       throw new RuntimeException("Cannot make Response instance with null content!");
@@ -62,16 +63,6 @@ public class Response {
   }
 
   /* ---------- METHODS ---------- */
-
-  /**
-   * Retrieves the content of this response,
-   * which is a key-value map.
-   *
-   * @return The content of this response.
-   */
-  public Map<String, String> getContent() {
-    return content;
-  }
 
   /**
    * Lazy loading ObjectMapper creation
@@ -102,23 +93,21 @@ public class Response {
   }
 
   /**
-   * Converts this Response instance to a JSON object.
+   * Returns the content of this Response as a
+   * JSON object. Will inject UUID into the content
+   * if this Response has a UUID and that UUID
+   * is not already in the content.
    *
    * @return A JSON object representing this Response instance.
    */
   public ObjectNode toJSONNode() {
 
-    ObjectNode rootNode = getMapper().createObjectNode();
-
     // Add "uuid" field if applicable.
-    if (uuid != null && !uuid.isBlank()) {
-      rootNode.put("uuid", uuid);
+    if (uuid != null && !uuid.isBlank() && content.has("uuid")) {
+      content.put("uuid", uuid);
     }
 
-    // Add key-value pairs from the content map
-    content.forEach(rootNode::put);
-
-    return rootNode;
+    return content;
 
   }
 

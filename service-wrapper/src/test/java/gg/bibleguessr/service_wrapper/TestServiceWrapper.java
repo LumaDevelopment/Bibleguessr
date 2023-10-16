@@ -1,5 +1,8 @@
 package gg.bibleguessr.service_wrapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.service_wrapper.example_service.ExampleRequest;
 import gg.bibleguessr.service_wrapper.example_service.ExampleService;
 import org.junit.jupiter.api.Assertions;
@@ -132,7 +135,11 @@ public class TestServiceWrapper {
   @Test
   @DisplayName("Are Responses Serializable")
   void areResponsesSerializable() {
-    Response response = new Response(Map.of("msg", "Hi"), null);
+
+    ObjectNode node = new ObjectMapper().createObjectNode();
+    node.put("msg", "Hi");
+
+    Response response = new Response(node, null);
     Assertions.assertNotNull(response.toJSONNode());
     Assertions.assertNotNull(response.toJSONString());
   }

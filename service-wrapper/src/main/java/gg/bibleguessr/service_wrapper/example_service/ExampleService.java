@@ -1,5 +1,8 @@
 package gg.bibleguessr.service_wrapper.example_service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
@@ -73,7 +76,7 @@ public class ExampleService extends Microservice {
     // Put the response content into a String to
     // String map. In correspondence to what is
     // detailed in RequestResponseSpecifications.md
-    Map<String, String> content = new HashMap<>();
+    ObjectNode content = new ObjectMapper().createObjectNode();
     content.put("lengthDivisibleBy2", Boolean.toString(lengthDivisibleBy2));
 
     logger.debug("Executed ExampleRequest. Message: \"{}\". Length divisible by 2: {}",
