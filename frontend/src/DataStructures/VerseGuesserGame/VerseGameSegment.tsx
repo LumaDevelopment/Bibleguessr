@@ -1,13 +1,12 @@
-import { BibleVersion } from "../Global/BibleVersion";
 import { Subscribable } from "../Global/Subscribable";
 import { Verse } from "../Global/Verse";
 
 /**
  * Since the user will have the ability to change the settings during a play sesson, then 
- * each time the user does a guessing segment, it will save there settings at that current point.
+ * each time the user does a guessing segment, it will save there settings at that  point.
  * Every part of the game loop will create a new segment.
  * 
- * For example, the user can request more guesses for a current game segment, while keeping the other segments intact.
+ * For example, the user can request more guesses for a  game segment, while keeping the other segments intact.
  * 
  * Every GameSegment must also be subscribable. This allows for the active game instance to keep the UI and the data structure in sync.
  */
@@ -15,30 +14,44 @@ export class VerseGameSegment extends Subscribable {
     /**
      * The users selected book.
      */
-    private currentBook: BibleVersion = "King James Version"
+    private version!: string;
     /**
-     * How many surronding verses the user gets.
+     * How many Surrounding verses the user gets.
      */
-    private allowedSurrondingVerses!: number
+    private allowedSurroundingVerses!: number
     /**
-     * How many guesses the user has currently made.
+     * How many guesses the user has ly made.
      */
-    private currentGuessesCount: number = 0;
+    private GuessesCount: number = 0;
+
+    /**
+     * The list of all verses that will be on the screen.
+     */
+    private verseBody: Verse[] = []
+
+    /**
+     * Verse to guess
+     */
+    private verseToGuess!: Verse
 
     /**
      * Stores the user's previous guesses.
      */
     private previousUserGuesses: Verse[] = [];
 
+    private correctGuesses: boolean[] = []
+
     /**
-     * Stores the user's current score.
+     * Stores the user's  score.
      */
-    private usersCurrentScore: number = 4000;
+    private usersScore: number = 4000;
 
 
-    constructor(allowedSurrondingVerses: number) {
+    constructor(allowedSurroundingVerses: number, verseBody: Verse[], verseToGuess: Verse) {
         super();
-        this.allowedSurrondingVerses = allowedSurrondingVerses;
+        this.allowedSurroundingVerses = allowedSurroundingVerses;
+        this.verseBody = verseBody;
+        this.verseToGuess = verseToGuess;
     }
 
     // Setters
@@ -49,17 +62,17 @@ export class VerseGameSegment extends Subscribable {
      * @returns The User's Store
      */
     calculateScore = () => {
-        this.usersCurrentScore = 0;
+        this.usersScore = 0;
         this.emitChange();
     }
 
-    setCurrentBook = (book: BibleVersion) => {
-        this.currentBook = book;
+    setVersion = (version: string) => {
+        this.version = version;
         this.emitChange();
     }
 
     increaseGuessCount = () => {
-        this.currentGuessesCount += 1;
+        this.GuessesCount += 1;
         this.emitChange()
     }
 
@@ -68,15 +81,23 @@ export class VerseGameSegment extends Subscribable {
         this.emitChange();
     }
 
-    setAllowedSurrondingVerses = (amount: number) => {
-        this.allowedSurrondingVerses = amount;
+    setAllowedSurroundingVerses = (amount: number) => {
+        this.allowedSurroundingVerses = amount;
         this.emitChange();
     }
 
     // Getters
 
-    getAllowedSurrondingVerses = (): number => {
-        return this.allowedSurrondingVerses;
+    getVerseBody = (): Verse[] => {
+      return this.verseBody;
+    }
+    
+    getVerseToGuess = (): Verse => {
+      return this.verseToGuess
+    }
+
+    getAllowedSurroundingVerses = (): number => {
+        return this.allowedSurroundingVerses;
     }
 
     getPreviousUserGuesses = (): Verse[] => {
@@ -84,15 +105,15 @@ export class VerseGameSegment extends Subscribable {
     }
 
     getUserScore = (): number => {
-        return this.usersCurrentScore
+        return this.usersScore
     }
 
-    getCurrentGuessesCount = (): number => {
-        return this.currentGuessesCount;
+    getGuessesCount = (): number => {
+        return this.GuessesCount;
     }
 
-    getCurrentBook = (): BibleVersion => {
-        return this.currentBook;
+    getVersion = ():string => {
+        return this.version;
     }
 
 }

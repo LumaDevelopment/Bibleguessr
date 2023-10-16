@@ -1,1 +1,0 @@
-export type BibleVersion = "King James Version" | "English Standard Version"

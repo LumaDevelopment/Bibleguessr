@@ -1,9 +1,10 @@
-import { BibleVersion } from "../DataStructures/Global/BibleVersion";
+import { BibleData } from "../DataStructures/Global/BibleData";
 import { Subscribable } from "../DataStructures/Global/Subscribable"
 import { VerseGameScreenSelector } from "../DataStructures/VerseGuesserGame/VerseGameScreenSelector";
 import { VerseGameSegment } from "../DataStructures/VerseGuesserGame/VerseGameSegment";
 
 export class VerseGameStore extends Subscribable {
+   private bibleData!: BibleData;
     private gameSegments: VerseGameSegment[] = []
     private activeGameSegment!: VerseGameSegment;
     private currentUserScreen: VerseGameScreenSelector = "INITIAL SETTINGS"
@@ -20,6 +21,9 @@ export class VerseGameStore extends Subscribable {
         this.gameSegments = [...this.gameSegments, newSegment]
         this.activeGameSegment = newSegment
         this.emitChange()
+    }
+    getBibleData = (): BibleData => {
+      return this.bibleData;
     }
     setActiveGameSegment = (newSegment: VerseGameSegment) => {
         this.activeGameSegment = newSegment
