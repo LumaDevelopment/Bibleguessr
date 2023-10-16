@@ -3,6 +3,7 @@ package gg.bibleguessr.bible.requests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.TokenBuffer;
 import gg.bibleguessr.bible.Bible;
 import gg.bibleguessr.bible.BibleService;
 import gg.bibleguessr.bible.objs.Version;
@@ -51,9 +52,16 @@ public class FrontendBibleDataMgr {
      */
     public ObjectNode getBibleData() {
 
-        if (bibleData != null) {
-            return bibleData;
+        if (bibleData == null) {
+            instantiateBibleData();
         }
+
+        // Return a clone, so the original is never modified
+        return this.bibleData.deepCopy();
+
+    }
+
+    private void instantiateBibleData() {
 
         this.bibleData = this.objectMapper.createObjectNode();
 
@@ -105,8 +113,6 @@ public class FrontendBibleDataMgr {
         }
 
         this.bibleData.set("dataMatrix", dataMatrix);
-
-        return this.bibleData;
 
     }
 
