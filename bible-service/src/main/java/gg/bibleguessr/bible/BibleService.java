@@ -252,6 +252,8 @@ public class BibleService extends Microservice {
         // Initialize the frontend Bible data manager
         this.frontendBibleDataMgr = new FrontendBibleDataMgr(this);
 
+        logger.info("Bible service has been initialized!");
+
     }
 
     @Override

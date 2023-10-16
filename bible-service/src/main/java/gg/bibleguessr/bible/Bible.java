@@ -401,7 +401,7 @@ public class Bible {
             // Add book object to array
             books[bookIndex] = book;
 
-            // Add all verses to array
+            // Add all verses to verses array
             for (int chapterIndex = 0; chapterIndex < book.allChapters().length; chapterIndex++) {
 
                 if (book.allChapters()[chapterIndex] == null) {
