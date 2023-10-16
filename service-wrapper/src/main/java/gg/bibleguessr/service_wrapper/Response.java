@@ -103,7 +103,7 @@ public class Response {
   public ObjectNode toJSONNode() {
 
     // Add "uuid" field if applicable.
-    if (uuid != null && !uuid.isBlank() && content.has("uuid")) {
+    if (uuid != null && !uuid.isBlank() && !content.has("uuid")) {
       content.put("uuid", uuid);
     }
 
