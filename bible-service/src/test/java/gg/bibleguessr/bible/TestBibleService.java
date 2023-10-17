@@ -2,17 +2,20 @@ package gg.bibleguessr.bible;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import gg.bibleguessr.bible.objs.Book;
-import gg.bibleguessr.bible.objs.Chapter;
-import gg.bibleguessr.bible.objs.Verse;
-import gg.bibleguessr.bible.objs.Version;
+import gg.bibleguessr.bible.data_structures.Book;
+import gg.bibleguessr.bible.data_structures.Chapter;
+import gg.bibleguessr.bible.data_structures.Verse;
+import gg.bibleguessr.bible.data_structures.Version;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.Iterator;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestBibleService {
 
@@ -175,23 +178,24 @@ public class TestBibleService {
     void frontendBibleDataIsCorrect() {
 
         ObjectNode data = service.getFrontendBibleDataMgr().getBibleData();
+        Collection<Version> versions = service.getBibleVersionMgr().getVersions();
 
         // Verify the basics of the bible names array is correct
         JsonNode bibleNames = data.get("bibleNames");
         assertNotNull(bibleNames);
         assertTrue(bibleNames.isArray());
-        assertEquals(service.getVersions().size(), bibleNames.size());
+        assertEquals(versions.size(), bibleNames.size());
 
         // Verify the basics of the bible book names map is correct
         JsonNode bibleBookNames = data.get("bibleBookNames");
         assertNotNull(bibleBookNames);
         assertTrue(bibleBookNames.isObject());
-        assertEquals(service.getVersions().size(), bibleBookNames.size());
+        assertEquals(versions.size(), bibleBookNames.size());
 
         // Loop through every version, and make sure
         // its name is in bibleNames, and its book names
         // are represented accurately in bibleBookNames
-        for (Version version : service.getVersions()) {
+        for (Version version :versions) {
 
             // Bible names should contain this version's name
             boolean foundVersionInBibleNames = false;

@@ -2,10 +2,11 @@ package gg.bibleguessr.bible;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import gg.bibleguessr.bible.objs.Version;
+import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
 import gg.bibleguessr.bible.requests.RandomVerseRequest;
+import gg.bibleguessr.bible.versions.BibleVersionMgr;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
@@ -15,8 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * The BibleService class is the main class for the
@@ -38,8 +37,27 @@ public class BibleService extends Microservice {
     public static final String DEFAULT_CONFIG_FILE_PATH = "bible_service_config.json";
 
     // Bible numerical constants
+
+    /**
+     * The number of books in the Bible, as
+     * far as we're concerned.
+     */
     public static final int BOOKS_IN_BIBLE = 66;
+
+    /**
+     * The number of verses in the Bible. Depending
+     * on what version you read, this number may
+     * be lower, but we operate with the highest
+     * number possible for maximum compatability.
+     */
     public static final int VERSES_IN_BIBLE = 31_102;
+
+    /**
+     * The maximum number of verses that can be
+     * given to any one verse as context. This
+     * number is derived with this equation:<br>
+     * <code>floor((VERSES_IN_BIBLE - 1) / 2)</code>
+     */
     public static final int MAX_CONTEXT_VERSES = 15_550;
 
     /* ---------- VARIABLES ---------- */
@@ -60,23 +78,23 @@ public class BibleService extends Microservice {
      */
     private BibleServiceConfig config;
 
+    // Managers
+
+    /**
+     * The class that manages all Bible versions
+     * that are available to this service.
+     */
+    private BibleVersionMgr bibleVersionMgr;
+
     /**
      * The class that operates reading text from different
      * Bible versions.
      */
-    private BibleReadingMgr bibleReadingMgr;
+    private BibleTextMgr bibleTextMgr;
 
     /**
-     * Versions offered by this service, reported
-     * by the bible reading manager. Map from
-     * version name to object.
-     */
-    private Map<String, Version> versions;
-
-    /**
-     * The class that manages the creation of data
-     * that we send for the frontend about the
-     * available versions, their book names, etc.
+     * The class that manages the data that the front end
+     * needs to operate.
      */
     private FrontendBibleDataMgr frontendBibleDataMgr;
 
@@ -112,8 +130,8 @@ public class BibleService extends Microservice {
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.configFile = configFile;
         this.config = null;
-        this.bibleReadingMgr = null;
-        this.versions = null;
+        this.bibleVersionMgr = null;
+        this.bibleTextMgr = null;
         this.frontendBibleDataMgr = null;
         this.objectMapper = new ObjectMapper();
 
@@ -137,9 +155,10 @@ public class BibleService extends Microservice {
 
         // Now that we're here, we can do a couple of parameter sanity checks
         String versionName = request.getVersion();
+        Version version = bibleVersionMgr.getVersionByName(versionName);
 
         // Check if the version name is valid.
-        if (versionName.isBlank() || !versions.containsKey(versionName)) {
+        if (versionName.isBlank() || version == null) {
             responseContent.put("error", 0);
             return new Response(responseContent, request.getUUID());
         }
@@ -151,8 +170,6 @@ public class BibleService extends Microservice {
             responseContent.put("error", 1);
             return new Response(responseContent, request.getUUID());
         }
-
-        Version version = versions.get(versionName);
 
         // TODO for Dan
         // In this case, we're good to go.
@@ -191,7 +208,10 @@ public class BibleService extends Microservice {
     public Response executeRequest(Request request) {
 
         if (request instanceof FrontendBibleDataRequest bibleDataReq) {
-            return new Response(frontendBibleDataMgr.getBibleData(), bibleDataReq.getUUID());
+            return new Response(
+                  frontendBibleDataMgr.getBibleData(),
+                  bibleDataReq.getUUID()
+            );
         } else if (request instanceof RandomVerseRequest randomVerseReq) {
             return executeRandomVerseRequest(randomVerseReq);
         } else {
@@ -241,48 +261,27 @@ public class BibleService extends Microservice {
     }
 
     /**
+     * Gets the BibleVersionMgr object for this service.
+     *
+     * @return The BibleVersionMgr object for this service.
+     */
+    public BibleVersionMgr getBibleVersionMgr() {
+        return bibleVersionMgr;
+    }
+
+    /**
      * Gets the BibleReadingMgr object for this service.
      *
      * @return The BibleReadingMgr object for this service.
      */
-    public BibleReadingMgr getBibleReadingMgr() {
-        return bibleReadingMgr;
+    public BibleTextMgr getBibleTextMgr() {
+        return bibleTextMgr;
     }
 
     /**
-     * Attempts to get the Version object of the
-     * version with the given name.
+     * Gets the FrontendBibleDataMgr object for this service.
      *
-     * @param versionName The name of the version to get.
-     * @return The Version object of the version with the
-     * given name, or <code>null</code> if no such version
-     * exists.
-     */
-    public Version getVersionByName(String versionName) {
-
-        if (versionName == null) {
-            return null;
-        }
-
-        return versions.get(versionName);
-
-    }
-
-    /**
-     * Gets all Bible versions accessible by
-     * this service.
-     *
-     * @return All Bible versions accessible by
-     * this service.
-     */
-    public Collection<Version> getVersions() {
-        return versions.values();
-    }
-
-    /**
-     * Gets the frontend Bible data manager.
-     *
-     * @return The frontend Bible data manager.
+     * @return The FrontendBibleDataMgr object for this service.
      */
     public FrontendBibleDataMgr getFrontendBibleDataMgr() {
         return frontendBibleDataMgr;
@@ -346,17 +345,20 @@ public class BibleService extends Microservice {
                     "Could not get Bible files, see logs for more information.");
         }
 
+        // Initializes the Bible version manager.
+        this.bibleVersionMgr = new BibleVersionMgr();
+
         // Initialize the Bible reading manager, and pull
         // all Bible versions available to us after it
         // is done initializing.
-        this.bibleReadingMgr = new BibleReadingMgr(
-                config.bibleFileExtension(),
-                getBibleFiles()
+        this.bibleTextMgr = new BibleTextMgr(
+              bibleVersionMgr,
+              config.bibleFileExtension(),
+              getBibleFiles()
         );
-        this.versions = bibleReadingMgr.getBibleVersions();
 
-        // Initialize the frontend Bible data manager
-        this.frontendBibleDataMgr = new FrontendBibleDataMgr(this);
+        // Initialize the frontend Bible data manager.
+        this.frontendBibleDataMgr = new FrontendBibleDataMgr(bibleVersionMgr);
 
         logger.info("Bible service has been initialized!");
 

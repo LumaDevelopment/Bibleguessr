@@ -1,4 +1,4 @@
-package gg.bibleguessr.bible.objs;
+package gg.bibleguessr.bible.data_structures;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param chapter        The Chapter object that this Verse belongs to.
  * @param number         The number of this Verse in its Chapter.
- * @param universalIndex The index of this verse in the entire Bible.
+ * @param universalIndex The index of this Verse in the entire Bible.
  */
 public record Verse(Chapter chapter, int number, int universalIndex)
         implements Comparable<Verse> {
@@ -18,8 +18,9 @@ public record Verse(Chapter chapter, int number, int universalIndex)
     /**
      * Creates a new Verse object with the given parameters.
      *
-     * @param chapter The Chapter object that this Verse belongs to.
-     * @param number  The number of this Verse in its Chapter.
+     * @param chapter        The Chapter object that this Verse belongs to.
+     * @param number         The number of this Verse in its Chapter.
+     * @param universalIndex The index of this Verse in the entire Bible.
      */
     public Verse {
         if (chapter == null) {

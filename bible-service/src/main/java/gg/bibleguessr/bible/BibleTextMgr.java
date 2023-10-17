@@ -1,7 +1,8 @@
 package gg.bibleguessr.bible;
 
-import gg.bibleguessr.bible.objs.Book;
-import gg.bibleguessr.bible.objs.Version;
+import gg.bibleguessr.bible.data_structures.Book;
+import gg.bibleguessr.bible.data_structures.Version;
+import gg.bibleguessr.bible.versions.BibleVersionMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,14 +15,21 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BibleReadingMgr {
+/**
+ * Class that manages reading the Bible text
+ * from version files. Stores the text in
+ * memory for easy retrieval. Notifies
+ * the BibleVersionMgr when the list of
+ * versions changes.
+ */
+public class BibleTextMgr {
 
     /* ---------- CONSTANTS ---------- */
 
     /**
      * Identifies this class's logger.
      */
-    public static final String LOGGER_NAME = BibleReadingMgr.class.getSimpleName();
+    public static final String LOGGER_NAME = BibleTextMgr.class.getSimpleName();
 
     /* ---------- VARIABLES ---------- */
 
@@ -29,6 +37,13 @@ public class BibleReadingMgr {
      * The logger used by this class.
      */
     private final Logger logger;
+
+    /**
+     * The class to notify whenever the list
+     * of available Bible versions is detected
+     * to have changed by this class.
+     */
+    private final BibleVersionMgr bibleVersionMgr;
 
     /**
      * Regex that pulls the chapter:verse part of
@@ -57,12 +72,15 @@ public class BibleReadingMgr {
     /**
      * Creates a new instance of BibleReadingMgr.
      *
+     * @param bibleVersionMgr    The Bible version manager.
      * @param bibleFileExtension The extension of all Bible version files.
      * @param bibleFiles         The Bible version files.
      */
-    public BibleReadingMgr(String bibleFileExtension, File[] bibleFiles) {
+    public BibleTextMgr(BibleVersionMgr bibleVersionMgr,
+                        String bibleFileExtension, File[] bibleFiles) {
 
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
+        this.bibleVersionMgr = bibleVersionMgr;
         this.chapterVersePattern = Pattern.compile("\\b\\d+:\\d+\\b");
         this.bibleFileExtensionLength = bibleFileExtension.length() + 1;
         this.bibleFiles = bibleFiles;
@@ -75,14 +93,32 @@ public class BibleReadingMgr {
     /* ---------- PUBLIC METHODS ---------- */
 
     /**
-     * Given a Bible version file, attempts to add it
-     * to the Bible text map.
+     * Attempts to add a new version from the given
+     * Bible version file. If it is successful,
+     * the change will be reflected in BibleVersionMgr
+     * and all classes that use Bible versions
+     * will be notified.
      *
      * @param versionFile The Bible version file to add.
      * @return <code>true</code> if the version was added
      * successfully, <code>false</code> otherwise.
      */
     public boolean addVersion(File versionFile) {
+        return addVersion(versionFile, true);
+    }
+
+    /**
+     * Given a Bible version file, attempts to add it
+     * to the Bible text map.
+     *
+     * @param versionFile      The Bible version file to add.
+     * @param notifyVersionMgr Whether to notify the
+     *                         BibleVersionMgr that a new
+     *                         version was added.
+     * @return <code>true</code> if the version was added
+     * successfully, <code>false</code> otherwise.
+     */
+    public boolean addVersion(File versionFile, boolean notifyVersionMgr) {
 
         // Cut out the ".txt" (or whatever the file extension is
         // from the file name to get the version name
@@ -176,6 +212,15 @@ public class BibleReadingMgr {
 
             // Store version object with Bible text
             bibleText.put(version, verseText);
+
+            if (notifyVersionMgr) {
+                // Notify the BibleVersionMgr that
+                // a single version has been added.
+                bibleVersionMgr.addAvailableVersion(version);
+            }
+
+            logger.info("Successfully added Bible version: {}", versionName);
+
             return true;
 
         } catch (IOException e) {
@@ -192,7 +237,7 @@ public class BibleReadingMgr {
      * @return A Map of all Bible versions that
      * this class has read.
      */
-    public Map<String, Version> getBibleVersions() {
+    private Map<String, Version> composeBibleVersionsMap() {
 
         HashMap<String, Version> versionsMap = new HashMap<>();
 
@@ -298,7 +343,9 @@ public class BibleReadingMgr {
      * Version object for every version of the Bible.
      * Extracts the verse text and book names from every
      * version of the Bible. Stores all extracted information
-     * for easy retrieval.
+     * for easy retrieval. Can be run multiple times
+     * if you want to react to new versions being added
+     * on the fly.
      */
     public void initializeText() {
 
@@ -313,7 +360,7 @@ public class BibleReadingMgr {
         // Loop through all version files
         for (File versionFile : bibleFiles) {
 
-            if (addVersion(versionFile)) {
+            if (addVersion(versionFile, false)) {
                 successes++;
             }
 
@@ -322,6 +369,11 @@ public class BibleReadingMgr {
         }
 
         logger.info("Finished reading Bible versions, {}/{} were successful.", successes, total);
+
+        // Since the text map is being fully reset,
+        // just tell the BibleVersionMgr that the
+        // whole thing has changed.
+        bibleVersionMgr.setAvailableVersions(composeBibleVersionsMap());
 
     }
 

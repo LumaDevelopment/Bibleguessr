@@ -10,40 +10,40 @@ import java.util.Map;
  */
 public class FrontendBibleDataRequest extends Request {
 
-    /* ---------- CONSTANTS ---------- */
+   /* ---------- CONSTANTS ---------- */
 
-    /**
-     * The path of this request. A bit shorter because the
-     * class name is supposed to provide clarity for backend
-     * devs (probably you, if you're reading this).
-     */
-    public static final String REQUEST_PATH = "get-bible-data";
+   /**
+    * The path of this request. A bit shorter because the
+    * class name is supposed to provide clarity for backend
+    * devs (probably you, if you're reading this).
+    */
+   public static final String REQUEST_PATH = "get-bible-data";
 
-    /* ---------- CONSTRUCTORS ---------- */
+   /* ---------- CONSTRUCTORS ---------- */
 
-    /**
-     * Just passes up the request path. However,
-     * this request doesn't take any parameters
-     * or have any other special characteristics.
-     */
-    public FrontendBibleDataRequest() {
-        super(REQUEST_PATH);
-    }
+   /**
+    * Just passes up the request path. However,
+    * this request doesn't take any parameters
+    * or have any other special characteristics.
+    */
+   public FrontendBibleDataRequest() {
+      super(REQUEST_PATH);
+   }
 
-    /* ---------- METHODS ---------- */
+   /* ---------- METHODS ---------- */
 
-    /***
-     * There are no parameters to parse with this
-     * request, so, always returns true, and
-     * parameters map is not used (unless it
-     * has a UUID).
-     *
-     * @param parameters the map of parameters
-     * @return true
-     */
-    @Override
-    public boolean parse(Map<String, String> parameters) {
-        return true;
-    }
+   /***
+    * There are no parameters to parse with this
+    * request, so, always returns true, and
+    * parameters map is not used (unless it
+    * has a UUID).
+    *
+    * @param parameters the map of parameters
+    * @return true
+    */
+   @Override
+   public boolean parse(Map<String, String> parameters) {
+      return true;
+   }
 
 }

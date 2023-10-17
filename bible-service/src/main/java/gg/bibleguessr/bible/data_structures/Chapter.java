@@ -1,4 +1,4 @@
-package gg.bibleguessr.bible.objs;
+package gg.bibleguessr.bible.data_structures;
 
 import org.jetbrains.annotations.NotNull;
 

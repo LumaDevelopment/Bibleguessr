@@ -1,8 +1,8 @@
 package gg.bibleguessr.bible;
 
-import gg.bibleguessr.bible.objs.Book;
-import gg.bibleguessr.bible.objs.Chapter;
-import gg.bibleguessr.bible.objs.Verse;
+import gg.bibleguessr.bible.data_structures.Book;
+import gg.bibleguessr.bible.data_structures.Chapter;
+import gg.bibleguessr.bible.data_structures.Verse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +18,14 @@ public class Bible {
 
     /* ---------- CONSTANTS ---------- */
 
-    // A 2-D array containing the number of verses
-    // for every chapter for every book of the Bible.
+    /**
+     * A 2-D array containing the number of verses
+     * for every chapter for every book of the Bible.
+     * First array could be considered an array of books,
+     * second array could be considerd an array of chapters,
+     * where the value of each element is the number of
+     * verses in that chapter.
+     */
     public static final Integer[][] VERSES_PER_CHAPTER = new Integer[][]{
             // Genesis
             {31, 25, 24, 26, 32, 22, 24, 22, 29, 32, 32, 20, 18, 24, 21, 16, 27, 33, 38, 18,
@@ -427,6 +433,8 @@ public class Bible {
             }
 
         }
+
+        logger.info("Bible objects initialized successfully!");
 
     }
 

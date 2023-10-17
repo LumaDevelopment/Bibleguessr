@@ -1,10 +1,17 @@
-package gg.bibleguessr.bible.objs;
+package gg.bibleguessr.bible.data_structures;
 
 import gg.bibleguessr.bible.Bible;
 import gg.bibleguessr.bible.BibleService;
 
 import java.util.Map;
 
+/**
+ * A class that represents a Version of the
+ * Bible (King James Version, for instance).
+ * Its primary purpose is to keep track of
+ * what each version names each book of the
+ * Bible.
+ */
 public class Version {
 
     /* -------- INSTANCE VARIABLES -------- */
@@ -93,6 +100,7 @@ public class Version {
      * with the given Book object, according to this
      * version of the Bible.
      *
+     * @param book The Book object to get the name of.
      * @return The name of the book, or <code>null</code>
      * if the book object is null.
      */
