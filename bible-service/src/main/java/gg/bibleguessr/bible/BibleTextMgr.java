@@ -12,8 +12,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Class that manages reading the Bible text
@@ -46,12 +44,6 @@ public class BibleTextMgr {
     private final BibleVersionMgr bibleVersionMgr;
 
     /**
-     * Regex that pulls the chapter:verse part of
-     * a verse reference out for removal.
-     */
-    private final Pattern chapterVersePattern;
-
-    /**
      * The length of the extension of all Bible text files.
      */
     private final int bibleFileExtensionLength;
@@ -81,7 +73,6 @@ public class BibleTextMgr {
 
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.bibleVersionMgr = bibleVersionMgr;
-        this.chapterVersePattern = Pattern.compile("\\b\\d+:\\d+\\b");
         this.bibleFileExtensionLength = bibleFileExtension.length() + 1;
         this.bibleFiles = bibleFiles;
         this.bibleText = new HashMap<>();
@@ -140,38 +131,13 @@ public class BibleTextMgr {
             String line;
             while ((line = br.readLine()) != null) {
 
-                // Make sure no trailing characters on the line
-                line = line.trim();
+                // Doing any trimming or skip empty operations
+                // would skip over intentional empty lines,
+                // so don't do that
 
-                // Skip empty lines
-                if (line.isEmpty()) {
-                    continue;
-                }
+                if (!line.isEmpty() && line.charAt(0) == '|') {
 
-                // The split between verse reference and
-                // verse text is the pipe character.
-                String[] lineParts = line.split("\\|");
-
-                if (lineParts.length < 1 || lineParts.length > 2) {
-                    logger.error("Bible file (" + versionFile.getName() + ") with " +
-                            "invalid formatting! Offending line: " + line);
-                    return false;
-                }
-
-                // The first part of the line is structured like
-                // "Genesis 1:1", so get the book name out of this
-                // by finding the chapter:verse portion with regex
-                // and using substring to cut it out
-                String bookName = getBookNameFromReference(lineParts[0]);
-
-                if (bookName == null) {
-                    logger.error("Bible file (" + versionFile.getName() + ") with " +
-                            "invalid formatting! Offending line: " + line);
-                    return false;
-                }
-
-                // Update book name if it is different
-                if (!bookName.equals(currentBookName)) {
+                    // This is a book name
 
                     if (currentBookIndex != -1) {
                         // Put previous book name into map
@@ -183,18 +149,15 @@ public class BibleTextMgr {
 
                     // Set new index and name
                     currentBookIndex++;
-                    currentBookName = bookName;
+                    currentBookName = line.substring(1);
 
-                }
-
-                // Insert the verse's text into the array
-                if (lineParts.length < 2) {
-                    verseText[verseIndex] = "";
                 } else {
-                    verseText[verseIndex] = lineParts[1];
-                }
 
-                verseIndex++;
+                    // This is verse text
+                    verseText[verseIndex] = line;
+                    verseIndex++;
+
+                }
 
             }
 
@@ -246,35 +209,6 @@ public class BibleTextMgr {
         }
 
         return versionsMap;
-
-    }
-
-    /**
-     * Given a reference to a Bible verse (i.e. Genesis 1:1),
-     * extracts the name of the book from it. Compatible with
-     * books that have numbers and spaces in their names.
-     *
-     * @param reference The reference to the verse.
-     * @return The name of the book, or <code>null</code> if
-     * the reference is invalid.
-     */
-    public String getBookNameFromReference(String reference) {
-
-        if (reference == null) {
-            return null;
-        }
-
-        Matcher matcher = chapterVersePattern.matcher(reference);
-        String chapterVerseReference;
-
-        if (matcher.find()) {
-            chapterVerseReference = matcher.group();
-        } else {
-            return null;
-        }
-
-        int charactersToCut = chapterVerseReference.length() + 1;
-        return reference.substring(0, reference.length() - charactersToCut);
 
     }
 
