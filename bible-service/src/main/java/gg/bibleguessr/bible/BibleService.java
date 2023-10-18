@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Random;
 
 /**
  * The BibleService class is the main class for the
@@ -192,6 +193,27 @@ public class BibleService extends Microservice {
         // information about them in the "Response Parameters"
         // section of the "Random Verse Request" in RequestResponseSpecifications.md
         // 6) Add all verse JSON objects to the responseContent object.
+        
+        // Initialize new Random object
+        Random rand = new Random();
+
+        // Obtain random index and start and end indices depending on context length
+        int randomIndex = rand.nextInt(VERSES_IN_BIBLE);
+        int startIndex = randomIndex - numOfContextVerses;
+        int endIndex = randomIndex + numOfContextVerses;
+
+        // Adjusts the range depending on if the start or end indices fall out of bounds
+        if (startIndex < 0) {
+            startIndex = 0; 
+            endIndex += Math.abs(startIndex);
+        } else if (endIndex > VERSES_IN_BIBLE - 1) {
+            endIndex = VERSES_IN_BIBLE - 1;
+            startIndex -= endIndex - (VERSES_IN_BIBLE - 1);
+        }
+
+        // Obtain the random verse and the random verse with context
+        String randomText = bibleTextMgr.getVerseText(version, randomIndex);
+        String randomTextWithContext = bibleTextMgr.getPassageText(version, startIndex, endIndex);
 
         return new Response(responseContent, request.getUUID());
 
