@@ -36,30 +36,6 @@ public class BibleService extends Microservice {
      */
     public static final String DEFAULT_CONFIG_FILE_PATH = "bible_service_config.json";
 
-    // Bible numerical constants
-
-    /**
-     * The number of books in the Bible, as
-     * far as we're concerned.
-     */
-    public static final int BOOKS_IN_BIBLE = 66;
-
-    /**
-     * The number of verses in the Bible. Depending
-     * on what version you read, this number may
-     * be lower, but we operate with the highest
-     * number possible for maximum compatability.
-     */
-    public static final int VERSES_IN_BIBLE = 31_102;
-
-    /**
-     * The maximum number of verses that can be
-     * given to any one verse as context. This
-     * number is derived with this equation:<br>
-     * <code>floor((VERSES_IN_BIBLE - 1) / 2)</code>
-     */
-    public static final int MAX_CONTEXT_VERSES = 15_550;
-
     /* ---------- VARIABLES ---------- */
 
     /**
@@ -77,6 +53,12 @@ public class BibleService extends Microservice {
      * The config object for this service.
      */
     private BibleServiceConfig config;
+
+    /**
+     * The object mapper that this class uses to
+     * do JSON operations.
+     */
+    private final ObjectMapper objectMapper;
 
     // Managers
 
@@ -97,12 +79,6 @@ public class BibleService extends Microservice {
      * needs to operate.
      */
     private FrontendBibleDataMgr frontendBibleDataMgr;
-
-    /**
-     * The object mapper that this class uses to
-     * do JSON operations.
-     */
-    private final ObjectMapper objectMapper;
 
     /* ---------- CONSTRUCTORS ---------- */
 
@@ -130,10 +106,10 @@ public class BibleService extends Microservice {
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.configFile = configFile;
         this.config = null;
+        this.objectMapper = new ObjectMapper();
         this.bibleVersionMgr = null;
         this.bibleTextMgr = null;
         this.frontendBibleDataMgr = null;
-        this.objectMapper = new ObjectMapper();
 
         initializeService();
 
@@ -166,7 +142,7 @@ public class BibleService extends Microservice {
         int numOfContextVerses = request.getNumOfContextVerses();
 
         // Check if the number of context verses is valid.
-        if (numOfContextVerses < 0 || numOfContextVerses > MAX_CONTEXT_VERSES) {
+        if (numOfContextVerses < 0 || numOfContextVerses > Bible.MAX_CONTEXT_VERSES) {
             responseContent.put("error", 1);
             return new Response(responseContent, request.getUUID());
         }
@@ -209,8 +185,8 @@ public class BibleService extends Microservice {
 
         if (request instanceof FrontendBibleDataRequest bibleDataReq) {
             return new Response(
-                  frontendBibleDataMgr.getBibleData(),
-                  bibleDataReq.getUUID()
+                    frontendBibleDataMgr.getBibleData(),
+                    bibleDataReq.getUUID()
             );
         } else if (request instanceof RandomVerseRequest randomVerseReq) {
             return executeRandomVerseRequest(randomVerseReq);
@@ -352,9 +328,9 @@ public class BibleService extends Microservice {
         // all Bible versions available to us after it
         // is done initializing.
         this.bibleTextMgr = new BibleTextMgr(
-              bibleVersionMgr,
-              config.bibleFileExtension(),
-              getBibleFiles()
+                bibleVersionMgr,
+                config.bibleFileExtension(),
+                getBibleFiles()
         );
 
         // Initialize the frontend Bible data manager.

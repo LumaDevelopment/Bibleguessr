@@ -109,7 +109,7 @@ public class BibleTextMgr {
      * @return <code>true</code> if the version was added
      * successfully, <code>false</code> otherwise.
      */
-    public boolean addVersion(File versionFile, boolean notifyVersionMgr) {
+    private boolean addVersion(File versionFile, boolean notifyVersionMgr) {
 
         // Cut out the ".txt" (or whatever the file extension is
         // from the file name to get the version name
@@ -124,7 +124,7 @@ public class BibleTextMgr {
 
         // Store the text of all verses in the Bible
         int verseIndex = 0;
-        String[] verseText = new String[BibleService.VERSES_IN_BIBLE];
+        String[] verseText = new String[Bible.NUM_OF_VERSES];
 
         try (BufferedReader br = new BufferedReader(new FileReader(versionFile))) {
 
@@ -231,9 +231,9 @@ public class BibleTextMgr {
         if (version == null ||
                 !bibleText.containsKey(version) ||
                 startUniversalIndex < 0 ||
-                startUniversalIndex >= BibleService.VERSES_IN_BIBLE ||
+                startUniversalIndex >= Bible.NUM_OF_VERSES ||
                 endUniversalIndex < 0 ||
-                endUniversalIndex >= BibleService.VERSES_IN_BIBLE) {
+                endUniversalIndex >= Bible.NUM_OF_VERSES) {
             return null;
         }
 
@@ -264,7 +264,7 @@ public class BibleTextMgr {
         if (version == null ||
                 !bibleText.containsKey(version) ||
                 universalIndex < 0 ||
-                universalIndex >= BibleService.VERSES_IN_BIBLE) {
+                universalIndex >= Bible.NUM_OF_VERSES) {
             return null;
         }
 
