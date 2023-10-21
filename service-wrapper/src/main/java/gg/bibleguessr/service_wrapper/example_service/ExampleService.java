@@ -1,13 +1,12 @@
 package gg.bibleguessr.service_wrapper.example_service;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An example service to demonstrate how to use the Service
@@ -35,6 +34,11 @@ public class ExampleService extends Microservice {
    * Logging object.
    */
   private final Logger logger;
+
+  /**
+   * Allows use with testing classes.
+   */
+  private boolean hasBeenStopped = false;
 
   /* ---------- CONSTRUCTOR ---------- */
 
@@ -68,8 +72,8 @@ public class ExampleService extends Microservice {
     // Put the response content into a String to
     // String map. In correspondence to what is
     // detailed in RequestResponseSpecifications.md
-    Map<String, String> content = new HashMap<>();
-    content.put("lengthDivisibleBy2", Boolean.toString(lengthDivisibleBy2));
+    ObjectNode content = GlobalObjectMapper.get().createObjectNode();
+    content.put("lengthDivisibleBy2", lengthDivisibleBy2);
 
     logger.debug("Executed ExampleRequest. Message: \"{}\". Length divisible by 2: {}",
       request.getMsg(), lengthDivisibleBy2);
@@ -107,6 +111,15 @@ public class ExampleService extends Microservice {
   }
 
   /**
+   * Whether this microservice has been fully stopped.
+   *
+   * @return Whether this microservice has been fully stopped.
+   */
+  public boolean hasBeenStopped() {
+    return hasBeenStopped;
+  }
+
+  /**
    * Inform ServiceWrapper all the types of requests
    * we can handle. For this service, only one.
    */
@@ -123,6 +136,7 @@ public class ExampleService extends Microservice {
    */
   @Override
   public void shutdown() {
+    hasBeenStopped = true;
     logger.info("Example Service is shutting down :(");
   }
 

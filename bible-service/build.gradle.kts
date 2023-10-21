@@ -19,15 +19,13 @@ dependencies {
 
     // Service Wrapper
     implementation(project(":service-wrapper"))
+    implementation(project(":backend-utils"))
 
     // JSON configuration
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
 
     // Logging provider
     implementation("org.slf4j:slf4j-api:2.0.7")
-
-    // Apache Commons Collections, for bidirectional maps
-    implementation("org.apache.commons:commons-collections4:4.4")
 
     // Annotations
     implementation("org.jetbrains:annotations:24.0.1")

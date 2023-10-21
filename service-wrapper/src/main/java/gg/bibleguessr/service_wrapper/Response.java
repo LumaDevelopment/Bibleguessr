@@ -1,11 +1,9 @@
 package gg.bibleguessr.service_wrapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * Class that represents the response
@@ -26,18 +24,7 @@ public class Response {
    * The content of this response. Necessary for
    * the Response to function.
    */
-  private final Map<String, String> content;
-
-  /**
-   * An ObjectMapper instance variable for serializing
-   * this Response as JSON. Not set by default because
-   * there may be some instances where a Response
-   * never needs to be serialized, like in a bundled
-   * deployment. Instead, it is accessed by getMapper()
-   * and initialized at that point if it hasn't been
-   * already.
-   */
-  private ObjectMapper mapper;
+  private final ObjectNode content;
 
   /* ---------- CONSTRUCTORS ---------- */
 
@@ -47,10 +34,10 @@ public class Response {
    * identified. However, this is passed
    * in/determined automatically by Request.getUUID()
    *
-   * @param content The content of this Response.
+   * @param content The content of this Response, stored as JSON.
    * @param uuid    The unique identifier of this Response.
    */
-  public Response(Map<String, String> content, String uuid) {
+  public Response(ObjectNode content, String uuid) {
 
     if (content == null) {
       throw new RuntimeException("Cannot make Response instance with null content!");
@@ -62,32 +49,6 @@ public class Response {
   }
 
   /* ---------- METHODS ---------- */
-
-  /**
-   * Retrieves the content of this response,
-   * which is a key-value map.
-   *
-   * @return The content of this response.
-   */
-  public Map<String, String> getContent() {
-    return content;
-  }
-
-  /**
-   * Lazy loading ObjectMapper creation
-   * and retrieval.
-   *
-   * @return An ObjectMapper instance.
-   */
-  private ObjectMapper getMapper() {
-
-    if (mapper == null) {
-      mapper = new ObjectMapper();
-    }
-
-    return mapper;
-
-  }
 
   /**
    * Retrieves the unique identifier of
@@ -102,23 +63,21 @@ public class Response {
   }
 
   /**
-   * Converts this Response instance to a JSON object.
+   * Returns the content of this Response as a
+   * JSON object. Will inject UUID into the content
+   * if this Response has a UUID and that UUID
+   * is not already in the content.
    *
    * @return A JSON object representing this Response instance.
    */
   public ObjectNode toJSONNode() {
 
-    ObjectNode rootNode = getMapper().createObjectNode();
-
     // Add "uuid" field if applicable.
-    if (uuid != null && !uuid.isBlank()) {
-      rootNode.put("uuid", uuid);
+    if (uuid != null && !uuid.isBlank() && !content.has("uuid")) {
+      content.put("uuid", uuid);
     }
 
-    // Add key-value pairs from the content map
-    content.forEach(rootNode::put);
-
-    return rootNode;
+    return content;
 
   }
 
@@ -131,7 +90,7 @@ public class Response {
 
     try {
 
-      return getMapper().writeValueAsString(toJSONNode());
+      return GlobalObjectMapper.get().writeValueAsString(toJSONNode());
 
     } catch (JsonProcessingException e) {
 

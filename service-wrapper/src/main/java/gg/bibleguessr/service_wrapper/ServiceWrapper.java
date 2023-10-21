@@ -1,5 +1,6 @@
 package gg.bibleguessr.service_wrapper;
 
+import gg.bibleguessr.backend_utils.BibleguessrUtilities;
 import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,7 +225,7 @@ public class ServiceWrapper {
     }
 
     // Attempt to create the config.
-    config = ServiceUtilities.getConfigObjFromFile(configFile, ServiceWrapperConfig.class);
+    config = BibleguessrUtilities.getConfigObjFromFile(configFile, ServiceWrapperConfig.class);
 
     return config != null;
 
@@ -374,6 +375,15 @@ public class ServiceWrapper {
   }
 
   /**
+   * Sets the configuration of the ServiceWrapper.
+   *
+   * @param config The new configuration.
+   */
+  public void setConfig(ServiceWrapperConfig config) {
+    this.config = config;
+  }
+
+  /**
    * Shuts down all microservices that the wrapper is
    * currently running. Shuts down Vert.x and RabbitMQ
    * operations.
@@ -416,7 +426,9 @@ public class ServiceWrapper {
 
     // Unregister the microservice's paths from
     // MainVerticle
-    mainVerticle.unregisterMicroserviceRequests(service);
+    if (mainVerticle != null) {
+      mainVerticle.unregisterMicroserviceRequests(service);
+    }
 
     // Nothing RabbitMQ related to shut down here.
 

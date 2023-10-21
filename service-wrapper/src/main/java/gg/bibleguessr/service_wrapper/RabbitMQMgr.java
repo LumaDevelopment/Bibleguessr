@@ -1,9 +1,10 @@
 package gg.bibleguessr.service_wrapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rabbitmq.client.*;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
+import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,11 +44,10 @@ public class RabbitMQMgr {
   private final ServiceWrapper serviceWrapper;
 
   /**
-   * The service wrapper config, used to access
-   * configuration variables from any point in
-   * the class.
+   * All configuration needed to connect to
+   * and utilize RabbitMQ.
    */
-  private final ServiceWrapperConfig config;
+  private final RabbitMQConfiguration config;
 
   // RABBITMQ VARIABLES
 
@@ -76,11 +76,6 @@ public class RabbitMQMgr {
   // JSON VARIABLES
 
   /**
-   * The Jackson ObjectMapper used to parse JSON.
-   */
-  private final ObjectMapper mapper;
-
-  /**
    * Jackson writes JSON in UTF-8, so we consider
    * it the charset to use for all RabbitMQ
    * communications.
@@ -104,13 +99,39 @@ public class RabbitMQMgr {
   public RabbitMQMgr(ServiceWrapper serviceWrapper) {
     this.logger = LoggerFactory.getLogger(LOGGER_NAME);
     this.serviceWrapper = serviceWrapper;
-    this.config = serviceWrapper.getConfig();
+    this.config = serviceWrapper.getConfig().rabbitMQConfig();
     this.conn = null;
-    this.mapper = new ObjectMapper();
     this.running = false;
   }
 
   /* ---------- METHODS ---------- */
+
+  /**
+   * Creates and returns a new connection factory.
+   * Uses values from the internal configuration.
+   *
+   * @return A new connection factory.
+   */
+  private ConnectionFactory getConnectionFactory() {
+
+    ConnectionFactory factory = new ConnectionFactory();
+
+    // Grab connection credentials and server
+    // location from the config.
+    factory.setUsername(config.username());
+    factory.setPassword(config.password());
+    factory.setHost(config.host());
+    factory.setPort(config.port());
+
+    // Set the virtual host only if it exists
+    String virtualHost = config.virtualHost();
+    if (!virtualHost.isBlank()) {
+      factory.setVirtualHost(config.virtualHost());
+    }
+
+    return factory;
+
+  }
 
   /**
    * Returns a consumer for the requests queue. Modular for the
@@ -142,7 +163,7 @@ public class RabbitMQMgr {
         logger.debug("Received message w/ body: {}", messageBody);
 
         // Attempt to parse as JSON
-        ObjectNode node = parseStringAsJSONObject(messageBody);
+        ObjectNode node = GlobalObjectMapper.parseStringAsJSONObject(messageBody);
 
         // Check if parse was successful.
         if (node == null) {
@@ -157,8 +178,8 @@ public class RabbitMQMgr {
         // Tentative JsonNode objects used to check
         // if all the necessary information to execute
         // the Request is present in the message
-        JsonNode microserviceIDNode = node.get(config.rabbitMQMicroserviceIDField());
-        JsonNode requestPathNode = node.get(config.rabbitMQRequestPathField());
+        JsonNode microserviceIDNode = node.get(config.microserviceIDField());
+        JsonNode requestPathNode = node.get(config.requestPathField());
 
         // Check if both values are present and textual,
         // if not, then acknowledge the message because no
@@ -206,8 +227,8 @@ public class RabbitMQMgr {
           Map.Entry<String, JsonNode> entry = it.next();
 
           if (entry.getKey().equals("deliveryTag") ||
-            entry.getKey().equals(config.rabbitMQMicroserviceIDField()) ||
-            entry.getKey().equals(config.rabbitMQRequestPathField())) {
+            entry.getKey().equals(config.microserviceIDField()) ||
+            entry.getKey().equals(config.requestPathField())) {
             // Entries that are not of relevancy to
             // the Request parser.
             continue;
@@ -247,10 +268,10 @@ public class RabbitMQMgr {
 
         // Publish response to responses queue
         channel.basicPublish(
-          config.rabbitMQExchangeName(),
-          config.rabbitMQResponsesQueue(),
+          config.exchangeName(),
+          config.responsesQueue(),
           null,
-          mapper.writeValueAsBytes(response.toJSONNode())
+          GlobalObjectMapper.get().writeValueAsBytes(response.toJSONNode())
         );
 
       }
@@ -267,30 +288,6 @@ public class RabbitMQMgr {
    */
   public boolean isRunning() {
     return running;
-  }
-
-  /**
-   * Attempts to parse the given message as a JSON object.
-   * If this fails at any point along the process, null is
-   * returned.
-   *
-   * @param message The message to parse.
-   * @return The parsed message as a JSON object, or null if
-   * the message could not be parsed.
-   */
-  public ObjectNode parseStringAsJSONObject(String message) {
-
-    try {
-      JsonNode jsonNode = mapper.readTree(message);
-      if (jsonNode.isObject()) {
-        return (ObjectNode) jsonNode;
-      }
-    } catch (Exception e) {
-      // Ignore.
-    }
-
-    return null;
-
   }
 
   /**
@@ -313,20 +310,7 @@ public class RabbitMQMgr {
     // then establish it.
     if (conn == null) {
 
-      ConnectionFactory factory = new ConnectionFactory();
-
-      // Grab connection credentials and server
-      // location from the config.
-      factory.setUsername(config.rabbitMQUsername());
-      factory.setPassword(config.rabbitMQPassword());
-      factory.setHost(config.rabbitMQHost());
-      factory.setPort(config.rabbitMQPort());
-
-      // Set the virtual host only if it exists
-      String virtualHost = config.rabbitMQVirtualHost();
-      if (!virtualHost.isBlank()) {
-        factory.setVirtualHost(config.rabbitMQVirtualHost());
-      }
+      ConnectionFactory factory = getConnectionFactory();
 
       // Attempt to establish a new connection.
       // If it fails, report failure and set
@@ -358,18 +342,18 @@ public class RabbitMQMgr {
     try {
 
       // First, declare the exchange
-      channel.exchangeDeclare(config.rabbitMQExchangeName(), "direct", true);
+      channel.exchangeDeclare(config.exchangeName(), "direct", true);
 
       // Bind to the responses queue
       // We do this first because the moment we receive
       // a request we need to be able to publish
       // a response.
-      channel.queueDeclare(config.rabbitMQResponsesQueue(), false, false, false, null);
-      channel.queueBind(config.rabbitMQResponsesQueue(), config.rabbitMQExchangeName(), config.rabbitMQResponsesQueue());
+      channel.queueDeclare(config.responsesQueue(), false, false, false, null);
+      channel.queueBind(config.responsesQueue(), config.exchangeName(), config.responsesQueue());
 
       // Bind to the requests queue
-      channel.queueDeclare(config.rabbitMQRequestsQueue(), false, false, false, null);
-      channel.queueBind(config.rabbitMQRequestsQueue(), config.rabbitMQExchangeName(), config.rabbitMQRequestsQueue());
+      channel.queueDeclare(config.requestsQueue(), false, false, false, null);
+      channel.queueBind(config.requestsQueue(), config.exchangeName(), config.requestsQueue());
 
       // Not sure if this has to be uniquer per-wrapper
       // or per queue, but we don't use it later, so I
@@ -377,7 +361,7 @@ public class RabbitMQMgr {
       String consumerTag = UUID.randomUUID().toString();
 
       // Set up a consumer for the requests queue
-      channel.basicConsume(config.rabbitMQRequestsQueue(), false, consumerTag, getRequestConsumer());
+      channel.basicConsume(config.requestsQueue(), false, consumerTag, getRequestConsumer());
 
       logger.info("Successfully setup RabbitMQ!");
       return true;

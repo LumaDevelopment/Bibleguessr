@@ -1,9 +1,16 @@
 package gg.bibleguessr.bible;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.BibleguessrUtilities;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
+import gg.bibleguessr.bible.data_structures.Version;
+import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
+import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
+import gg.bibleguessr.bible.requests.RandomVerseRequest;
+import gg.bibleguessr.bible.versions.BibleVersionMgr;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
-import gg.bibleguessr.service_wrapper.ServiceUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,11 +54,25 @@ public class BibleService extends Microservice {
      */
     private BibleServiceConfig config;
 
+    // Managers
+
+    /**
+     * The class that manages all Bible versions
+     * that are available to this service.
+     */
+    private BibleVersionMgr bibleVersionMgr;
+
     /**
      * The class that operates reading text from different
      * Bible versions.
      */
-    private BibleReadingMgr bibleReadingMgr;
+    private BibleTextMgr bibleTextMgr;
+
+    /**
+     * The class that manages the data that the front end
+     * needs to operate.
+     */
+    private FrontendBibleDataMgr frontendBibleDataMgr;
 
     /* ---------- CONSTRUCTORS ---------- */
 
@@ -79,7 +100,9 @@ public class BibleService extends Microservice {
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.configFile = configFile;
         this.config = null;
-        this.bibleReadingMgr = null;
+        this.bibleVersionMgr = null;
+        this.bibleTextMgr = null;
+        this.frontendBibleDataMgr = null;
 
         initializeService();
 
@@ -88,9 +111,84 @@ public class BibleService extends Microservice {
 
     /* ---------- METHODS ---------- */
 
+    /**
+     * Executes the given random verse request.
+     *
+     * @param request The request to execute.
+     * @return The response to the request.
+     */
+    public Response executeRandomVerseRequest(RandomVerseRequest request) {
+
+        // Node to insert response data into
+        ObjectNode responseContent = GlobalObjectMapper.get().createObjectNode();
+
+        // Now that we're here, we can do a couple of parameter sanity checks
+        String versionName = request.getVersion();
+        Version version = bibleVersionMgr.getVersionByName(versionName);
+
+        // Check if the version name is valid.
+        if (versionName.isBlank() || version == null) {
+            responseContent.put("error", 0);
+            return new Response(responseContent, request.getUUID());
+        }
+
+        int numOfContextVerses = request.getNumOfContextVerses();
+
+        // Check if the number of context verses is valid.
+        if (numOfContextVerses < 0 || numOfContextVerses > Bible.MAX_CONTEXT_VERSES) {
+            responseContent.put("error", 1);
+            return new Response(responseContent, request.getUUID());
+        }
+
+        // TODO for Dan
+        // In this case, we're good to go.
+        // Steps:
+        // 1) Select a random verse.
+        // 2) Gather its context verses. Make sure to account for the
+        // case where the context would expand beyond the bounds of the
+        // Bible. (ex. Genesis 1:1 with >0 context verses)
+        // 3) Consult with Michael on how he wants us to handle multiple
+        // verses. Does he want multiple verse objects?
+        // 4) Whatever the solution, assemble one or more verse JSON
+        // objects (can create a new JSON object with
+        // objectMapper.createObjectNode()) and fill it with the
+        // information Michael needs. Text can be pulled from BibleReadingMgr,
+        // book, chapter, and verse information can be pulled from the
+        // Bible class, and once you have the Book object from
+        // the verse object, you can get its name using
+        // version.getBookNameByObject().
+        // 5) However you structure these responses, make sure to put
+        // information about them in the "Response Parameters"
+        // section of the "Random Verse Request" in RequestResponseSpecifications.md
+        // 6) Add all verse JSON objects to the responseContent object.
+
+        return new Response(responseContent, request.getUUID());
+
+    }
+
+    /**
+     * Handle all request types that are directed to this service.
+     * Should only receive types that are stated in initializeRequestTypesMap().
+     *
+     * @param request The request to execute.
+     * @return The response to the request.
+     */
     @Override
     public Response executeRequest(Request request) {
-        return null;
+
+        if (request instanceof FrontendBibleDataRequest bibleDataReq) {
+            return new Response(
+                    frontendBibleDataMgr.getBibleData(),
+                    bibleDataReq.getUUID()
+            );
+        } else if (request instanceof RandomVerseRequest randomVerseReq) {
+            return executeRandomVerseRequest(randomVerseReq);
+        } else {
+            // Unknown type of request
+            logger.error("Received request of unknown type: {}!", request.getClass().getSimpleName());
+            return null;
+        }
+
     }
 
     /**
@@ -114,20 +212,12 @@ public class BibleService extends Microservice {
         }
 
         // Create a filter to determine what files are valid
-        FilenameFilter bibleFileFilter = (dir, name) -> name.endsWith("." + config.bibleFileExtension());
+        FilenameFilter bibleFileFilter =
+                (dir, name) -> name.endsWith("." + config.bibleFileExtension());
 
         // Get all valid bible files in the directory
         return biblesDirectory.listFiles(bibleFileFilter);
 
-    }
-
-    /**
-     * Gets the BibleReadingMgr object for this service.
-     *
-     * @return The BibleReadingMgr object for this service.
-     */
-    public BibleReadingMgr getBibleReadingMgr() {
-        return bibleReadingMgr;
     }
 
     /**
@@ -137,6 +227,33 @@ public class BibleService extends Microservice {
      */
     public BibleServiceConfig getConfig() {
         return config;
+    }
+
+    /**
+     * Gets the BibleVersionMgr object for this service.
+     *
+     * @return The BibleVersionMgr object for this service.
+     */
+    public BibleVersionMgr getBibleVersionMgr() {
+        return bibleVersionMgr;
+    }
+
+    /**
+     * Gets the BibleReadingMgr object for this service.
+     *
+     * @return The BibleReadingMgr object for this service.
+     */
+    public BibleTextMgr getBibleTextMgr() {
+        return bibleTextMgr;
+    }
+
+    /**
+     * Gets the FrontendBibleDataMgr object for this service.
+     *
+     * @return The FrontendBibleDataMgr object for this service.
+     */
+    public FrontendBibleDataMgr getFrontendBibleDataMgr() {
+        return frontendBibleDataMgr;
     }
 
     /**
@@ -159,39 +276,66 @@ public class BibleService extends Microservice {
         }
 
         // Attempt to create the config.
-        config = ServiceUtilities.getConfigObjFromFile(configFile, BibleServiceConfig.class);
+        config = BibleguessrUtilities.getConfigObjFromFile(configFile, BibleServiceConfig.class);
 
         return config != null;
 
     }
 
+    /**
+     * Initialize all request types that
+     * this service can handle.
+     */
     @Override
     public void initializeRequestTypesMap() {
-
+        initializeRequestType(FrontendBibleDataRequest.class);
+        initializeRequestType(RandomVerseRequest.class);
     }
 
+    /**
+     * Initialize all aspects of the Bible service, including
+     * the configuration, the bible files, the bible reading
+     * manager, the frontend bible data manager, etc.
+     */
     private void initializeService() {
 
         // Attempt to initialize the configuration,
         // and throw an error if we can't
         if (!initializeConfig()) {
-            throw new RuntimeException("Configuration file does not exist, see logs for more information.");
+            throw new RuntimeException(
+                    "Configuration file does not exist, see logs for more information.");
         }
 
         // Get all valid Bible files
         File[] bibleFiles = getBibleFiles();
 
         if (bibleFiles == null) {
-            throw new RuntimeException("Could not get Bible files, see logs for more information.");
+            throw new RuntimeException(
+                    "Could not get Bible files, see logs for more information.");
         }
 
-        this.bibleReadingMgr = new BibleReadingMgr(this);
+        // Initializes the Bible version manager.
+        this.bibleVersionMgr = new BibleVersionMgr();
+
+        // Initialize the Bible reading manager, and pull
+        // all Bible versions available to us after it
+        // is done initializing.
+        this.bibleTextMgr = new BibleTextMgr(
+                bibleVersionMgr,
+                config.bibleFileExtension(),
+                bibleFiles
+        );
+
+        // Initialize the frontend Bible data manager.
+        this.frontendBibleDataMgr = new FrontendBibleDataMgr(bibleVersionMgr);
+
+        logger.info("Bible service has been initialized!");
 
     }
 
     @Override
     public void shutdown() {
-        bibleReadingMgr.closeRandomAccessFiles();
+        // Nothing to do.
     }
 
 }

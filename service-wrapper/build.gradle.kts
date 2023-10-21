@@ -29,6 +29,9 @@ dependencies {
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 
+  // Bibleguessr Backend Utils
+  implementation(project(":backend-utils"))
+
   // JSON configuration
   implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
 
