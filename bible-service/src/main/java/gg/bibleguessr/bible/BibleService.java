@@ -323,7 +323,7 @@ public class BibleService extends Microservice {
         this.bibleTextMgr = new BibleTextMgr(
                 bibleVersionMgr,
                 config.bibleFileExtension(),
-                getBibleFiles()
+                bibleFiles
         );
 
         // Initialize the frontend Bible data manager.
