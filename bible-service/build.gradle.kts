@@ -26,9 +26,6 @@ dependencies {
     // Logging provider
     implementation("org.slf4j:slf4j-api:2.0.7")
 
-    // Apache Commons Collections, for bidirectional maps
-    implementation("org.apache.commons:commons-collections4:4.4")
-
     // Annotations
     implementation("org.jetbrains:annotations:24.0.1")
 

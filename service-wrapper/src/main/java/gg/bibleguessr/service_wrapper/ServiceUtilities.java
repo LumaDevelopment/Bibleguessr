@@ -99,4 +99,14 @@ public class ServiceUtilities {
 
   }
 
+  /**
+   * Get the amount of memory currently in
+   * use by the program.
+   *
+   * @return The memory in use, in bytes.
+   */
+  public static long getMemoryInUse() {
+    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+  }
+
 }

@@ -3,6 +3,7 @@ package gg.bibleguessr.bible;
 import gg.bibleguessr.bible.data_structures.Book;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.versions.BibleVersionMgr;
+import gg.bibleguessr.service_wrapper.ServiceUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,6 +112,9 @@ public class BibleTextMgr {
      */
     private boolean addVersion(File versionFile, boolean notifyVersionMgr) {
 
+        // Start recording time to add
+        long startTime = System.currentTimeMillis();
+
         // Cut out the ".txt" (or whatever the file extension is
         // from the file name to get the version name
         String versionName = versionFile.getName().substring(0,
@@ -176,13 +180,29 @@ public class BibleTextMgr {
             // Store version object with Bible text
             bibleText.put(version, verseText);
 
+            // Stop recording time to add
+            long endTime = System.currentTimeMillis();
+
             if (notifyVersionMgr) {
                 // Notify the BibleVersionMgr that
                 // a single version has been added.
+                // This will add the version to the
+                // frontend bible data.
                 bibleVersionMgr.addAvailableVersion(version);
             }
 
-            logger.info("Successfully added Bible version: {}", versionName);
+            // Calculate statistics
+            long timeToAddInMs = endTime - startTime;
+            double timeToAddInS = timeToAddInMs / 1_000.0;
+            int versesPerSecond = (int) (Bible.NUM_OF_VERSES / timeToAddInS);
+
+            long fileSizeInBytes = versionFile.length();
+            double fileSizeInMBs = fileSizeInBytes / 1_000_000.0;
+
+            // Print statistics
+            String format =  "Successfully added Bible version: \"%s\". %.2f MB file loaded in %d milliseconds. %d " +
+                    "verses stored per second.";
+            logger.info(String.format(format, versionName, fileSizeInMBs, timeToAddInMs, versesPerSecond));
 
             return true;
 
@@ -302,7 +322,13 @@ public class BibleTextMgr {
 
         }
 
-        logger.info("Finished reading Bible versions, {}/{} were successful.", successes, total);
+        // Clear unused memory and get how much memory in use.
+        System.gc();
+        long memoryInUseInBytes = ServiceUtilities.getMemoryInUse();
+        double memoryInUseInMBs = memoryInUseInBytes / 1_000_000.0;
+
+        logger.info("Finished reading Bible versions, {}/{} were successful. {} MB of memory in use.",
+                successes, total, memoryInUseInMBs);
 
         // Since the text map is being fully reset,
         // just tell the BibleVersionMgr that the
