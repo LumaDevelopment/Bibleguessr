@@ -19,6 +19,7 @@ dependencies {
 
     // Service Wrapper
     implementation(project(":service-wrapper"))
+    implementation(project(":backend-utils"))
 
     // JSON configuration
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")

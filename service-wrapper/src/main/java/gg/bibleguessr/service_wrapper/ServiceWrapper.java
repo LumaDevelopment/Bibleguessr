@@ -1,5 +1,6 @@
 package gg.bibleguessr.service_wrapper;
 
+import gg.bibleguessr.backend_utils.BibleguessrUtilities;
 import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,7 +225,7 @@ public class ServiceWrapper {
     }
 
     // Attempt to create the config.
-    config = ServiceUtilities.getConfigObjFromFile(configFile, ServiceWrapperConfig.class);
+    config = BibleguessrUtilities.getConfigObjFromFile(configFile, ServiceWrapperConfig.class);
 
     return config != null;
 

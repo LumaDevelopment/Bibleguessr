@@ -1,7 +1,8 @@
 package gg.bibleguessr.bible;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.BibleguessrUtilities;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
@@ -10,7 +11,6 @@ import gg.bibleguessr.bible.versions.BibleVersionMgr;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
-import gg.bibleguessr.service_wrapper.ServiceUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,12 +53,6 @@ public class BibleService extends Microservice {
      * The config object for this service.
      */
     private BibleServiceConfig config;
-
-    /**
-     * The object mapper that this class uses to
-     * do JSON operations.
-     */
-    private final ObjectMapper objectMapper;
 
     // Managers
 
@@ -106,7 +100,6 @@ public class BibleService extends Microservice {
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.configFile = configFile;
         this.config = null;
-        this.objectMapper = new ObjectMapper();
         this.bibleVersionMgr = null;
         this.bibleTextMgr = null;
         this.frontendBibleDataMgr = null;
@@ -127,7 +120,7 @@ public class BibleService extends Microservice {
     public Response executeRandomVerseRequest(RandomVerseRequest request) {
 
         // Node to insert response data into
-        ObjectNode responseContent = objectMapper.createObjectNode();
+        ObjectNode responseContent = GlobalObjectMapper.get().createObjectNode();
 
         // Now that we're here, we can do a couple of parameter sanity checks
         String versionName = request.getVersion();
@@ -283,7 +276,7 @@ public class BibleService extends Microservice {
         }
 
         // Attempt to create the config.
-        config = ServiceUtilities.getConfigObjFromFile(configFile, BibleServiceConfig.class);
+        config = BibleguessrUtilities.getConfigObjFromFile(configFile, BibleServiceConfig.class);
 
         return config != null;
 

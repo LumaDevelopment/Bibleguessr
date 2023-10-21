@@ -1,16 +1,12 @@
 package gg.bibleguessr.service_wrapper.example_service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An example service to demonstrate how to use the Service
@@ -76,7 +72,7 @@ public class ExampleService extends Microservice {
     // Put the response content into a String to
     // String map. In correspondence to what is
     // detailed in RequestResponseSpecifications.md
-    ObjectNode content = new ObjectMapper().createObjectNode();
+    ObjectNode content = GlobalObjectMapper.get().createObjectNode();
     content.put("lengthDivisibleBy2", lengthDivisibleBy2);
 
     logger.debug("Executed ExampleRequest. Message: \"{}\". Length divisible by 2: {}",

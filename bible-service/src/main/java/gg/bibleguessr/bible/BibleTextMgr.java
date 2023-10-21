@@ -1,9 +1,9 @@
 package gg.bibleguessr.bible;
 
+import gg.bibleguessr.backend_utils.BibleguessrUtilities;
 import gg.bibleguessr.bible.data_structures.Book;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.versions.BibleVersionMgr;
-import gg.bibleguessr.service_wrapper.ServiceUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -324,7 +324,7 @@ public class BibleTextMgr {
 
         // Clear unused memory and get how much memory in use.
         System.gc();
-        long memoryInUseInBytes = ServiceUtilities.getMemoryInUse();
+        long memoryInUseInBytes = BibleguessrUtilities.getMemoryInUse();
         double memoryInUseInMBs = memoryInUseInBytes / 1_000_000.0;
 
         logger.info("Finished reading Bible versions, {}/{} were successful. {} MB of memory in use.",

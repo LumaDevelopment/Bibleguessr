@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import gg.bibleguessr.bible.Bible;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.versions.BibleVersionMgr;
@@ -51,8 +52,8 @@ public class FrontendBibleDataMgr implements VersionsUpdateListener {
     private final BibleVersionMgr bibleVersionMgr;
 
     /**
-     * ObjectMapper, because we use a lot of
-     * JSON in this class.
+     * The GlobalObjectMapper stored as a variable,
+     * because we use a lot of JSON in this class.
      */
     private final ObjectMapper objectMapper;
 
@@ -77,7 +78,7 @@ public class FrontendBibleDataMgr implements VersionsUpdateListener {
 
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.bibleVersionMgr = bibleVersionMgr;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = GlobalObjectMapper.get();
         this.bibleData = null;
 
         // Register this object as a listener
