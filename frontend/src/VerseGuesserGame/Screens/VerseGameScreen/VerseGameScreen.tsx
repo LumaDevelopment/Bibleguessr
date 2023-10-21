@@ -41,7 +41,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
             </select>
             <p>Chapter Number</p>
             <input min={0} max={chaptersInBook} value={selectedChapter} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-               setSelectedVerse(1)
+               // setSelectedVerse(1)
                setSelectedChapter(event.target.value as unknown as number)
             }} />
             <p>Current Verse</p>
