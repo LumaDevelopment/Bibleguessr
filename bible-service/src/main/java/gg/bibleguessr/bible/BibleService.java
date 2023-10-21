@@ -1,7 +1,10 @@
 package gg.bibleguessr.bible;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import gg.bibleguessr.bible.data_structures.Verse;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
@@ -194,6 +197,12 @@ public class BibleService extends Microservice {
         // section of the "Random Verse Request" in RequestResponseSpecifications.md
         // 6) Add all verse JSON objects to the responseContent object.
         
+        // Michael has stated that for simplicity's sake, he will request new verse objects
+        // one at a time, meaning there won't be a need (for now) to create an additional
+        // JSON object. If in the future he would like multiple verse objects, the
+        // current agreed-upon structure would be a JSON object containing an array of
+        // Verse JSON objects.
+
         // Initialize new Random object
         Random rand = new Random();
 
@@ -211,10 +220,42 @@ public class BibleService extends Microservice {
             startIndex -= endIndex - (VERSES_IN_BIBLE - 1);
         }
 
-        // Obtain the random verse and the random verse with context
+        // Obtain the random verse and the random verse with context as an array and define the random verse index
         String randomText = bibleTextMgr.getVerseText(version, randomIndex);
-        String randomTextWithContext = bibleTextMgr.getPassageText(version, startIndex, endIndex);
+        
+        // -- Experimentation with earlier implementations of this method; ignore --
+        //String randomTextWithContext = bibleTextMgr.getPassageText(version, startIndex, endIndex);
+        //String[] contextArray = new String[2*numOfContextVerses+1];
 
+        // Define the contextArray and the index of the selected verse
+        ArrayNode contextArray = objectMapper.createArrayNode();
+        int randomLocalIndex = -1;
+
+        // Add each piece of text to the context array and set the verse index when appropriate
+        for (int i = startIndex; i <= endIndex; i++){
+            String currentText = bibleTextMgr.getVerseText(version, i);
+            contextArray.add(currentText);
+            if (currentText.equals(randomText)) randomLocalIndex = i-startIndex;
+        }
+
+        // Retrieve the verse information from the Bible instance
+        Bible bible = Bible.getInstance();
+        Verse verseInfo = bible.getVerseByUniversalIndex(randomIndex);
+
+        // Retrieve the book name, chapter number, and verse number from the verse object
+        String bookName = version.getBookNameByObject(verseInfo.chapter().book());
+        int chapter = verseInfo.chapter().number();
+        int verseNum = verseInfo.number();
+        
+        // Put all requested information into the JSON object
+        responseContent.put("bibleVersion", versionName);
+        responseContent.put("bookName", bookName);
+        responseContent.put("chapter", chapter);
+        responseContent.put("verseNumber", verseNum);
+        responseContent.set("verseArray", contextArray);
+        responseContent.put("localVerseIndex", randomLocalIndex);
+        responseContent.put("globalVerseIndex", randomIndex);
+        
         return new Response(responseContent, request.getUUID());
 
     }
