@@ -11,109 +11,37 @@ import { Verse } from "../Global/Verse";
  * Every GameSegment must also be subscribable. This allows for the active game instance to keep the UI and the data structure in sync.
  */
 export class VerseGameSegment extends Subscribable {
+    private bibleVersion!: string
+    private guesses: number = 0;
     /**
-     * The users selected book.
+     * Verses that are above the verse to guess (higher global number)
      */
-    private version!: string;
+    private contextVersesAbove: Verse[] = [];
     /**
-     * How many Surrounding verses the user gets.
+     * Verses that are below the verse to guess (higher global number)
      */
-    private allowedSurroundingVerses!: number
-    /**
-     * How many guesses the user has ly made.
-     */
-    private GuessesCount: number = 0;
-
-    /**
-     * The list of all verses that will be on the screen.
-     */
-    private verseBody: Verse[] = []
-
-    /**
-     * Verse to guess
-     */
+    private contextVersesBelow: Verse[] = [];
     private verseToGuess!: Verse
-
-    /**
-     * Stores the user's previous guesses.
-     */
-    private previousUserGuesses: Verse[] = [];
-
-    private correctGuesses: boolean[] = []
-
-    /**
-     * Stores the user's  score.
-     */
-    private usersScore: number = 4000;
-
-
-    constructor(allowedSurroundingVerses: number, verseBody: Verse[], verseToGuess: Verse) {
-        super();
-        this.allowedSurroundingVerses = allowedSurroundingVerses;
-        this.verseBody = verseBody;
+    constructor(bibleVersion: string, contextVersesAbove: Verse[], contextVersesBelow: [], verseToGuess: Verse) {
+        super()
+        this.bibleVersion = bibleVersion;
+        this.contextVersesAbove = [...contextVersesAbove];
+        this.contextVersesBelow = [...contextVersesBelow];
         this.verseToGuess = verseToGuess;
     }
-
-    // Setters
-
-    /**
-     * @todo Put Dan's formula here
-     * 
-     * @returns The User's Store
-     */
-    calculateScore = () => {
-        this.usersScore = 0;
-        this.emitChange();
+    getBibleVersion = (): string => {
+        return this.bibleVersion;
     }
-
-    setVersion = (version: string) => {
-        this.version = version;
-        this.emitChange();
+    getGuesses = (): number => {
+        return this.guesses;
     }
-
-    increaseGuessCount = () => {
-        this.GuessesCount += 1;
-        this.emitChange()
+    getContextVersesAbove = (): Verse[] => {
+        return this.contextVersesAbove;
     }
-
-    addGuessedVerse = (verse: Verse) => {
-        this.previousUserGuesses = [...this.previousUserGuesses, verse];
-        this.emitChange();
+    getContextVersesBelow= (): Verse[] => {
+        return this.contextVersesBelow;
     }
-
-    setAllowedSurroundingVerses = (amount: number) => {
-        this.allowedSurroundingVerses = amount;
-        this.emitChange();
-    }
-
-    // Getters
-
-    getVerseBody = (): Verse[] => {
-      return this.verseBody;
-    }
-    
     getVerseToGuess = (): Verse => {
-      return this.verseToGuess
+        return this.verseToGuess;
     }
-
-    getAllowedSurroundingVerses = (): number => {
-        return this.allowedSurroundingVerses;
-    }
-
-    getPreviousUserGuesses = (): Verse[] => {
-        return this.previousUserGuesses;
-    }
-
-    getUserScore = (): number => {
-        return this.usersScore
-    }
-
-    getGuessesCount = (): number => {
-        return this.GuessesCount;
-    }
-
-    getVersion = ():string => {
-        return this.version;
-    }
-
 }
