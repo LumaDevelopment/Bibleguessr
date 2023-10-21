@@ -160,42 +160,9 @@ public class BibleService extends Microservice {
         // Now that we're here, we can do a couple of parameter sanity checks
         String versionName = request.getVersion();
         Version version = bibleVersionMgr.getVersionByName(versionName);
-
-        // Check if the version name is valid.
-        if (versionName.isBlank() || version == null) {
-            responseContent.put("error", 0);
-            return new Response(responseContent, request.getUUID());
-        }
-
         int numOfContextVerses = request.getNumOfContextVerses();
 
-        // Check if the number of context verses is valid.
-        if (numOfContextVerses < 0 || numOfContextVerses > MAX_CONTEXT_VERSES) {
-            responseContent.put("error", 1);
-            return new Response(responseContent, request.getUUID());
-        }
-
-        // TODO for Dan
-        // In this case, we're good to go.
-        // Steps:
-        // 1) Select a random verse.
-        // 2) Gather its context verses. Make sure to account for the
-        // case where the context would expand beyond the bounds of the
-        // Bible. (ex. Genesis 1:1 with >0 context verses)
-        // 3) Consult with Michael on how he wants us to handle multiple
-        // verses. Does he want multiple verse objects?
-        // 4) Whatever the solution, assemble one or more verse JSON
-        // objects (can create a new JSON object with
-        // objectMapper.createObjectNode()) and fill it with the
-        // information Michael needs. Text can be pulled from BibleReadingMgr,
-        // book, chapter, and verse information can be pulled from the
-        // Bible class, and once you have the Book object from
-        // the verse object, you can get its name using
-        // version.getBookNameByObject().
-        // 5) However you structure these responses, make sure to put
-        // information about them in the "Response Parameters"
-        // section of the "Random Verse Request" in RequestResponseSpecifications.md
-        // 6) Add all verse JSON objects to the responseContent object.
+        // Sanity checks are done in the parse() method of RandomVerseRequest
         
         // Michael has stated that for simplicity's sake, he will request new verse objects
         // one at a time, meaning there won't be a need (for now) to create an additional
@@ -213,11 +180,27 @@ public class BibleService extends Microservice {
 
         // Adjusts the range depending on if the start or end indices fall out of bounds
         if (startIndex < 0) {
+
+            int addToEnd = -startIndex;
             startIndex = 0; 
-            endIndex += Math.abs(startIndex);
+            endIndex += addToEnd;
+
+            // If the shifting put the end index out of bounds
+            if (endIndex > VERSES_IN_BIBLE - 1) {
+                endIndex = VERSES_IN_BIBLE - 1;
+            }
+
         } else if (endIndex > VERSES_IN_BIBLE - 1) {
+
+            int addToStart = endIndex - (VERSES_IN_BIBLE - 1);
             endIndex = VERSES_IN_BIBLE - 1;
-            startIndex -= endIndex - (VERSES_IN_BIBLE - 1);
+            startIndex -= addToStart;
+
+            // If the shifting put the start index out of bounds
+            if (startIndex < 0) {
+                startIndex = 0;
+            }
+
         }
 
         // Obtain the random verse and the random verse with context as an array and define the random verse index

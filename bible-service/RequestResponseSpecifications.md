@@ -50,7 +50,12 @@ Vert.x will respond with the following error codes, depending on the situation:
 - **Response Parameters:**
     - `uuid` (Text) (Optional) - Matches UUID from request. Only useful for something like RabbitMQ where we can't
       deliver a direct response to a request.
-    - `error` (Integer) (On Failure) - An error code if an issue arises while executing this request.
-        - `0` - Invalid version. Either the version is blank or this service does not have the given version.
-        - `1` - Invalid number of context verses. Either the number of context verses is less than the minimum or more
-          than the maximum.
+    - `bibleVersion` - The version of the Bible the text is in.
+    - `bookName` - The name of the book the random verse is pulled from according, to the chosen version.
+    - `chapter` - The number of the chapter the verse is from.
+    - `verseNumber` - The number of the verse within its chapter.
+    - `verseArray` - The array of verse text, including any context verses that were requested.
+    - `localVerseIndex` - The index of the random verse within the `verseArray`. This is useful for picking out the
+      random verse from the context verses. The UI can use this to highlight the verse with the actual reference that
+      needs to be guessed.
+    - `globalVerseIndex` - The index of the random verse within the entire Bible.

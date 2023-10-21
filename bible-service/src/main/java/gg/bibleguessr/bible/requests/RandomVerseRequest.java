@@ -1,5 +1,6 @@
 package gg.bibleguessr.bible.requests;
 
+import gg.bibleguessr.bible.BibleService;
 import gg.bibleguessr.service_wrapper.Request;
 
 import java.util.Map;
@@ -77,7 +78,7 @@ public class RandomVerseRequest extends Request {
          // Attempt to pull the version from the parameters
          String version = parameters.get("version");
 
-         if (version == null) {
+         if (version == null || version.isBlank()) {
             return false;
          }
 
@@ -92,6 +93,11 @@ public class RandomVerseRequest extends Request {
          // Attempt to parse the number of context verses
          // as its correct type
          int numOfContextVerses = Integer.parseInt(numOfContextVersesText);
+
+         // Make sure the number of context verses is within reasonable bounds
+         if (numOfContextVerses < 0 || numOfContextVerses > BibleService.MAX_CONTEXT_VERSES) {
+            return false;
+         }
 
          // Success!
          this.version = version;
