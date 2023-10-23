@@ -24,20 +24,49 @@ public class IntakeMgr {
 
   /* ---------- CONSTANTS ---------- */
 
+  /**
+   * The name of the logger for this class.
+   */
   public static final String LOGGER_NAME = IntakeMgr.class.getSimpleName();
 
   /* ---------- INSTANCE VARIABLES ---------- */
 
+  /**
+   * The logger for this class.
+   */
   private final Logger logger;
-  private final ServiceWrapper serviceWrapper;
+
+  /**
+   * The ServiceWrapper instance, used for
+   * configuration access, querying currently
+   * running microservices, and request
+   * execution.
+   */
+  private final ServiceWrapper wrapper;
+
+  /**
+   * All "intakes" that are currently running.
+   * Intakes are just classes that enable receiving
+   * requests over a certain communication protocol.
+   */
   private final Map<Class<? extends CommsIntake>, CommsIntake> intakes;
+
+  /**
+   * Vert.x instance, used to deploy
+   * the HTTPIntake.
+   */
   private Vertx vertx;
 
   /* ---------- CONSTRUCTORS ---------- */
 
-  public IntakeMgr(ServiceWrapper serviceWrapper) {
+  /**
+   * Main constructor.
+   *
+   * @param wrapper The ServiceWrapper instance.
+   */
+  public IntakeMgr(ServiceWrapper wrapper) {
     this.logger = LoggerFactory.getLogger(LOGGER_NAME);
-    this.serviceWrapper = serviceWrapper;
+    this.wrapper = wrapper;
     this.intakes = new HashMap<>();
     this.vertx = null;
   }
@@ -104,18 +133,19 @@ public class IntakeMgr {
     LinkedList<CommsIntake> toInitialize = new LinkedList<>();
 
     // HTTP
-    if (serviceWrapper.getConfig().hostWithVertx()) {
+    if (wrapper.getConfig().hostWithVertx()) {
       toInitialize.push(new HTTPIntake(
         this,
-        this.serviceWrapper.getConfig().vertxPort()
+        this.wrapper.getConfig().apiKey(),
+        this.wrapper.getConfig().vertxPort()
       ));
     }
 
     // RabbitMQ
-    if (serviceWrapper.getConfig().hostWithRabbitMQ()) {
+    if (wrapper.getConfig().hostWithRabbitMQ()) {
       toInitialize.push(new RabbitMQIntake(
         this,
-        this.serviceWrapper.getConfig().rabbitMQConfig()
+        this.wrapper.getConfig().rabbitMQConfig()
       ));
     }
 
@@ -196,7 +226,7 @@ public class IntakeMgr {
     String requestPath = splitPath[2];
 
     // Convert microservice ID to running service object
-    Microservice service = this.serviceWrapper.getRunningMicroservice(microserviceID);
+    Microservice service = this.wrapper.getRunningMicroservice(microserviceID);
 
     if (service == null) {
       logger.error("Received request with non-existent microservice ID: \"{}\"", microserviceID);
@@ -225,7 +255,7 @@ public class IntakeMgr {
     }
 
     // Execute the request and get a response object
-    Response response = this.serviceWrapper.executeRequest(request);
+    Response response = this.wrapper.executeRequest(request);
 
     if (response == null) {
       logger.error("Internal error while executing response with type \"{}\".", requestClass.getSimpleName());
@@ -238,6 +268,10 @@ public class IntakeMgr {
 
   }
 
+  /**
+   * Closes down Vert.x and all intakes by
+   * calling their shutdown() method.
+   */
   public void shutdown() {
 
     // Shut down Vert.x

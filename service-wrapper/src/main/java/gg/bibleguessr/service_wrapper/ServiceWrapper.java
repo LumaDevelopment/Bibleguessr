@@ -2,12 +2,15 @@ package gg.bibleguessr.service_wrapper;
 
 import gg.bibleguessr.backend_utils.BibleguessrUtilities;
 import gg.bibleguessr.service_wrapper.intake.IntakeMgr;
+import gg.bibleguessr.service_wrapper.self_service.SelfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Main service wrapping library class. This allows a BibleGuessr
@@ -89,14 +92,40 @@ public class ServiceWrapper {
    * @param configFile The location of the config file.
    */
   public ServiceWrapper(File configFile) {
+    this(configFile, null);
+  }
+
+  /**
+   * Creates a ServiceWrapper instance with a custom
+   * configuration object.
+   *
+   * @param config The configuration object.
+   */
+  public ServiceWrapper(ServiceWrapperConfig config) {
+    this(null, config);
+  }
+
+  /**
+   * Internal constructor that is called by all the
+   * public constructors. Supports setting a custom
+   * configuration file, but also supports setting
+   * a custom configuration object directly.
+   *
+   * @param configFile The location of the config file.
+   * @param config     The configuration object.
+   */
+  private ServiceWrapper(File configFile, ServiceWrapperConfig config) {
 
     this.logger = LoggerFactory.getLogger(LOGGER_NAME);
     this.configFile = configFile;
-    this.config = null;
+    this.config = config;
     this.runningMicroservices = new HashMap<>();
     this.reqTypeToService = new HashMap<>();
 
     this.intakeMgr = new IntakeMgr(this);
+
+    // Run the self-service of the Service Wrapper
+    run(new SelfService(this));
 
   }
 
@@ -112,6 +141,11 @@ public class ServiceWrapper {
    * if some sort of error occurs.
    */
   public Response executeRequest(Request request) {
+
+    if (request == null) {
+      logger.error("Null request given to execute!");
+      return null;
+    }
 
     Microservice executor = reqTypeToService.get(request.getClass());
 
@@ -177,6 +211,19 @@ public class ServiceWrapper {
   }
 
   /**
+   * Returns an unmodifiable set of currently running
+   * microservices.
+   *
+   * @return The currently running microservices.
+   */
+  public Collection<Microservice> getRunningMicroservices() {
+    return runningMicroservices
+      .values()
+      .stream()
+      .collect(Collectors.toUnmodifiableSet());
+  }
+
+  /**
    * Checks if the config object already exists,
    * and if so, returns it. Otherwise, attempts
    * to read the config file and create the
@@ -238,15 +285,6 @@ public class ServiceWrapper {
 
     logger.info("Successfully started {}!", getCleanServiceName(service));
 
-  }
-
-  /**
-   * Sets the configuration of the ServiceWrapper.
-   *
-   * @param config The new configuration.
-   */
-  public void setConfig(ServiceWrapperConfig config) {
-    this.config = config;
   }
 
   /**

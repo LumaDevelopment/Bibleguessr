@@ -1,6 +1,5 @@
 package gg.bibleguessr.service_wrapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
@@ -21,8 +20,6 @@ public class TestServiceWrapper {
   @BeforeEach
   void setup() {
 
-    wrapper = new ServiceWrapper();
-
     ServiceWrapperConfig config = new ServiceWrapperConfig(
       "",
       false,
@@ -31,7 +28,7 @@ public class TestServiceWrapper {
       RabbitMQConfiguration.getDefault()
     );
 
-    wrapper.setConfig(config);
+    wrapper = new ServiceWrapper(config);
 
   }
 

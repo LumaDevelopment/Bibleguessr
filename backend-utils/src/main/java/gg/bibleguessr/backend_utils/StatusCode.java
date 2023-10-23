@@ -19,6 +19,11 @@ public enum StatusCode {
     MALFORMED_REQUEST(400),
 
     /**
+     * The API key is missing or invalid.
+     */
+    BAD_API_KEY(403),
+
+    /**
      * There is no request with the given path that is
      * recognized by the corresponding microservice
      * running on this service wrapper/API gateway.

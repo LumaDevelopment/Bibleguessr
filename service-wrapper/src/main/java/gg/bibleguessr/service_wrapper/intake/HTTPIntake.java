@@ -42,6 +42,12 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
   private final IntakeMgr intakeMgr;
 
   /**
+   * The API key to validate with incoming HTTP requests.
+   * A blank key means we don't check for an API key.
+   */
+  private final String apiKey;
+
+  /**
    * The port that this web server should
    * be hosted on.
    */
@@ -54,9 +60,12 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
    * for config access, request execution, etc.
    *
    * @param intakeMgr The IntakeMgr instance.
+   * @param apiKey    The API key required to authenticate HTTP
+   *                  requests. If empty, do not validate or
+   *                  check for key.
    * @param port      The port this web server should be hosted on.
    */
-  public HTTPIntake(IntakeMgr intakeMgr, int port) {
+  public HTTPIntake(IntakeMgr intakeMgr, String apiKey, int port) {
 
     if (intakeMgr == null) {
       throw new RuntimeException("IntakeMgr passed into HTTPIntake cannot be null!");
@@ -64,6 +73,7 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
 
     this.logger = LoggerFactory.getLogger(LOGGER_NAME);
     this.intakeMgr = intakeMgr;
+    this.apiKey = apiKey;
     this.port = port;
 
   }
@@ -105,6 +115,18 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
       // Load parameters into map
       Map<String, String> parameters = new HashMap<>();
       req.params().forEach(entry -> parameters.put(entry.getKey(), entry.getValue()));
+
+      // Check for API key
+      if (!this.apiKey.isEmpty()) {
+
+        String givenAPIKey = parameters.get("apiKey");
+
+        if (givenAPIKey == null || !givenAPIKey.equals(this.apiKey)) {
+          throwErrorCode(req, StatusCode.BAD_API_KEY);
+          return;
+        }
+
+      }
 
       // Decide what to do based on the response
       CommsCallback callback = new CommsCallback() {

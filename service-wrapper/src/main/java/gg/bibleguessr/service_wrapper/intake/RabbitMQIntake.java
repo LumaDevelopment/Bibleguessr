@@ -22,6 +22,9 @@ public class RabbitMQIntake implements CommsIntake {
 
   /* ---------- CONSTANTS ---------- */
 
+  /**
+   * The name of the logger for this class.
+   */
   public static final String LOGGER_NAME = RabbitMQIntake.class.getSimpleName();
 
   /* ---------- VARIABLES ---------- */
