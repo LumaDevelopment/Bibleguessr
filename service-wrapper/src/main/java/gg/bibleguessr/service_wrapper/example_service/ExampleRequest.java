@@ -33,7 +33,7 @@ public class ExampleRequest extends Request {
    * All Request subclasses must have a blank constructor,
    * so that they can be created and parsed by
    * <code>Request.parse()</code> or so they can have
-   * their requestPath retrieved by <code>MainVerticle</code>.
+   * their requestPath retrieved by <code>HTTPIntake</code>.
    */
   public ExampleRequest() {
     super(REQUEST_PATH);

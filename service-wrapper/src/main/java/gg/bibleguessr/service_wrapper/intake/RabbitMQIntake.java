@@ -1,18 +1,15 @@
-package gg.bibleguessr.service_wrapper;
+package gg.bibleguessr.service_wrapper.intake;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rabbitmq.client.*;
-import gg.bibleguessr.backend_utils.GlobalObjectMapper;
-import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
+import gg.bibleguessr.backend_utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,11 +18,11 @@ import java.util.UUID;
  * connecting to the server, all message handling
  * related tasks, and posting message responses.
  */
-public class RabbitMQMgr {
+public class RabbitMQIntake implements CommsIntake {
 
   /* ---------- CONSTANTS ---------- */
 
-  public static final String LOGGER_NAME = RabbitMQMgr.class.getSimpleName();
+  public static final String LOGGER_NAME = RabbitMQIntake.class.getSimpleName();
 
   /* ---------- VARIABLES ---------- */
 
@@ -37,11 +34,10 @@ public class RabbitMQMgr {
   private final Logger logger;
 
   /**
-   * Service wrapper, used to access the config, check
-   * get Microservice objects of microservices that are
-   * currently running, and execute requests.
+   * Intake manager, handles the path validation, request
+   * execution, communications callback calling, etc.
    */
-  private final ServiceWrapper serviceWrapper;
+  private final IntakeMgr intakeMgr;
 
   /**
    * All configuration needed to connect to
@@ -82,26 +78,19 @@ public class RabbitMQMgr {
    */
   private final Charset charset = StandardCharsets.UTF_8;
 
-  // STATUS VARIABLES
-
-  /**
-   * Tracks whether RabbitMQ is currently running.
-   */
-  private boolean running;
-
   /* ---------- CONSTRUCTORS ---------- */
 
   /**
    * The one constructor to rule them all.
    *
-   * @param serviceWrapper The service wrapper.
+   * @param intakeMgr The intake manager.
+   * @param config    All RabbitMQ configuration variables.
    */
-  public RabbitMQMgr(ServiceWrapper serviceWrapper) {
+  public RabbitMQIntake(IntakeMgr intakeMgr, RabbitMQConfiguration config) {
     this.logger = LoggerFactory.getLogger(LOGGER_NAME);
-    this.serviceWrapper = serviceWrapper;
-    this.config = serviceWrapper.getConfig().rabbitMQConfig();
+    this.intakeMgr = intakeMgr;
+    this.config = config;
     this.conn = null;
-    this.running = false;
   }
 
   /* ---------- METHODS ---------- */
@@ -162,18 +151,34 @@ public class RabbitMQMgr {
         String messageBody = new String(body, charset);
         logger.debug("Received message w/ body: {}", messageBody);
 
-        // Attempt to parse as JSON
-        ObjectNode node = GlobalObjectMapper.parseStringAsJSONObject(messageBody);
-
-        // Check if parse was successful.
-        if (node == null) {
-          logger.error("Received non-JSON message, can't parse.");
-          return;
-        }
-
         // Grab delivery tag from message envelope, used
         // to acknowledge or reject a message.
         long deliveryTag = envelope.getDeliveryTag();
+
+        // Attempt to parse as JSON
+        ObjectNode node = GlobalObjectMapper.parseStringAsJSONObject(messageBody);
+
+        // Check if parse was successful. If not,
+        // remove it from the queue.
+        if (node == null) {
+          logger.error("Received non-JSON message, can't parse, removing from queue.");
+          channel.basicAck(deliveryTag, false);
+          return;
+        }
+
+        // Try to pull the UUID of the request
+        // from the JSON object. If the request
+        // has no UUID, remove it from the
+        // queue.
+        JsonNode uuidNode = node.get("uuid");
+
+        if (uuidNode == null || !uuidNode.isTextual()) {
+          logger.error("Received unidentifiable request, removing from queue.");
+          channel.basicAck(deliveryTag, false);
+          return;
+        }
+
+        String uuid = uuidNode.asText();
 
         // Tentative JsonNode objects used to check
         // if all the necessary information to execute
@@ -187,6 +192,7 @@ public class RabbitMQMgr {
         if ((microserviceIDNode == null || !microserviceIDNode.isTextual()) ||
           (requestPathNode == null || !requestPathNode.isTextual())) {
           logger.error("Received message with no microservice ID or request path, can't execute request.");
+          sendErrorResponse(uuid, StatusCode.MALFORMED_REQUEST);
           channel.basicAck(deliveryTag, false);
           return;
         }
@@ -195,99 +201,65 @@ public class RabbitMQMgr {
         String microserviceID = microserviceIDNode.asText();
         String requestPath = requestPathNode.asText();
 
-        // Attempt to retrieve microservice from service wrapper.
-        Microservice microservice = serviceWrapper.getRunningMicroservice(microserviceID);
+        // Construct path and parameters map to give to IntakeMgr
+        String fullPath = "/" + microserviceID + "/" + requestPath;
+        Map<String, String> parameters = BibleguessrUtilities.convertObjNodeToStringMap(node);
+        parameters.remove(config.microserviceIDField());
+        parameters.remove(config.requestPathField());
 
-        if (microservice == null) {
-          // We're not running the microservice this request is for.
-          // No big deal, just reject the message and
-          // let the right microservice handle it.
-          channel.basicReject(deliveryTag, true);
-          return;
-        }
+        // Determine what we'll do when we receive the response
+        CommsCallback callback = new CommsCallback() {
+          @Override
+          public void onSuccess(String content) {
+            // Publish response to responses queue
+            try {
 
-        // Attempt to retrieve request class
-        // from the microservice.
-        Class<? extends Request> requestClazz = microservice.getRequestTypeFromPath(requestPath);
+              channel.basicAck(deliveryTag, false);
 
-        if (requestClazz == null) {
-          // A request path has been requested for a
-          // request type that doesn't exist. Log
-          // error and acknowledge.
-          logger.error("Received request for existing microservice with path that does not exist!");
-          channel.basicAck(deliveryTag, false);
-          return;
-        }
+              channel.basicPublish(
+                config.exchangeName(),
+                config.responsesQueue(),
+                null,
+                content.getBytes(charset)
+              );
 
-        // Standardize all fields of the JSON object into
-        // a String -> String map
-        Map<String, String> parameters = new HashMap<>();
-        for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
-
-          Map.Entry<String, JsonNode> entry = it.next();
-
-          if (entry.getKey().equals("deliveryTag") ||
-            entry.getKey().equals(config.microserviceIDField()) ||
-            entry.getKey().equals(config.requestPathField())) {
-            // Entries that are not of relevancy to
-            // the Request parser.
-            continue;
+            } catch (Exception e) {
+              logger.error("Could not acknowledge request and/or publish response!", e);
+            }
           }
 
-          // Store the key-value pair in the parameters map
-          parameters.put(entry.getKey(), entry.getValue().asText());
+          @Override
+          public void onFailure(StatusCode errorCode) {
 
-        }
+            // Error encountered
 
-        // Create new request object from the correct type
-        // and the standardized parameters.
-        Request request = Request.parse(requestClazz, parameters);
+            try {
+              if (errorCode.equals(StatusCode.NO_MICROSERVICE_WITH_ID) || errorCode.equals(StatusCode.INTERNAL_ERROR)) {
+                // Send it back into the queue for some other
+                // Service Wrapper to deal with
+                channel.basicReject(deliveryTag, true);
+              } else {
+                // Send error response and
+                // acknowledge request
+                sendErrorResponse(uuid, errorCode);
+                channel.basicAck(deliveryTag, false);
+              }
+            } catch (IOException e) {
+              logger.error("Could not reject/acknowledge request after being unable to fulfill it!", e);
+            }
 
-        if (request == null) {
-          // Request parsing failed, log error and acknowledge.
-          logger.error("Failed to parse request!");
-          channel.basicAck(deliveryTag, false);
-          return;
-        }
+          }
 
-        // Execute the request
-        Response response = serviceWrapper.executeRequest(request);
+        };
 
-        // We somehow failed to execute the request.
-        // Leave it in the queue and hope someone else picks
-        // it up and does it better.
-        if (response == null) {
-          logger.error("Failed to execute request!");
-          channel.basicReject(deliveryTag, true);
-          return;
-        }
-
-        // Acknowledge the message, we've got a
-        // valid response to send back.
-        channel.basicAck(deliveryTag, false);
-
-        // Publish response to responses queue
-        channel.basicPublish(
-          config.exchangeName(),
-          config.responsesQueue(),
-          null,
-          GlobalObjectMapper.get().writeValueAsBytes(response.toJSONNode())
-        );
+        // Send the request off to the intake manager
+        intakeMgr.receiveRequest(fullPath, parameters, callback);
 
       }
     };
 
     return consumer;
 
-  }
-
-  /**
-   * Returns whether the RabbitMQ client is running.
-   *
-   * @return Whether the RabbitMQ client is running.
-   */
-  public boolean isRunning() {
-    return running;
   }
 
   /**
@@ -299,12 +271,8 @@ public class RabbitMQMgr {
    *
    * @return Whether the RabbitMQ client is started
    */
-  public boolean start() {
-
-    if (running) {
-      // Running successfully already
-      return true;
-    }
+  @Override
+  public boolean initialize() {
 
     // If a connection is not established,
     // then establish it.
@@ -377,10 +345,47 @@ public class RabbitMQMgr {
   }
 
   /**
+   * Send a message in the responses queue with the given
+   * request ID and the given status code as an error
+   * code. This notifies whoever sent the request that
+   * the request was not fulfilled, and why.
+   *
+   * @param uuid      The UUID of the request.
+   * @param errorCode The error code to send.
+   */
+  private void sendErrorResponse(String uuid, StatusCode errorCode) {
+
+    if (uuid == null || errorCode == null) {
+      logger.error("Null uuid and/or error given while attempting to send error response!");
+      return;
+    }
+
+    ObjectNode response = GlobalObjectMapper.get().createObjectNode();
+
+    // Put in uuid and error code
+    response.put("uuid", uuid);
+    response.put("error", errorCode.getStatusCode());
+
+    // Publish response to responses queue
+    try {
+      channel.basicPublish(
+        config.exchangeName(),
+        config.responsesQueue(),
+        null,
+        GlobalObjectMapper.get().writeValueAsBytes(response)
+      );
+    } catch (Exception e) {
+      logger.error("Encountered error while attempting to send error response! Ironic...", e);
+    }
+
+  }
+
+  /**
    * Stops the RabbitMQ client (closing all connections)
    * and sets the running status to false.
    */
-  public void stop() {
+  @Override
+  public void shutdown() {
 
     // Each statement is in a separate
     // try catch because we want the
@@ -399,8 +404,6 @@ public class RabbitMQMgr {
     } catch (Exception e) {
       // Ignore.
     }
-
-    running = false;
 
   }
 

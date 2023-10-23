@@ -19,11 +19,24 @@ public enum StatusCode {
     MALFORMED_REQUEST(400),
 
     /**
-     * There is no request with the given microservice
-     * ID and request path that is recognized by this
-     * microservice/API gateway.
+     * There is no request with the given path that is
+     * recognized by the corresponding microservice
+     * running on this service wrapper/API gateway.
      */
     INVALID_PATH(404),
+
+    /**
+     * A bad URL passed into a service wrapper/API gateway
+     * web server.
+     */
+    HTTP_BAD_URL(406),
+
+    /**
+     * No microservice with the given ID is running
+     * on or recognized by this service wrapper/API
+     * gateway.
+     */
+    NO_MICROSERVICE_WITH_ID(415),
 
     /**
      * There was some issue within the microservice

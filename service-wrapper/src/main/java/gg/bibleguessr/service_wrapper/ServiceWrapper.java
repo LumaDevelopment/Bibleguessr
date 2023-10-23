@@ -1,15 +1,13 @@
 package gg.bibleguessr.service_wrapper;
 
 import gg.bibleguessr.backend_utils.BibleguessrUtilities;
-import io.vertx.core.Vertx;
+import gg.bibleguessr.service_wrapper.intake.IntakeMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Main service wrapping library class. This allows a BibleGuessr
@@ -71,20 +69,8 @@ public class ServiceWrapper {
    */
   private final Map<Class<? extends Request>, Microservice> reqTypeToService;
 
-  // WEB OPERATIONS
-
-  /**
-   * Vertx instance used for our web-server operations.
-   */
-  private Vertx vertx;
-
-  /**
-   * MainVerticle (Vertx agent), stored so we can add valid paths.
-   */
-  private MainVerticle mainVerticle;
-
-  // RABBITMQ OPERATIONS
-  private RabbitMQMgr rabbitMQMgr;
+  // REQUEST INTAKE MANAGER
+  private final IntakeMgr intakeMgr;
 
   /* ---------- CONSTRUCTORS ---------- */
 
@@ -110,10 +96,7 @@ public class ServiceWrapper {
     this.runningMicroservices = new HashMap<>();
     this.reqTypeToService = new HashMap<>();
 
-    this.vertx = null;
-    this.mainVerticle = null;
-
-    this.rabbitMQMgr = null;
+    this.intakeMgr = new IntakeMgr(this);
 
   }
 
@@ -150,7 +133,7 @@ public class ServiceWrapper {
    * @return The name of the service, or a null string if
    * the parameter is null.
    */
-  public String getCleanServiceName(Microservice service) {
+  public static String getCleanServiceName(Microservice service) {
 
     if (service == null) {
       return "<NULL>";
@@ -171,16 +154,14 @@ public class ServiceWrapper {
   }
 
   /**
-   * Gets the manager of all RabbitMQ related
-   * operations. Really shouldn't be needed
-   * outside ServiceWrapper because it has
-   * effectively 0 forward facing functionality,
-   * but the option is here!
+   * Gets the class that manages all request intake
+   * classes, which by proxy means that it manages
+   * all communication protocols.
    *
-   * @return The RabbitMQMgr instance.
+   * @return The IntakeMgr instance.
    */
-  public RabbitMQMgr getRabbitMQMgr() {
-    return rabbitMQMgr;
+  public IntakeMgr getIntakeMgr() {
+    return intakeMgr;
   }
 
   /**
@@ -193,16 +174,6 @@ public class ServiceWrapper {
    */
   public Microservice getRunningMicroservice(String microserviceID) {
     return runningMicroservices.get(microserviceID);
-  }
-
-  /**
-   * Attempts to initialize Vert.x, then returns it.
-   *
-   * @return The Vert.x instance.
-   */
-  public Vertx getVertx() {
-    initializeVertx();
-    return vertx;
   }
 
   /**
@@ -232,79 +203,6 @@ public class ServiceWrapper {
   }
 
   /**
-   * Attempts to start RabbitMQ operations if
-   * they haven't been started already.
-   *
-   * @return Whether RabbitMQ is successfully running
-   * by the end of this method.
-   */
-  public boolean initializeRabbitMQ() {
-
-    // Make sure RabbitMQ isn't already initialized
-    if (this.rabbitMQMgr == null) {
-      this.rabbitMQMgr = new RabbitMQMgr(this);
-    }
-
-    if (rabbitMQMgr.isRunning()) {
-      return true;
-    }
-
-    return rabbitMQMgr.start();
-
-  }
-
-  /**
-   * Initializes the Vertx instance if it is not
-   * already initialized.
-   *
-   * @return Whether the Vertx instance was successfully
-   * initialized.
-   */
-  public boolean initializeVertx() {
-
-    // Make sure Vertx isn't already initialized
-    if (this.vertx == null) {
-      this.vertx = Vertx.vertx();
-    }
-
-    if (this.mainVerticle == null) {
-
-      // Attempt to start the main verticle
-      this.mainVerticle = new MainVerticle(this);
-
-      // Concurrency handling
-      CountDownLatch latch = new CountDownLatch(1);
-      AtomicBoolean success = new AtomicBoolean(false);
-
-      // Deploy verticle
-      vertx.deployVerticle(mainVerticle).onComplete(res -> {
-
-        if (res.failed()) {
-          logger.error("Error while starting main verticle.", res.cause());
-        }
-
-        // Concurrency handling
-        success.set(res.succeeded());
-        latch.countDown();
-
-      });
-
-      try {
-        latch.await();
-      } catch (InterruptedException e) {
-        logger.error("Interrupted while waiting for main verticle to start.", e);
-        return false;
-      }
-
-      return success.get();
-
-    }
-
-    return true;
-
-  }
-
-  /**
    * Runs the given microservice. This involves
    * configuration management, hosting with Vert.x
    * and registering request paths (if Vert.x is
@@ -326,41 +224,9 @@ public class ServiceWrapper {
       return;
     }
 
-    // HTTP support
-    if (config.hostWithVertx()) {
-
-      // Initialize Vertx instance
-      boolean vertxLaunched = initializeVertx();
-
-      if (vertxLaunched) {
-
-        // Register all microservice request paths
-        // with the main verticle.
-        mainVerticle.registerMicroserviceRequests(service);
-
-      } else {
-        logger.error("Vertx could not be launched!");
-      }
-
-    }
-
-    // RabbitMQ support
-    if (config.hostWithRabbitMQ()) {
-
-      boolean rabbitMQLaunched = initializeRabbitMQ();
-
-      if (!rabbitMQLaunched) {
-        logger.error("RabbitMQ could not be launched!");
-      }
-
-      // If RabbitMQ is launched successfully, we
-      // don't need to do anything else here.
-      // RabbitMQMgr's message consumer will automatically
-      // tap into ServiceWrapper to get the right
-      // Microservice and Request class for the requests
-      // it receives.
-
-    }
+    // Initialize all intakes (HTTP, RabbitMQ, etc.) that
+    // are enabled in the configuration
+    intakeMgr.initializeIntakes();
 
     // Now, just keep track that this service
     // is running, and log it
@@ -390,26 +256,20 @@ public class ServiceWrapper {
    */
   public void shutdown() {
 
+    // Shut down the intake manager and all
+    // of its intakes.
+    intakeMgr.shutdown();
+
     // Shut down all Microservices
     for (Microservice service : runningMicroservices.values()) {
       service.shutdown();
-    }
-
-    // Shut down all web hosting.
-    if (vertx != null) {
-      vertx.close();
-    }
-
-    // Shut down RabbitMQ.
-    if (rabbitMQMgr != null) {
-      rabbitMQMgr.stop();
     }
 
   }
 
   /**
    * Stops the microservice with the given ID. It's request
-   * paths are unregistered from the MainVerticle, and
+   * paths are unregistered from the HTTPIntake, and
    * it's shutdown() method is called.
    *
    * @param microserviceID The ID of the microservice to stop.
@@ -423,14 +283,6 @@ public class ServiceWrapper {
       logger.warn("ServiceWrapper was asked to stop a microservice that is not running.");
       return;
     }
-
-    // Unregister the microservice's paths from
-    // MainVerticle
-    if (mainVerticle != null) {
-      mainVerticle.unregisterMicroserviceRequests(service);
-    }
-
-    // Nothing RabbitMQ related to shut down here.
 
     // Remove the request types from reqTypeToService map
     for (Class<? extends Request> requestType : service.getRequestTypes()) {

@@ -1,5 +1,6 @@
 package gg.bibleguessr.service_wrapper;
 
+import gg.bibleguessr.service_wrapper.intake.HTTPIntake;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -14,7 +15,10 @@ public class TestVertx {
   void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
     ServiceWrapper wrapper = new ServiceWrapper();
     wrapper.initializeConfig();
-    vertx.deployVerticle(new MainVerticle(wrapper), testContext.succeeding(id -> testContext.completeNow()));
+    vertx.deployVerticle(
+      new HTTPIntake(wrapper.getIntakeMgr(), wrapper.getConfig().vertxPort()),
+      testContext.succeeding(id -> testContext.completeNow())
+    );
   }
 
   @Test

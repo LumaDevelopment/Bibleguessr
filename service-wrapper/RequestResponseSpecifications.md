@@ -14,6 +14,8 @@ Vert.x will respond with the following error codes, depending on the situation:
 
 - `400` - Request could not be parsed, malformed request.
 - `404` - The requested path has not been registered.
+- `406` - URL formatted incorrectly (HTTP only).
+- `415` - The API Gateway or Service Wrapper does not have the microservice registered.
 - `500` - The server had some problem executing the request.
 
 ## Example Service
@@ -25,10 +27,13 @@ Vert.x will respond with the following error codes, depending on the situation:
 - **Request Path:** `example-request`
 - **Vert.x Path:** `/example-service/example-request`
 - **Request Parameters:**
+  - `apiKey` (Required with HTTP) - Used to authenticate requests coming in on the Service Wrapper
+  - s web server.
   - `uuid` (Optional) - Unique request identifier.
   - `msg` - Message of this request.
 - **Response Parameters:**
   - `uuid` (Text) (Optional) - Matches UUID from request. Only useful for something like RabbitMQ where we can't
     deliver a direct response to a request.
-  - `lengthDivisibleBy2` (Boolean) - Whether the length of the message of the request is evenly divisible by 2. Can be `true`
+  - `lengthDivisibleBy2` (Boolean) - Whether the length of the message of the request is evenly divisible by 2. Can
+    be `true`
     or `false`.
