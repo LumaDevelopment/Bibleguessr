@@ -1,17 +1,48 @@
 # Service Wrapper
 
-A library which standardizes how Bibleguessr services operate. The service wrapper serves as an intermediary between service requests/responses and the library business logic. The intention of the library is to allow for multiple types of service communication: RabbitMQ, GET/POST, and in-code requests. The advantage of this wrapper is the ability to deploy Bibleguessr services in multiple configurations. RabbitMQ can be used when deploying Bibleguessr services in scalable clusters, like with Kubernetes. GET/POST can be used when deploying individual instances of services. In-code requests can be used in resource-constrained environments where all Bibleguessr services are wrapped in one executable to remove the need for containerized services and/or virtualization.
+A library which standardizes how Bibleguessr services operate. The service wrapper serves as an intermediary between
+service requests/responses (made by the API gateway) and the library business logic. The intention of the library is to
+allow for multiple types of service communication: RabbitMQ, GET/POST, and in-code requests. The advantage of this
+wrapper is the ability to deploy Bibleguessr services in multiple configurations. RabbitMQ can be used when deploying
+Bibleguessr services in scalable clusters, like with Kubernetes. GET/POST can be used when deploying individual
+instances of services. In-code requests can be used in resource-constrained environments where all Bibleguessr services
+are wrapped in one executable to remove the need for containerized services and/or virtualization.
 
-The Service Wrapper should mandate a service ID from services, so that service context paths can be hosted without conflict on bundled deployments (service paths look like `service-id/path`, so that two services can have a path called `path` and no conflicts arise). Additionally, individual service paths should also be registered with the Service Wrapper, likely associated with a custom request object, so that requests can be routed much more efficiently.
+The Service Wrapper should mandate a service ID from services, so that service context paths can be hosted without
+conflict on bundled deployments (service paths look like `/service-id/path`, so that two services can have a path
+called `path` and no conflicts arise). Additionally, individual service paths should also be registered with the Service
+Wrapper, likely associated with a custom request object, so that requests can be routed much more efficiently.
 
-Usage ideas:
-- There is a `Launchpad` class that contains `public static void main(String[] args)` and creates an instance of `ServiceWrapper`.
-- Then, you can use the `ServiceWrapper` to run one or more `Microservice` instances.
-- The `Microservice` informs the `ServiceWrapper` what it's ID is, and what type of `Request`s it accepts.
-- `ServiceWrapper` builds a map of `Request`s to `Microservice`.
-- `ServiceWrapper` has a `receiveRequest()` method that accepts a `Request` and returns a `Response`.
-- `ServiceWrapper` is passed into Vert.x and RabbitMQ components.
+# Class Structure & Descriptions
 
-ISSUES:
-- Need to define a way where `MainVerticle` can pass of a request to `ServiceWrapper`, which needs to parse it as a `Request`, which needs to pass off to the appropriate `Microservice` instance, which needs to return a `Response`, which needs to be passed back to `MainVerticle` to be sent back to the client.
-- The problem is that this `Request` must also be able to be parsed from Vert.x or RabbitMQ without the microservice ever needing to know what Vert.x or RabbitMQ is. Each path is a different Request object though, so maybe we can do something with instantiating a Request class with each parameter? Maybe each Microservice can have a `RequestParser` or something like that that takes in a map of Strings, converts to the appropriate `Request` object, and then returns a response. Or maybe have a `Request.parse()` method that takes in a map of Strings.
+- `gg.bibleguessr.service_wrapper`
+  - `example_service`
+    - `ExampleRequest` - An example request which simply takes in a `msg` String and returns whether the length of the
+      string is evenly divisible by 2. Models how to properly extend the `Request` class.
+    - `ExampleService` - An example service which offers the `ExampleRequest`. Models how to properly extend
+      the `Microservice` class.
+  - `intake`
+    - `CommsIntake` - An interface that defines functionality that all communications intakes should have in common.
+      Communications intakes are classes that receive requests over the network. Mostly exists so that the `IntakeMgr`
+      can hold communications intakes in a list and initialize/shut down all intakes in one loop.
+    - `HTTPIntake` - Receives GET/POST requests over HTTP by hosting a Vert.x web server.
+    - `IntakeMgr` - Manages all `CommsIntake` classes. Receives request from its intakes, verifies the input, and
+      attempts to past them off to the `ServiceWrapper` for execution. Initializes intakes.
+    - `RabbitMQIntake` - Receives requests over RabbitMQ and publishes responses.
+  - `self_service`
+    - `GetIDsRequest` - Doesn't have any parameters, but simply returns the IDs of every microservice running in this
+      Service Wrapper.
+    - `SelfService` - The service which fields `GetIDsRequest`s. The ID of this service doesn't get returned with
+      the `GetIDsRequest` response, as it is kind of an internal service.
+  - `Microservice` - Abstract class detailing all attributes and functionalities that must be help and fulfilled by a
+    microservice that would be registered with the ServiceWrapper.
+  - `Request` - Abstract class where a developer can define what parameters they want for a request and details a
+    functionality where the Request object can be parsed from a `Map<String, String>`. Requires that a request path be
+    provided. Provides other functionality, like unique identification.
+  - `Response` - A response to a request. Can be uniquely identifiable. Largely a wrapper for a JSON object.
+  - `ServiceWrapper` - The main class. Manages configuration, allows microservices to be registered and unregistered,
+    routes request execution to the appropriate microservice and returns the response, and creates and holds
+    the `IntakeMgr`.
+  - `ServiceWrapperConfig` - Configurable aspects of the Service Wrapper. Allows the user to set the API key to
+    authenticate HTTP requests in, allows the user to toggle and configure different communication platforms like HTTP
+    and RabbitMQ.
