@@ -30,6 +30,8 @@ public class ExampleService extends Microservice {
    */
   public static final String ID = "example-service";
 
+  /* ---------- INSTANCE VARIABLES ---------- */
+
   /**
    * Logging object.
    */

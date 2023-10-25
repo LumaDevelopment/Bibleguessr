@@ -1,8 +1,8 @@
 package gg.bibleguessr.service_wrapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
 import gg.bibleguessr.service_wrapper.example_service.ExampleRequest;
 import gg.bibleguessr.service_wrapper.example_service.ExampleService;
 import org.junit.jupiter.api.Assertions;
@@ -20,25 +20,15 @@ public class TestServiceWrapper {
   @BeforeEach
   void setup() {
 
-    wrapper = new ServiceWrapper();
-
     ServiceWrapperConfig config = new ServiceWrapperConfig(
+      "",
       false,
       0,
       false,
-      "",
-      "",
-      "",
-      0,
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
+      RabbitMQConfiguration.getDefault()
     );
 
-    wrapper.setConfig(config);
+    wrapper = new ServiceWrapper(config);
 
   }
 
@@ -96,8 +86,8 @@ public class TestServiceWrapper {
   @Test
   @DisplayName("Can Get Clean Service Name")
   void canGetCleanServiceName() {
-    Assertions.assertEquals("<NULL>", wrapper.getCleanServiceName(null));
-    Assertions.assertEquals("ExampleService", wrapper.getCleanServiceName(new ExampleService()));
+    Assertions.assertEquals("<NULL>", ServiceWrapper.getCleanServiceName(null));
+    Assertions.assertEquals("ExampleService", ServiceWrapper.getCleanServiceName(new ExampleService()));
   }
 
   @Test

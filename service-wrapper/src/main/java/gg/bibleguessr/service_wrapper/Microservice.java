@@ -3,6 +3,22 @@ package gg.bibleguessr.service_wrapper;
 import java.util.Collection;
 import java.util.HashMap;
 
+/**
+ * A microservice that can be run by the Service
+ * Wrapper. This class forces all the functionality
+ * that a Microservice must have, including reporting
+ * its ID and the types of requests it can support.
+ * To extend this class properly, just implement the
+ * constructor using a constant microservice ID (which
+ * should also be contained in the service's
+ * <code>RequestResponseSpecifications.md</code>), add
+ * support for request execution in
+ * <code>executeRequest()</code>, and implement
+ * <code>initializeRequestTypesMap()</code> by calling
+ * <code>initializeRequestType()</code> for each request
+ * type that the microservice supports inside of it.
+ * Additionally, you can define shutdown behavior.
+ */
 public abstract class Microservice {
 
   /* ---------- VARIABLES ---------- */
