@@ -2,14 +2,19 @@ package gg.bibleguessr.backend_utils;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A class that contains utility methods for the Bibleguessr
@@ -21,6 +26,40 @@ public class BibleguessrUtilities {
      * The name of the logger used by this class. There is no
      */
     public static final String LOGGER_NAME = BibleguessrUtilities.class.getSimpleName();
+
+    public static Map<String, String> convertObjNodeToStringMap(ObjectNode node) {
+
+        // Get logging object, the map we read into,
+        // and the fields that we'll be reading
+        Logger logger = LoggerFactory.getLogger(LOGGER_NAME);
+        Map<String, String> parameters = new HashMap<>();
+        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+
+        while (fields.hasNext()) {
+
+            // Iterate through every field
+            Map.Entry<String, JsonNode> field = fields.next();
+            JsonNode value = field.getValue();
+
+            if (value.isValueNode()) {
+                // Insert value into parameters map as a string
+                parameters.put(field.getKey(), field.getValue().asText());
+            } else if (value.isContainerNode()) {
+                try {
+                    // Convert object/array to JSON string and
+                    // insert it into the parameters map
+                    parameters.put(field.getKey(), GlobalObjectMapper.get().writeValueAsString(field.getValue()));
+                } catch (Exception e) {
+                    logger.error("Encountered an error while attempting to represent the \"" + field.getKey() + "\" " +
+                            "field as a JSON string!", e);
+                }
+            }
+
+        }
+
+        return parameters;
+
+    }
 
     /**
      * Attempts to read the provided JSON configuration file,
@@ -42,7 +81,7 @@ public class BibleguessrUtilities {
         // Create objects for logging and JSON reading
         Logger logger = LoggerFactory.getLogger(LOGGER_NAME);
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = GlobalObjectMapper.get();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         try {

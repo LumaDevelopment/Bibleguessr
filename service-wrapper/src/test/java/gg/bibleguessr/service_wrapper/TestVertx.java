@@ -1,5 +1,7 @@
 package gg.bibleguessr.service_wrapper;
 
+import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
+import gg.bibleguessr.service_wrapper.intake.HTTPIntake;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -12,9 +14,21 @@ public class TestVertx {
 
   @BeforeEach
   void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
-    ServiceWrapper wrapper = new ServiceWrapper();
-    wrapper.initializeConfig();
-    vertx.deployVerticle(new MainVerticle(wrapper), testContext.succeeding(id -> testContext.completeNow()));
+
+    ServiceWrapperConfig config = new ServiceWrapperConfig(
+      "",
+      false,
+      0,
+      false,
+      RabbitMQConfiguration.getDefault()
+    );
+
+    ServiceWrapper wrapper = new ServiceWrapper(config);
+    vertx.deployVerticle(
+      new HTTPIntake(wrapper.getIntakeMgr(), wrapper.getConfig().apiKey(), wrapper.getConfig().vertxPort()),
+      testContext.succeeding(id -> testContext.completeNow())
+    );
+
   }
 
   @Test
