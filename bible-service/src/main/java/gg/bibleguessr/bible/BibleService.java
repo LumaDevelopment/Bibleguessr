@@ -1,10 +1,10 @@
 package gg.bibleguessr.bible;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.backend_utils.BibleguessrUtilities;
 import gg.bibleguessr.backend_utils.GlobalObjectMapper;
+import gg.bibleguessr.bible.data_structures.Verse;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
@@ -16,8 +16,7 @@ import gg.bibleguessr.service_wrapper.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.io.*;
 import java.util.Random;
 
 /**
@@ -142,7 +141,7 @@ public class BibleService extends Microservice {
         Random rand = new Random();
 
         // Obtain random index and start and end indices depending on context length
-        int randomIndex = rand.nextInt(VERSES_IN_BIBLE);
+        int randomIndex = rand.nextInt(Bible.NUM_OF_VERSES);
         int startIndex = randomIndex - numOfContextVerses;
         int endIndex = randomIndex + numOfContextVerses;
 
@@ -154,14 +153,14 @@ public class BibleService extends Microservice {
             endIndex += addToEnd;
 
             // If the shifting put the end index out of bounds
-            if (endIndex > VERSES_IN_BIBLE - 1) {
-                endIndex = VERSES_IN_BIBLE - 1;
+            if (endIndex > Bible.NUM_OF_VERSES - 1) {
+                endIndex = Bible.NUM_OF_VERSES - 1;
             }
 
-        } else if (endIndex > VERSES_IN_BIBLE - 1) {
+        } else if (endIndex > Bible.NUM_OF_VERSES - 1) {
 
-            int addToStart = endIndex - (VERSES_IN_BIBLE - 1);
-            endIndex = VERSES_IN_BIBLE - 1;
+            int addToStart = endIndex - (Bible.NUM_OF_VERSES - 1);
+            endIndex = Bible.NUM_OF_VERSES - 1;
             startIndex -= addToStart;
 
             // If the shifting put the start index out of bounds
@@ -179,7 +178,7 @@ public class BibleService extends Microservice {
         //String[] contextArray = new String[2*numOfContextVerses+1];
 
         // Define the contextArray and the index of the selected verse
-        ArrayNode contextArray = objectMapper.createArrayNode();
+        ArrayNode contextArray = GlobalObjectMapper.get().createArrayNode();
         int randomLocalIndex = -1;
 
         // Add each piece of text to the context array and set the verse index when appropriate
