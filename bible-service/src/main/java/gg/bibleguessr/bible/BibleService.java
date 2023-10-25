@@ -1,8 +1,10 @@
 package gg.bibleguessr.bible;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.backend_utils.BibleguessrUtilities;
 import gg.bibleguessr.backend_utils.GlobalObjectMapper;
+import gg.bibleguessr.bible.data_structures.Verse;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
@@ -14,8 +16,8 @@ import gg.bibleguessr.service_wrapper.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.io.*;
+import java.util.Random;
 
 /**
  * The BibleService class is the main class for the
@@ -125,42 +127,84 @@ public class BibleService extends Microservice {
         // Now that we're here, we can do a couple of parameter sanity checks
         String versionName = request.getVersion();
         Version version = bibleVersionMgr.getVersionByName(versionName);
-
-        // Check if the version name is valid.
-        if (versionName.isBlank() || version == null) {
-            responseContent.put("error", 0);
-            return new Response(responseContent, request.getUUID());
-        }
-
         int numOfContextVerses = request.getNumOfContextVerses();
 
-        // Check if the number of context verses is valid.
-        if (numOfContextVerses < 0 || numOfContextVerses > Bible.MAX_CONTEXT_VERSES) {
-            responseContent.put("error", 1);
-            return new Response(responseContent, request.getUUID());
+        // Sanity checks are done in the parse() method of RandomVerseRequest
+
+        // Michael has stated that for simplicity's sake, he will request new verse objects
+        // one at a time, meaning there won't be a need (for now) to create an additional
+        // JSON object. If in the future he would like multiple verse objects, the
+        // current agreed-upon structure would be a JSON object containing an array of
+        // Verse JSON objects.
+
+        // Initialize new Random object
+        Random rand = new Random();
+
+        // Obtain random index and start and end indices depending on context length
+        int randomIndex = rand.nextInt(Bible.NUM_OF_VERSES);
+        int startIndex = randomIndex - numOfContextVerses;
+        int endIndex = randomIndex + numOfContextVerses;
+
+        // Adjusts the range depending on if the start or end indices fall out of bounds
+        if (startIndex < 0) {
+
+            int addToEnd = -startIndex;
+            startIndex = 0;
+            endIndex += addToEnd;
+
+            // If the shifting put the end index out of bounds
+            if (endIndex > Bible.NUM_OF_VERSES - 1) {
+                endIndex = Bible.NUM_OF_VERSES - 1;
+            }
+
+        } else if (endIndex > Bible.NUM_OF_VERSES - 1) {
+
+            int addToStart = endIndex - (Bible.NUM_OF_VERSES - 1);
+            endIndex = Bible.NUM_OF_VERSES - 1;
+            startIndex -= addToStart;
+
+            // If the shifting put the start index out of bounds
+            if (startIndex < 0) {
+                startIndex = 0;
+            }
+
         }
 
-        // TODO for Dan
-        // In this case, we're good to go.
-        // Steps:
-        // 1) Select a random verse.
-        // 2) Gather its context verses. Make sure to account for the
-        // case where the context would expand beyond the bounds of the
-        // Bible. (ex. Genesis 1:1 with >0 context verses)
-        // 3) Consult with Michael on how he wants us to handle multiple
-        // verses. Does he want multiple verse objects?
-        // 4) Whatever the solution, assemble one or more verse JSON
-        // objects (can create a new JSON object with
-        // objectMapper.createObjectNode()) and fill it with the
-        // information Michael needs. Text can be pulled from BibleReadingMgr,
-        // book, chapter, and verse information can be pulled from the
-        // Bible class, and once you have the Book object from
-        // the verse object, you can get its name using
-        // version.getBookNameByObject().
-        // 5) However you structure these responses, make sure to put
-        // information about them in the "Response Parameters"
-        // section of the "Random Verse Request" in RequestResponseSpecifications.md
-        // 6) Add all verse JSON objects to the responseContent object.
+        // Obtain the random verse and the random verse with context as an array and define the random verse index
+        String randomText = bibleTextMgr.getVerseText(version, randomIndex);
+
+        // -- Experimentation with earlier implementations of this method; ignore --
+        //String randomTextWithContext = bibleTextMgr.getPassageText(version, startIndex, endIndex);
+        //String[] contextArray = new String[2*numOfContextVerses+1];
+
+        // Define the contextArray and the index of the selected verse
+        ArrayNode contextArray = GlobalObjectMapper.get().createArrayNode();
+        int randomLocalIndex = -1;
+
+        // Add each piece of text to the context array and set the verse index when appropriate
+        for (int i = startIndex; i <= endIndex; i++){
+            String currentText = bibleTextMgr.getVerseText(version, i);
+            contextArray.add(currentText);
+            if (currentText.equals(randomText)) randomLocalIndex = i-startIndex;
+        }
+
+        // Retrieve the verse information from the Bible instance
+        Bible bible = Bible.getInstance();
+        Verse verseInfo = bible.getVerseByUniversalIndex(randomIndex);
+
+        // Retrieve the book name, chapter number, and verse number from the verse object
+        String bookName = version.getBookNameByObject(verseInfo.chapter().book());
+        int chapter = verseInfo.chapter().number();
+        int verseNum = verseInfo.number();
+
+        // Put all requested information into the JSON object
+        responseContent.put("bibleVersion", versionName);
+        responseContent.put("bookName", bookName);
+        responseContent.put("chapter", chapter);
+        responseContent.put("verseNumber", verseNum);
+        responseContent.set("verseArray", contextArray);
+        responseContent.put("localVerseIndex", randomLocalIndex);
+        responseContent.put("globalVerseIndex", randomIndex);
 
         return new Response(responseContent, request.getUUID());
 
