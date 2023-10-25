@@ -1,5 +1,6 @@
 package gg.bibleguessr.bible;
 
+import gg.bibleguessr.backend_utils.BibleguessrUtilities;
 import gg.bibleguessr.bible.data_structures.Book;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.versions.BibleVersionMgr;
@@ -12,8 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Class that manages reading the Bible text
@@ -46,12 +45,6 @@ public class BibleTextMgr {
     private final BibleVersionMgr bibleVersionMgr;
 
     /**
-     * Regex that pulls the chapter:verse part of
-     * a verse reference out for removal.
-     */
-    private final Pattern chapterVersePattern;
-
-    /**
      * The length of the extension of all Bible text files.
      */
     private final int bibleFileExtensionLength;
@@ -81,7 +74,6 @@ public class BibleTextMgr {
 
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.bibleVersionMgr = bibleVersionMgr;
-        this.chapterVersePattern = Pattern.compile("\\b\\d+:\\d+\\b");
         this.bibleFileExtensionLength = bibleFileExtension.length() + 1;
         this.bibleFiles = bibleFiles;
         this.bibleText = new HashMap<>();
@@ -118,7 +110,10 @@ public class BibleTextMgr {
      * @return <code>true</code> if the version was added
      * successfully, <code>false</code> otherwise.
      */
-    public boolean addVersion(File versionFile, boolean notifyVersionMgr) {
+    private boolean addVersion(File versionFile, boolean notifyVersionMgr) {
+
+        // Start recording time to add
+        long startTime = System.currentTimeMillis();
 
         // Cut out the ".txt" (or whatever the file extension is
         // from the file name to get the version name
@@ -133,45 +128,20 @@ public class BibleTextMgr {
 
         // Store the text of all verses in the Bible
         int verseIndex = 0;
-        String[] verseText = new String[BibleService.VERSES_IN_BIBLE];
+        String[] verseText = new String[Bible.NUM_OF_VERSES];
 
         try (BufferedReader br = new BufferedReader(new FileReader(versionFile))) {
 
             String line;
             while ((line = br.readLine()) != null) {
 
-                // Make sure no trailing characters on the line
-                line = line.trim();
+                // Doing any trimming or skip empty operations
+                // would skip over intentional empty lines,
+                // so don't do that
 
-                // Skip empty lines
-                if (line.isEmpty()) {
-                    continue;
-                }
+                if (!line.isEmpty() && line.charAt(0) == '|') {
 
-                // The split between verse reference and
-                // verse text is the pipe character.
-                String[] lineParts = line.split("\\|");
-
-                if (lineParts.length < 1 || lineParts.length > 2) {
-                    logger.error("Bible file (" + versionFile.getName() + ") with " +
-                            "invalid formatting! Offending line: " + line);
-                    return false;
-                }
-
-                // The first part of the line is structured like
-                // "Genesis 1:1", so get the book name out of this
-                // by finding the chapter:verse portion with regex
-                // and using substring to cut it out
-                String bookName = getBookNameFromReference(lineParts[0]);
-
-                if (bookName == null) {
-                    logger.error("Bible file (" + versionFile.getName() + ") with " +
-                            "invalid formatting! Offending line: " + line);
-                    return false;
-                }
-
-                // Update book name if it is different
-                if (!bookName.equals(currentBookName)) {
+                    // This is a book name
 
                     if (currentBookIndex != -1) {
                         // Put previous book name into map
@@ -183,18 +153,15 @@ public class BibleTextMgr {
 
                     // Set new index and name
                     currentBookIndex++;
-                    currentBookName = bookName;
+                    currentBookName = line.substring(1);
 
-                }
-
-                // Insert the verse's text into the array
-                if (lineParts.length < 2) {
-                    verseText[verseIndex] = "";
                 } else {
-                    verseText[verseIndex] = lineParts[1];
-                }
 
-                verseIndex++;
+                    // This is verse text
+                    verseText[verseIndex] = line;
+                    verseIndex++;
+
+                }
 
             }
 
@@ -213,13 +180,29 @@ public class BibleTextMgr {
             // Store version object with Bible text
             bibleText.put(version, verseText);
 
+            // Stop recording time to add
+            long endTime = System.currentTimeMillis();
+
             if (notifyVersionMgr) {
                 // Notify the BibleVersionMgr that
                 // a single version has been added.
+                // This will add the version to the
+                // frontend bible data.
                 bibleVersionMgr.addAvailableVersion(version);
             }
 
-            logger.info("Successfully added Bible version: {}", versionName);
+            // Calculate statistics
+            long timeToAddInMs = endTime - startTime;
+            double timeToAddInS = timeToAddInMs / 1_000.0;
+            int versesPerSecond = (int) (Bible.NUM_OF_VERSES / timeToAddInS);
+
+            long fileSizeInBytes = versionFile.length();
+            double fileSizeInMBs = fileSizeInBytes / 1_000_000.0;
+
+            // Print statistics
+            String format =  "Successfully added Bible version: \"%s\". %.2f MB file loaded in %d milliseconds. %d " +
+                    "verses stored per second.";
+            logger.info(String.format(format, versionName, fileSizeInMBs, timeToAddInMs, versesPerSecond));
 
             return true;
 
@@ -250,35 +233,6 @@ public class BibleTextMgr {
     }
 
     /**
-     * Given a reference to a Bible verse (i.e. Genesis 1:1),
-     * extracts the name of the book from it. Compatible with
-     * books that have numbers and spaces in their names.
-     *
-     * @param reference The reference to the verse.
-     * @return The name of the book, or <code>null</code> if
-     * the reference is invalid.
-     */
-    public String getBookNameFromReference(String reference) {
-
-        if (reference == null) {
-            return null;
-        }
-
-        Matcher matcher = chapterVersePattern.matcher(reference);
-        String chapterVerseReference;
-
-        if (matcher.find()) {
-            chapterVerseReference = matcher.group();
-        } else {
-            return null;
-        }
-
-        int charactersToCut = chapterVerseReference.length() + 1;
-        return reference.substring(0, reference.length() - charactersToCut);
-
-    }
-
-    /**
      * Attempts to get the text of the passage of the
      * Bible with the given universal indices, from
      * the given version of the Bible.
@@ -297,9 +251,9 @@ public class BibleTextMgr {
         if (version == null ||
                 !bibleText.containsKey(version) ||
                 startUniversalIndex < 0 ||
-                startUniversalIndex >= BibleService.VERSES_IN_BIBLE ||
+                startUniversalIndex >= Bible.NUM_OF_VERSES ||
                 endUniversalIndex < 0 ||
-                endUniversalIndex >= BibleService.VERSES_IN_BIBLE) {
+                endUniversalIndex >= Bible.NUM_OF_VERSES) {
             return null;
         }
 
@@ -330,7 +284,7 @@ public class BibleTextMgr {
         if (version == null ||
                 !bibleText.containsKey(version) ||
                 universalIndex < 0 ||
-                universalIndex >= BibleService.VERSES_IN_BIBLE) {
+                universalIndex >= Bible.NUM_OF_VERSES) {
             return null;
         }
 
@@ -368,7 +322,13 @@ public class BibleTextMgr {
 
         }
 
-        logger.info("Finished reading Bible versions, {}/{} were successful.", successes, total);
+        // Clear unused memory and get how much memory in use.
+        System.gc();
+        long memoryInUseInBytes = BibleguessrUtilities.getMemoryInUse();
+        double memoryInUseInMBs = memoryInUseInBytes / 1_000_000.0;
+
+        logger.info("Finished reading Bible versions, {}/{} were successful. {} MB of memory in use.",
+                successes, total, memoryInUseInMBs);
 
         // Since the text map is being fully reset,
         // just tell the BibleVersionMgr that the

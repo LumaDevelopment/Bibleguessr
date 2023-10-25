@@ -1,10 +1,7 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 
 plugins {
-  java
-  application
-  id("com.github.johnrengelman.shadow") version "7.1.2"
+  `java-library`
 }
 
 group = "gg.bibleguessr"
@@ -17,10 +14,6 @@ repositories {
 val vertxVersion = "4.4.5"
 val junitJupiterVersion = "5.9.1"
 
-application {
-  mainClass.set("gg.bibleguessr.service_wrapper.TestLaunchpad")
-}
-
 dependencies {
 
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
@@ -28,6 +21,9 @@ dependencies {
   implementation("io.vertx:vertx-web")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+
+  // Bibleguessr Backend Utils
+  implementation(project(":backend-utils"))
 
   // JSON configuration
   implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
@@ -43,11 +39,6 @@ dependencies {
 java {
   sourceCompatibility = JavaVersion.VERSION_17
   targetCompatibility = JavaVersion.VERSION_17
-}
-
-tasks.withType<ShadowJar> {
-  archiveClassifier.set("fat")
-  mergeServiceFiles()
 }
 
 tasks.withType<Test> {

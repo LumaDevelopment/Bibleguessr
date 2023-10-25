@@ -1,3 +1,5 @@
+# Authorization Microservice
+
 - Store salted + hashed passwords in the database
 - Consider what information should be stored about a user
 - Require the user to make a 12-character password with symbols. Hash with SHA256.
@@ -13,5 +15,5 @@
 - Password is hashed, sent to the database, database compares, and then returns the token if there’s a match.
 - Maybe associate the token with IP, so if the token is used from a different IP, then invalidate it.
 - Built-in database encryption, probably MongoDB, is best.
--   MongoDB will be used for both account data and account authentication.
+- MongoDB will be used for both account data and account authentication.
 - https://auth0.com/pricing 

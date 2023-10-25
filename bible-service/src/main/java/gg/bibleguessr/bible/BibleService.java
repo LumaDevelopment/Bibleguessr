@@ -3,8 +3,8 @@ package gg.bibleguessr.bible;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import gg.bibleguessr.bible.data_structures.Verse;
+import gg.bibleguessr.backend_utils.BibleguessrUtilities;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
@@ -13,7 +13,6 @@ import gg.bibleguessr.bible.versions.BibleVersionMgr;
 import gg.bibleguessr.service_wrapper.Microservice;
 import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.Response;
-import gg.bibleguessr.service_wrapper.ServiceUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,30 +38,6 @@ public class BibleService extends Microservice {
      * The default path to the config file.
      */
     public static final String DEFAULT_CONFIG_FILE_PATH = "bible_service_config.json";
-
-    // Bible numerical constants
-
-    /**
-     * The number of books in the Bible, as
-     * far as we're concerned.
-     */
-    public static final int BOOKS_IN_BIBLE = 66;
-
-    /**
-     * The number of verses in the Bible. Depending
-     * on what version you read, this number may
-     * be lower, but we operate with the highest
-     * number possible for maximum compatability.
-     */
-    public static final int VERSES_IN_BIBLE = 31_102;
-
-    /**
-     * The maximum number of verses that can be
-     * given to any one verse as context. This
-     * number is derived with this equation:<br>
-     * <code>floor((VERSES_IN_BIBLE - 1) / 2)</code>
-     */
-    public static final int MAX_CONTEXT_VERSES = 15_550;
 
     /* ---------- VARIABLES ---------- */
 
@@ -102,12 +77,6 @@ public class BibleService extends Microservice {
      */
     private FrontendBibleDataMgr frontendBibleDataMgr;
 
-    /**
-     * The object mapper that this class uses to
-     * do JSON operations.
-     */
-    private final ObjectMapper objectMapper;
-
     /* ---------- CONSTRUCTORS ---------- */
 
     /**
@@ -137,7 +106,6 @@ public class BibleService extends Microservice {
         this.bibleVersionMgr = null;
         this.bibleTextMgr = null;
         this.frontendBibleDataMgr = null;
-        this.objectMapper = new ObjectMapper();
 
         initializeService();
 
@@ -155,7 +123,7 @@ public class BibleService extends Microservice {
     public Response executeRandomVerseRequest(RandomVerseRequest request) {
 
         // Node to insert response data into
-        ObjectNode responseContent = objectMapper.createObjectNode();
+        ObjectNode responseContent = GlobalObjectMapper.get().createObjectNode();
 
         // Now that we're here, we can do a couple of parameter sanity checks
         String versionName = request.getVersion();
@@ -163,7 +131,7 @@ public class BibleService extends Microservice {
         int numOfContextVerses = request.getNumOfContextVerses();
 
         // Sanity checks are done in the parse() method of RandomVerseRequest
-        
+
         // Michael has stated that for simplicity's sake, he will request new verse objects
         // one at a time, meaning there won't be a need (for now) to create an additional
         // JSON object. If in the future he would like multiple verse objects, the
@@ -182,7 +150,7 @@ public class BibleService extends Microservice {
         if (startIndex < 0) {
 
             int addToEnd = -startIndex;
-            startIndex = 0; 
+            startIndex = 0;
             endIndex += addToEnd;
 
             // If the shifting put the end index out of bounds
@@ -205,7 +173,7 @@ public class BibleService extends Microservice {
 
         // Obtain the random verse and the random verse with context as an array and define the random verse index
         String randomText = bibleTextMgr.getVerseText(version, randomIndex);
-        
+
         // -- Experimentation with earlier implementations of this method; ignore --
         //String randomTextWithContext = bibleTextMgr.getPassageText(version, startIndex, endIndex);
         //String[] contextArray = new String[2*numOfContextVerses+1];
@@ -229,7 +197,7 @@ public class BibleService extends Microservice {
         String bookName = version.getBookNameByObject(verseInfo.chapter().book());
         int chapter = verseInfo.chapter().number();
         int verseNum = verseInfo.number();
-        
+
         // Put all requested information into the JSON object
         responseContent.put("bibleVersion", versionName);
         responseContent.put("bookName", bookName);
@@ -238,7 +206,7 @@ public class BibleService extends Microservice {
         responseContent.set("verseArray", contextArray);
         responseContent.put("localVerseIndex", randomLocalIndex);
         responseContent.put("globalVerseIndex", randomIndex);
-        
+
         return new Response(responseContent, request.getUUID());
 
     }
@@ -255,8 +223,8 @@ public class BibleService extends Microservice {
 
         if (request instanceof FrontendBibleDataRequest bibleDataReq) {
             return new Response(
-                  frontendBibleDataMgr.getBibleData(),
-                  bibleDataReq.getUUID()
+                    frontendBibleDataMgr.getBibleData(),
+                    bibleDataReq.getUUID()
             );
         } else if (request instanceof RandomVerseRequest randomVerseReq) {
             return executeRandomVerseRequest(randomVerseReq);
@@ -353,7 +321,7 @@ public class BibleService extends Microservice {
         }
 
         // Attempt to create the config.
-        config = ServiceUtilities.getConfigObjFromFile(configFile, BibleServiceConfig.class);
+        config = BibleguessrUtilities.getConfigObjFromFile(configFile, BibleServiceConfig.class);
 
         return config != null;
 
@@ -398,9 +366,9 @@ public class BibleService extends Microservice {
         // all Bible versions available to us after it
         // is done initializing.
         this.bibleTextMgr = new BibleTextMgr(
-              bibleVersionMgr,
-              config.bibleFileExtension(),
-              getBibleFiles()
+                bibleVersionMgr,
+                config.bibleFileExtension(),
+                bibleFiles
         );
 
         // Initialize the frontend Bible data manager.

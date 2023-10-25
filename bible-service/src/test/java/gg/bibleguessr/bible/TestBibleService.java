@@ -35,7 +35,7 @@ public class TestBibleService {
     @Test
     @DisplayName("No Null Books")
     void noNullBooks() {
-        for (int i = 0; i < BibleService.BOOKS_IN_BIBLE; i++) {
+        for (int i = 0; i < Bible.NUM_OF_BOOKS; i++) {
             Book book = bible.getBookByIndex(i);
             assertNotNull(book);
         }
@@ -44,7 +44,7 @@ public class TestBibleService {
     @Test
     @DisplayName("No Null Chapters")
     void noNullChapters() {
-        for (int i = 0; i < BibleService.BOOKS_IN_BIBLE; i++) {
+        for (int i = 0; i < Bible.NUM_OF_BOOKS; i++) {
             Book book = bible.getBookByIndex(i);
             assertNotNull(book);
 
@@ -60,7 +60,7 @@ public class TestBibleService {
     void noNulLVerses() {
 
         // Can test this in two ways. First, by hierarchical traversal:
-        for (int i = 0; i < BibleService.BOOKS_IN_BIBLE; i++) {
+        for (int i = 0; i < Bible.NUM_OF_BOOKS; i++) {
             Book book = bible.getBookByIndex(i);
             assertNotNull(book);
 
@@ -78,7 +78,7 @@ public class TestBibleService {
         }
 
         // Next, by universal index
-        for (int i = 0; i < BibleService.VERSES_IN_BIBLE; i++) {
+        for (int i = 0; i < Bible.NUM_OF_VERSES; i++) {
             assertNotNull(bible.getVerseByUniversalIndex(i));
         }
 
@@ -102,7 +102,7 @@ public class TestBibleService {
     @DisplayName("Bible Object Internal Info Is Correct")
     void bibleObjectInternalInfoIsCorrect() {
 
-        for (int i = 0; i < BibleService.BOOKS_IN_BIBLE; i++) {
+        for (int i = 0; i < Bible.NUM_OF_BOOKS; i++) {
             Book book = bible.getBookByIndex(i);
             assertEquals(i, book.index());
 
@@ -218,10 +218,10 @@ public class TestBibleService {
             JsonNode versionBookNames = bibleBookNames.get(version.getName());
             assertNotNull(versionBookNames);
             assertTrue(versionBookNames.isArray());
-            assertEquals(BibleService.BOOKS_IN_BIBLE, versionBookNames.size());
+            assertEquals(Bible.NUM_OF_BOOKS, versionBookNames.size());
 
             // Loop through both lists to check for equality
-            for (int i = 0; i < BibleService.BOOKS_IN_BIBLE; i++) {
+            for (int i = 0; i < Bible.NUM_OF_BOOKS; i++) {
 
                 JsonNode versionBookName = versionBookNames.get(i);
                 assertNotNull(versionBookName);
@@ -236,10 +236,10 @@ public class TestBibleService {
         JsonNode dataMatrix = data.get("dataMatrix");
         assertNotNull(dataMatrix);
         assertTrue(dataMatrix.isArray());
-        assertEquals(BibleService.BOOKS_IN_BIBLE, dataMatrix.size());
+        assertEquals(Bible.NUM_OF_BOOKS, dataMatrix.size());
 
         // Loop through books
-        for (int i = 0; i < BibleService.BOOKS_IN_BIBLE; i++) {
+        for (int i = 0; i < Bible.NUM_OF_BOOKS; i++) {
 
             JsonNode book = dataMatrix.get(i);
             assertNotNull(book);

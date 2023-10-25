@@ -1,12 +1,9 @@
 package gg.bibleguessr.service_wrapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * Class that represents the response
@@ -28,17 +25,6 @@ public class Response {
    * the Response to function.
    */
   private final ObjectNode content;
-
-  /**
-   * An ObjectMapper instance variable for serializing
-   * this Response as JSON. Not set by default because
-   * there may be some instances where a Response
-   * never needs to be serialized, like in a bundled
-   * deployment. Instead, it is accessed by getMapper()
-   * and initialized at that point if it hasn't been
-   * already.
-   */
-  private ObjectMapper mapper;
 
   /* ---------- CONSTRUCTORS ---------- */
 
@@ -63,22 +49,6 @@ public class Response {
   }
 
   /* ---------- METHODS ---------- */
-
-  /**
-   * Lazy loading ObjectMapper creation
-   * and retrieval.
-   *
-   * @return An ObjectMapper instance.
-   */
-  private ObjectMapper getMapper() {
-
-    if (mapper == null) {
-      mapper = new ObjectMapper();
-    }
-
-    return mapper;
-
-  }
 
   /**
    * Retrieves the unique identifier of
@@ -120,7 +90,7 @@ public class Response {
 
     try {
 
-      return getMapper().writeValueAsString(toJSONNode());
+      return GlobalObjectMapper.get().writeValueAsString(toJSONNode());
 
     } catch (JsonProcessingException e) {
 

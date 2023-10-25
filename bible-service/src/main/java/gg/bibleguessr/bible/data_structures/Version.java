@@ -1,7 +1,6 @@
 package gg.bibleguessr.bible.data_structures;
 
 import gg.bibleguessr.bible.Bible;
-import gg.bibleguessr.bible.BibleService;
 
 import java.util.Map;
 
@@ -44,9 +43,9 @@ public class Version {
         }
 
         // Validate we have the right number of book names
-        if (bookNames.size() != BibleService.BOOKS_IN_BIBLE) {
+        if (bookNames.size() != Bible.NUM_OF_BOOKS) {
             throw new RuntimeException(
-                    "Version must have " + BibleService.BOOKS_IN_BIBLE + " books!");
+                    "Version must have " + Bible.NUM_OF_BOOKS + " books!");
         }
 
         // Validate that no book names are null

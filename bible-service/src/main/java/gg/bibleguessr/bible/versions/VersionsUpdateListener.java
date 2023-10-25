@@ -11,22 +11,22 @@ import java.util.Collection;
  */
 public interface VersionsUpdateListener {
 
-   /**
-    * Called by the BibleVersionMgr whenever the
-    * list of available Bible versions has
-    * been fully set (typically on initial
-    * service start).
-    *
-    * @param versions The new list of versions.
-    */
-   void onVersionsListSet(Collection<Version> versions);
+    /**
+     * Called by the BibleVersionMgr whenever
+     * just a single version has been added.
+     *
+     * @param version The new version.
+     */
+    void onNewVersionAdded(Version version);
 
-   /**
-    * Called by the BibleVersionMgr whenever
-    * just a single version has been added.
-    *
-    * @param version The new version.
-    */
-   void onNewVersionAdded(Version version);
+    /**
+     * Called by the BibleVersionMgr whenever the
+     * list of available Bible versions has
+     * been fully set (typically on initial
+     * service start).
+     *
+     * @param versions The new list of versions.
+     */
+    void onVersionsListSet(Collection<Version> versions);
 
 }

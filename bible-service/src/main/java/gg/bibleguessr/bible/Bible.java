@@ -19,6 +19,28 @@ public class Bible {
     /* ---------- CONSTANTS ---------- */
 
     /**
+     * The maximum number of verses that can be
+     * given to any one verse as context. This
+     * number is derived with this equation:<br>
+     * <code>floor((VERSES_IN_BIBLE - 1) / 2)</code>
+     */
+    public static final int MAX_CONTEXT_VERSES = 15_550;
+
+    /**
+     * The number of books in the Bible, as
+     * far as we're concerned.
+     */
+    public static final int NUM_OF_BOOKS = 66;
+
+    /**
+     * The number of verses in the Bible. Depending
+     * on what version you read, this number may
+     * be lower, but we operate with the highest
+     * number possible for maximum compatability.
+     */
+    public static final int NUM_OF_VERSES = 31_102;
+
+    /**
      * A 2-D array containing the number of verses
      * for every chapter for every book of the Bible.
      * First array could be considered an array of books,
@@ -237,8 +259,8 @@ public class Bible {
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
 
         // Establish actual book objects
-        this.books = new Book[BibleService.BOOKS_IN_BIBLE];
-        this.verses = new Verse[BibleService.VERSES_IN_BIBLE];
+        this.books = new Book[NUM_OF_BOOKS];
+        this.verses = new Verse[NUM_OF_VERSES];
         initializeBibleObjects();
 
     }
@@ -309,14 +331,9 @@ public class Bible {
         }
 
         Book book = books[bookIndex];
-
-        if (chapterNum < 1 || chapterNum > book.numOfChapters()) {
-            return null;
-        }
-
         Chapter chapter = book.chapter(chapterNum);
 
-        if (verseNum < 1 || verseNum > chapter.numOfVerses()) {
+        if (chapter == null) {
             return null;
         }
 
