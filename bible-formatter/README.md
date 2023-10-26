@@ -9,3 +9,19 @@ The txt files are formatted where there is an agreed upon marker that separates 
 Every bible in the database is public domain or free for programs to use.
 
 We are currently searching for more public domain bible databases (especially ones in different languages). Once we find one that is adequate, more python scripts will be created to put the database into a format we can work with.
+
+## Here are the current languages we have thus far:
+  - **Staten Vertaling** - Dutch
+  - **Synodal** - Russian
+  - **Bible Kralicka** - Czech
+  - **Biblia Livre** - Portuguese
+  - **Cornilescu** - Romanian
+  - **Diodati** - Italian
+  - **Finnish 1776** - Finnish
+  - **Indian Revised Version** - Hindi
+  - **Karoli** - Hungarian
+  - **Korean** - Korean
+  - **Louis Segond 1910** - French
+  - **Luther Bible** - German
+  - **Polska Biblia Gdanska** - Polish
+  - **Reina Valera 1909** - Spanish
