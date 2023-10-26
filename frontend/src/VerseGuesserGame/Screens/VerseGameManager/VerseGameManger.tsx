@@ -5,11 +5,12 @@ import { VerseGameScreenSelector } from "../../../DataStructures/VerseGuesserGam
 import { InitialSettings } from "../InitialSettings/InitialSettings"
 import "./VerseGameManager.css"
 import { VerseGameScreen } from "../VerseGameScreen/VerseGameScreen"
+import { Verse } from "../../../DataStructures/Global/Verse"
 
 export const VerseGameManager: React.FC = () => {
     const gameStore = useMemo(() => {
         let store = new VerseGameStore();
-        let firstSegment = new VerseGameSegment(0)
+        let firstSegment = new VerseGameSegment("King James Version",5)
         store.addGameSegment(firstSegment)
         return store;
     }, [])
@@ -17,8 +18,8 @@ export const VerseGameManager: React.FC = () => {
     const currentUserScreen: VerseGameScreenSelector = useSyncExternalStore(gameStore.subscribe, gameStore.getCurrentUserScreen)
     return (
         <>
-            {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings activeUserGameSegment={activeUserGameSegment} />}
-            {currentUserScreen === "MAIN GUESSER" && <VerseGameScreen activeUserGameSegment={activeUserGameSegment} />}
+            {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings activeUserGameSegment={activeUserGameSegment} bibleData={gameStore.getBibleData()} />}
+            {currentUserScreen === "MAIN GUESSER" && <VerseGameScreen verseGameStore={gameStore} />}
             <div className="VerseGameManager-footer">
                 <a className="VerseGameManager-button" onClick={() => {
                     if (currentUserScreen !== "INITIAL SETTINGS") {

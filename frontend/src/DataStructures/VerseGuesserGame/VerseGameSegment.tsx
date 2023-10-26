@@ -13,6 +13,7 @@ import { Verse } from "../Global/Verse";
 export class VerseGameSegment extends Subscribable {
     private bibleVersion!: string
     private guesses: number = 0;
+    private contextVerseDefault: number = 5;
     /**
      * Verses that are above the verse to guess (higher global number)
      */
@@ -22,12 +23,33 @@ export class VerseGameSegment extends Subscribable {
      */
     private contextVersesBelow: Verse[] = [];
     private verseToGuess!: Verse
-    constructor(bibleVersion: string, contextVersesAbove: Verse[], contextVersesBelow: [], verseToGuess: Verse) {
+    constructor(bibleVersion: string, contextVerseDefault: number) {
         super()
         this.bibleVersion = bibleVersion;
-        this.contextVersesAbove = [...contextVersesAbove];
-        this.contextVersesBelow = [...contextVersesBelow];
-        this.verseToGuess = verseToGuess;
+        this.contextVerseDefault = contextVerseDefault;
+    }
+    setBibleVersion = (version: string) => {
+      this.bibleVersion = version
+      this.emitChange()
+    }
+    setVerseToGuess = (verseToGuess: Verse) => {
+      this.verseToGuess = verseToGuess;
+      this.emitChange();
+    }
+    setContextVerseDefault = (context: number) => {
+      this.contextVerseDefault = context;
+      this.emitChange();
+    }
+    setContextVersesAbove = (above: Verse[]) => {
+      this.contextVersesAbove = [...above]
+      this.emitChange();
+    }
+    setContextVersesBelow = (below: Verse[]) => {
+      this.contextVersesAbove = [...below]
+      this.emitChange();
+    }
+    getContextVersesDefault = (): number => {
+      return this.contextVerseDefault;
     }
     getBibleVersion = (): string => {
         return this.bibleVersion;
