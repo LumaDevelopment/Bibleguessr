@@ -14,7 +14,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
 
    const { verseGameStore } = props
 
-   const activeGameSegment = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getActiveGameSegment)
+   const activeGameSegment: VerseGameSegment = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getActiveGameSegment)
    const bibleData = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getBibleData)
    const bibleVersion = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getBibleVersion)
    const contextVersesAbove = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getContextVersesAbove)
@@ -29,8 +29,10 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    if (bibleData === undefined || verseToGuess == undefined) {
       return (
          <div className="VerseGameScreen-container">
-            <h2>Guess the verse</h2>
-            <p>Loading...</p>
+            <div className="VerseGameScreen-loading">
+               <h2>Guess the verse</h2>
+               <p>Loading...</p>
+            </div>
          </div>
       )
    }
@@ -52,7 +54,9 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
             {/**
              * Todo: Add select function to this dropdown.
              */}
-            <select>
+            <select onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+               setBookGuess(event.target.value)
+            }}>
                {bibleData.bibleBookNames.get(bibleVersion)?.map((name: string) => <option>{name}</option>)}
             </select>
             <p>Chapter Number</p>

@@ -1,3 +1,13 @@
 .VerseGameScreen-container {
     text-align: center;
 }
+
+.VerseGameScreen-loading {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid red;
+}

@@ -27,7 +27,11 @@ export const VerseGameManager: React.FC = () => {
                     }
                     // Todo: Fix this back logic.
                 }} href={currentUserScreen !== "INITIAL SETTINGS" ? "/" : "#"}>Back</a>
-                <a className="VerseGameManager-button" onClick={() => gameStore.nextScreen()} href="#">{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</a>
+                <a className="VerseGameManager-button" onClick={() => {
+                    if (!(currentUserScreen === "INITIAL SETTINGS" && (gameStore.getBibleData() === undefined || gameStore.getActiveGameSegment() === undefined))) {
+                        gameStore.nextScreen()
+                    }
+                }} href="#">{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</a>
             </div>
         </>
     )

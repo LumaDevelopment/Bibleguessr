@@ -6,3 +6,9 @@
     text-align: center;
     width: 100%;
 }
+
+.InitialSettings-loading {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}

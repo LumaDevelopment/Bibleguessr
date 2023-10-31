@@ -1,3 +1,4 @@
+import { BibleData } from "../Global/BibleData";
 import { Subscribable } from "../Global/Subscribable";
 import { Verse } from "../Global/Verse";
 
