@@ -9,20 +9,66 @@ import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Executes HTTP requests for other classes. Primarily, this
+ * is used to get request responses from service wrappers.
+ */
 public class HTTPRequestExecutor {
 
+    /* ---------- CONSTANTS ---------- */
+
+    /**
+     * The name of the logger for this class.
+     */
     public static final String LOGGER_NAME = HTTPRequestExecutor.class.getSimpleName();
 
+    /* ---------- INSTANCE VARIABLES ---------- */
+
+    /**
+     * The logger for this class.
+     */
     private final Logger logger;
+
+    /**
+     * The CommsOrchestrator instance. We use this to
+     * get the API key to inject into requests.
+     */
     private final CommsOrchestrator orchestrator;
+
+    /**
+     * The OkHttpClient instance, used to execute
+     * HTTP requests.
+     */
     private final OkHttpClient client;
 
+    /* ---------- CONSTRUCTOR ---------- */
+
+    /**
+     * Creates an instance of HTTPRequestExecutor.
+     * This class is intentionally dependent on the
+     * CommsOrchestrator.
+     *
+     * @param orchestrator The CommsOrchestrator instance.
+     */
     public HTTPRequestExecutor(CommsOrchestrator orchestrator) {
         this.logger = LoggerFactory.getLogger(LOGGER_NAME);
         this.orchestrator = orchestrator;
         this.client = new OkHttpClient();
     }
 
+    /* ---------- METHODS ---------- */
+
+    /**
+     * Executes the given HTTP request and calls
+     * the given callback with the response.
+     *
+     * @param urlBuilder The incomplete URL. The reason
+     *                   this method takes in a builder
+     *                   is so it can inject the API
+     *                   key if that is necessary.
+     * @param callback   The callback to call with the
+     *                   response.
+     */
     public void request(HttpUrl.Builder urlBuilder, CommsCallback callback) {
 
         // Inject API key
