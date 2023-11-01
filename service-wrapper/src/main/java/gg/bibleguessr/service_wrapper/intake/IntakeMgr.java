@@ -137,7 +137,8 @@ public class IntakeMgr {
       toInitialize.push(new HTTPIntake(
         this,
         this.wrapper.getConfig().apiKey(),
-        this.wrapper.getConfig().vertxPort()
+        this.wrapper.getConfig().vertxPort(),
+        this.wrapper.getConfig().allowedCorsOrigins()
       ));
     }
 

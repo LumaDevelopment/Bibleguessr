@@ -4,7 +4,11 @@ import gg.bibleguessr.backend_utils.CommsCallback;
 import gg.bibleguessr.backend_utils.StatusCode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CorsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +74,27 @@ public class HTTPRequestReceiver extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
 
-        vertx.createHttpServer().requestHandler(req -> {
+        // Create new HttpServer and Router
+        HttpServer server = vertx.createHttpServer();
+        Router router = Router.router(vertx);
+
+        // Add a route to avoid CORS issues
+        router.route().handler(CorsHandler.create()
+                .addOrigins(this.orchestrator.getAllowedCorsOrigins())
+                .allowedMethod(HttpMethod.GET)
+                .allowedMethod(HttpMethod.POST)
+                .allowedMethod(HttpMethod.OPTIONS)
+                .allowedHeader("Access-Control-Request-Method")
+                .allowedHeader("Access-Control-Allow-Credentials")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Access-Control-Allow-Headers")
+                .allowedHeader("Content-Type")
+        );
+
+        // Handle requests
+        router.route().handler(ctx -> {
+
+            HttpServerRequest req = ctx.request();
 
             // Load parameters into map
             Map<String, String> parameters = new HashMap<>();
@@ -98,7 +122,10 @@ public class HTTPRequestReceiver extends AbstractVerticle {
             // Attempt to execute the request
             this.orchestrator.receiveRequest(req.path(), parameters, callback);
 
-        }).listen(port, http -> {
+        });
+
+        // Start listening with the Router as a request handler
+        server.requestHandler(router).listen(port, http -> {
             if (http.succeeded()) {
                 startPromise.complete();
                 logger.info("Vert.x launched successfully on port {}!", port);

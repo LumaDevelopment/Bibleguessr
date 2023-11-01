@@ -3,6 +3,8 @@ package gg.bibleguessr.api_gateway;
 import gg.bibleguessr.api_gateway.comms.CommsProtocol;
 import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
 
+import java.util.List;
+
 /**
  * @param port                         The port on which the API Gateway takes HTTP requests.
  * @param reqExecutionProtocol         The communication protocol used to connect to the
@@ -20,6 +22,9 @@ import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
  * @param httpHosts                    The hosts of all Service Wrappers we are connected to
  *                                     using HTTP. Only used if <code>reqExecutionProtocol</code>
  *                                     is <code>HTTP</code>.
+ * @param allowedCorsOrigins           The origins that are allowed to make CORS requests to the
+ *                                     API Gateway. Only used if <code>reqExecutionProtocol</code>
+ *                                     is <code>HTTP</code>.
  * @param rabbitMQConfig               The configuration for RabbitMQ. Requests are made to all possible
  *                                     Service Wrappers connected to this broker. Only used if
  *                                     <code>reqExecutionProtocol</code> is <code>RabbitMQ</code>.
@@ -30,6 +35,7 @@ public record APIGatewayConfig(
         long wrapperDetectionIntervalInMs,
         String apiKey,
         String[] httpHosts,
+        List<String> allowedCorsOrigins,
         RabbitMQConfiguration rabbitMQConfig
 ) {
 
@@ -40,6 +46,7 @@ public record APIGatewayConfig(
      * - {@code wrapperDetectionIntervalInMs} is {@code 5_000} (5 seconds).<br>
      * - {@code apiKey} is blank.<br>
      * - {@code httpHosts} is {@code ["localhost:8890"]}<br>
+     * - {@code allowedCorsOrigins} is {@code ["http://localhost:5173"]}<br>
      * - {@code rabbitMQConfig} is the default.<br>
      *
      * @return The default configuration for the API Gateway
@@ -51,6 +58,7 @@ public record APIGatewayConfig(
                 5_000,
                 "",
                 new String[]{"localhost:8890"},
+                List.of("http://localhost:5173"),
                 RabbitMQConfiguration.getDefault()
         );
     }

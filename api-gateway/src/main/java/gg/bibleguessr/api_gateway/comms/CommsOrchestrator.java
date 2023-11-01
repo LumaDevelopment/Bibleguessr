@@ -8,6 +8,7 @@ import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -206,6 +207,15 @@ public class CommsOrchestrator {
     }
 
     /* ---------- CONFIG RETRIEVAL METHODS ---------- */
+
+    /**
+     * Gets the allowed CORS origins.
+     *
+     * @return The allowed CORS origins.
+     */
+    public List<String> getAllowedCorsOrigins() {
+        return this.apiGateway.getConfig().allowedCorsOrigins();
+    }
 
     /**
      * Gets the port that the HTTP server should host on.
