@@ -19,7 +19,7 @@ import java.util.List;
  * @param apiKey                       The API key used to identify ourselves to service wrappers
  *                                     we send HTTP requests to. If this value is blank, it will
  *                                     not be sent.
- * @param httpHosts                    The hosts of all Service Wrappers we are connected to
+ * @param httpSockets                  The sockets of all Service Wrappers we are connected to
  *                                     using HTTP. Only used if <code>reqExecutionProtocol</code>
  *                                     is <code>HTTP</code>.
  * @param allowedCorsOrigins           The origins that are allowed to make CORS requests to the
@@ -34,7 +34,7 @@ public record APIGatewayConfig(
         CommsProtocol reqExecutionProtocol,
         long wrapperDetectionIntervalInMs,
         String apiKey,
-        String[] httpHosts,
+        List<String> httpSockets,
         List<String> allowedCorsOrigins,
         RabbitMQConfiguration rabbitMQConfig
 ) {
@@ -45,7 +45,7 @@ public record APIGatewayConfig(
      * - {@code reqExecutionProtocol} is {@code HTTP}<br>
      * - {@code wrapperDetectionIntervalInMs} is {@code 5_000} (5 seconds).<br>
      * - {@code apiKey} is blank.<br>
-     * - {@code httpHosts} is {@code ["localhost:8890"]}<br>
+     * - {@code httpSockets} is {@code ["localhost:8890"]}<br>
      * - {@code allowedCorsOrigins} is {@code ["http://localhost:5173"]}<br>
      * - {@code rabbitMQConfig} is the default.<br>
      *
@@ -55,9 +55,9 @@ public record APIGatewayConfig(
         return new APIGatewayConfig(
                 8891,
                 CommsProtocol.HTTP,
-                5_000,
+                15_000,
                 "",
-                new String[]{"localhost:8890"},
+                List.of("localhost:8890"),
                 List.of("http://localhost:5173"),
                 RabbitMQConfiguration.getDefault()
         );

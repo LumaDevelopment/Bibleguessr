@@ -71,15 +71,15 @@ public class APIGateway {
     // HTTP Mode
 
     /**
-     * A map from service IDs to the hosts of
+     * A map from service IDs to the sockets of
      * the service wrappers which run those
      * services.
      */
-    private final Map<String, HashSet<String>> httpServiceToHosts;
+    private final Map<String, HashSet<String>> httpServiceToSockets;
 
     /**
      * A queue of service wrappers, with the wrapper
-     * host and the last time a request was executed
+     * socket and the last time a request was executed
      * using that service.
      */
     private final PriorityQueue<ServiceWrapperInfo<String>> httpReqDistributionQueue;
@@ -154,12 +154,12 @@ public class APIGateway {
         // track of active services and service wrappers
         if (this.config.reqExecutionProtocol().equals(CommsProtocol.HTTP)) {
             // HTTP Mode
-            this.httpServiceToHosts = new HashMap<>();
+            this.httpServiceToSockets = new HashMap<>();
             this.httpReqDistributionQueue = new PriorityQueue<>();
             this.rabbitMQServiceIDs = null;
         } else if (this.config.reqExecutionProtocol().equals(CommsProtocol.RabbitMQ)) {
             // RabbitMQ Mode
-            this.httpServiceToHosts = null;
+            this.httpServiceToSockets = null;
             this.httpReqDistributionQueue = null;
             this.rabbitMQServiceIDs = new HashSet<>();
         } else {
@@ -200,8 +200,8 @@ public class APIGateway {
 
             // Get whether we know of a service wrapper
             // that is running a service with this ID
-            synchronized (this.httpServiceToHosts) {
-                haveServiceWithID = this.httpServiceToHosts.containsKey(microserviceID);
+            synchronized (this.httpServiceToSockets) {
+                haveServiceWithID = this.httpServiceToSockets.containsKey(microserviceID);
             }
 
         } else if (this.config.reqExecutionProtocol().equals(CommsProtocol.RabbitMQ)) {
@@ -297,26 +297,26 @@ public class APIGateway {
 
             HashSet<String> wrappersWithService;
 
-            synchronized (this.httpServiceToHosts) {
-                wrappersWithService = new HashSet<>(this.httpServiceToHosts.get(microserviceID));
+            synchronized (this.httpServiceToSockets) {
+                wrappersWithService = new HashSet<>(this.httpServiceToSockets.get(microserviceID));
             }
 
             // Get the one that we haven't used in the longest amount of time
 
-            String wrapperHost = null;
+            String wrapperSocket = null;
 
             synchronized (this.httpReqDistributionQueue) {
 
                 // Get the first service wrapper in the queue
                 // that has a config value that is in
                 // the wrappersWithService set, remove it
-                // from the queue, store its host, then
+                // from the queue, store its socket, then
                 // update its last used time and add it
                 // back to the queue.
 
                 LinkedList<ServiceWrapperInfo<String>> wrappersToAddBack = new LinkedList<>();
 
-                while (wrapperHost == null && !this.httpReqDistributionQueue.isEmpty()) {
+                while (wrapperSocket == null && !this.httpReqDistributionQueue.isEmpty()) {
 
                     ServiceWrapperInfo<String> potentialWrapper = this.httpReqDistributionQueue.poll();
 
@@ -327,7 +327,7 @@ public class APIGateway {
 
                     if (wrappersWithService.contains(potentialWrapper.getConfig())) {
                         // Found it!
-                        wrapperHost = potentialWrapper.getConfig();
+                        wrapperSocket = potentialWrapper.getConfig();
                         potentialWrapper.updateWhenLastRequestSent();
                     }
 
@@ -345,7 +345,7 @@ public class APIGateway {
 
             }
 
-            if (wrapperHost == null) {
+            if (wrapperSocket == null) {
 
                 // For some reason, we had marked that
                 // we know a service wrapper with this
@@ -360,27 +360,31 @@ public class APIGateway {
 
             }
 
+            String[] socketComponents = wrapperSocket.split(":");
+            String host = socketComponents[0];
+
             // Construct URL with http scheme, service wrapper
-            // host, and service/request identifiers pulled
+            // host and port, and service/request identifiers pulled
             // from received URL.
             HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
                     .scheme("http")
-                    .host(wrapperHost)
+                    .host(host)
                     .addPathSegment(microserviceID)
                     .addPathSegment(requestPath);
+
+            // If the socket also has a port then set that
+            if (socketComponents.length > 1) {
+                urlBuilder.port(Integer.parseInt(socketComponents[1]));
+            }
 
             // Add all parameters as query parameters to the URL
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
             }
 
-            // If API key isn't blank, add that too
-            if (!this.config.apiKey().isBlank()) {
-                urlBuilder.addQueryParameter("apiKey", this.config.apiKey());
-            }
-
             // Make the request
-            this.orchestrator.makeHTTPRequest(urlBuilder.build(), callback);
+            // TODO if we can't access this service wrapper then try another one and remove this one
+            this.orchestrator.makeHTTPRequest(urlBuilder, callback);
 
         } else if (this.config.reqExecutionProtocol().equals(CommsProtocol.RabbitMQ)) {
 
@@ -438,44 +442,44 @@ public class APIGateway {
 
                     // HTTP Mode
 
-                    if (httpServiceToHosts == null || httpReqDistributionQueue == null) {
-                        logger.error("Service -> hosts map or request distribution queue is null when request " +
+                    if (httpServiceToSockets == null || httpReqDistributionQueue == null) {
+                        logger.error("Service -> sockets map or request distribution queue is null when request " +
                                 "execution protocol is HTTP!");
                         return;
                     }
 
-                    Map<String, HashSet<String>> newServiceToHosts = ServiceWrapperDetector.detectHTTPServiceWrappers(
-                            config.httpHosts(),
+                    Map<String, HashSet<String>> newServiceToSockets = ServiceWrapperDetector.detectHTTPServiceWrappers(
+                            config.httpSockets(),
                             orchestrator
                     );
 
-                    // Construct set of all valid hosts
-                    HashSet<String> allValidHosts = new HashSet<>();
-                    for (HashSet<String> setOfValidHosts : newServiceToHosts.values()) {
-                        allValidHosts.addAll(setOfValidHosts);
+                    // Construct set of all valid sockets
+                    HashSet<String> allValidSockets = new HashSet<>();
+                    for (HashSet<String> setOfValidSockets : newServiceToSockets.values()) {
+                        allValidSockets.addAll(setOfValidSockets);
                     }
 
-                    // Update service -> hosts map
-                    synchronized (httpServiceToHosts) {
+                    // Update service -> sockets map
+                    synchronized (httpServiceToSockets) {
 
                         // Clear out any service IDs that we no
                         // longer have across any of our
                         // service wrappers
-                        Set<String> oldServiceIDs = new HashSet<>(httpServiceToHosts.keySet());
+                        Set<String> oldServiceIDs = new HashSet<>(httpServiceToSockets.keySet());
                         for (String serviceID : oldServiceIDs) {
 
-                            if (newServiceToHosts.containsKey(serviceID)) {
+                            if (newServiceToSockets.containsKey(serviceID)) {
                                 continue;
                             }
 
                             // Remove from map
-                            httpServiceToHosts.remove(serviceID);
+                            httpServiceToSockets.remove(serviceID);
 
                         }
 
-                        // Update map with new hosts, possibly
+                        // Update map with new sockets, possibly
                         // meaning new service IDs
-                        httpServiceToHosts.putAll(newServiceToHosts);
+                        httpServiceToSockets.putAll(newServiceToSockets);
 
                     }
 
@@ -485,16 +489,16 @@ public class APIGateway {
                     synchronized (httpReqDistributionQueue) {
 
                         Iterator<ServiceWrapperInfo<String>> iterator = httpReqDistributionQueue.iterator();
-                        Set<String> oldServiceWrapperHosts = new HashSet<>();
+                        Set<String> oldServiceWrapperSockets = new HashSet<>();
 
                         // First, get rid of all old
                         // service wrappers.
                         while (iterator.hasNext()) {
 
                             ServiceWrapperInfo<String> info = iterator.next();
-                            if (allValidHosts.contains(info.getConfig())) {
-                                // Store the host, we'll need it later
-                                oldServiceWrapperHosts.add(info.getConfig());
+                            if (allValidSockets.contains(info.getConfig())) {
+                                // Store the socket, we'll need it later
+                                oldServiceWrapperSockets.add(info.getConfig());
                             } else {
                                 // Remove from list, no longer valid
                                 iterator.remove();
@@ -503,15 +507,15 @@ public class APIGateway {
                         }
 
                         // Next, add all new service wrappers.
-                        for (String host : allValidHosts) {
+                        for (String socket : allValidSockets) {
 
-                            if (oldServiceWrapperHosts.contains(host)) {
+                            if (oldServiceWrapperSockets.contains(socket)) {
                                 // We already have this service wrapper
                                 continue;
                             }
 
                             // Add to list
-                            httpReqDistributionQueue.add(new ServiceWrapperInfo<>(host));
+                            httpReqDistributionQueue.add(new ServiceWrapperInfo<>(socket));
 
                         }
 

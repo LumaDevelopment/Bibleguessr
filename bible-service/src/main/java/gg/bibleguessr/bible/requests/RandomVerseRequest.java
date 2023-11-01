@@ -1,6 +1,6 @@
 package gg.bibleguessr.bible.requests;
 
-import gg.bibleguessr.bible.BibleService;
+import gg.bibleguessr.bible.Bible;
 import gg.bibleguessr.service_wrapper.Request;
 
 import java.util.Map;
@@ -95,7 +95,7 @@ public class RandomVerseRequest extends Request {
             int numOfContextVerses = Integer.parseInt(numOfContextVersesText);
 
             // Make sure the number of context verses is within reasonable bounds
-            if (numOfContextVerses < 0 || numOfContextVerses > BibleService.MAX_CONTEXT_VERSES) {
+            if (numOfContextVerses < 0 || numOfContextVerses > Bible.MAX_CONTEXT_VERSES) {
                 return false;
             }
 

@@ -16,7 +16,8 @@ import gg.bibleguessr.service_wrapper.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Random;
 
 /**
@@ -182,10 +183,10 @@ public class BibleService extends Microservice {
         int randomLocalIndex = -1;
 
         // Add each piece of text to the context array and set the verse index when appropriate
-        for (int i = startIndex; i <= endIndex; i++){
+        for (int i = startIndex; i <= endIndex; i++) {
             String currentText = bibleTextMgr.getVerseText(version, i);
             contextArray.add(currentText);
-            if (currentText.equals(randomText)) randomLocalIndex = i-startIndex;
+            if (currentText.equals(randomText)) randomLocalIndex = i - startIndex;
         }
 
         // Retrieve the verse information from the Bible instance

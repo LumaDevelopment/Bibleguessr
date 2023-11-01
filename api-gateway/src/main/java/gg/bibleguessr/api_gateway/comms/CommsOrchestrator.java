@@ -161,10 +161,10 @@ public class CommsOrchestrator {
     /**
      * Passes HTTP requests off to the HTTP Request Executor.
      *
-     * @param url      The URL to make the request to.
-     * @param callback The callback to call when the request is complete.
+     * @param urlBuilder The URL to make the request to.
+     * @param callback   The callback to call when the request is complete.
      */
-    public void makeHTTPRequest(HttpUrl url, CommsCallback callback) {
+    public void makeHTTPRequest(HttpUrl.Builder urlBuilder, CommsCallback callback) {
 
         if (this.httpReqExec == null) {
             logger.error("Cannot make HTTP request because the executor has not been instantiated!");
@@ -172,7 +172,7 @@ public class CommsOrchestrator {
             return;
         }
 
-        this.httpReqExec.request(url, callback);
+        this.httpReqExec.request(urlBuilder, callback);
 
     }
 
@@ -215,6 +215,16 @@ public class CommsOrchestrator {
      */
     public List<String> getAllowedCorsOrigins() {
         return this.apiGateway.getConfig().allowedCorsOrigins();
+    }
+
+    /**
+     * Gets the API key that must be used to authenticate
+     * self with service wrappers.
+     *
+     * @return The API key.
+     */
+    public String getApiKey() {
+        return this.apiGateway.getConfig().apiKey();
     }
 
     /**
