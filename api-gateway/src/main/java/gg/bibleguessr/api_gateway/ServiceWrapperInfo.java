@@ -1,42 +1,94 @@
 package gg.bibleguessr.api_gateway;
 
-import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
+import org.jetbrains.annotations.NotNull;
 
-public record ServiceWrapperInfo(
-        String wrapperID,
-        String url,
-        RabbitMQConfiguration rabbitMQConfig
-) {
+/**
+ * Represents a service wrapper, accessed through any type of communication protocol.
+ *
+ * @param <T> The configuration type of the service wrapper, for
+ *            instance, this is String for HTTP because we store
+ *            the URL.
+ */
+public class ServiceWrapperInfo<T> implements Comparable<ServiceWrapperInfo<?>> {
 
-    public ServiceWrapperInfo {
+    /* ---------- INSTANCE VARIABLES ---------- */
 
-        if (wrapperID == null) {
-            String className = ServiceWrapperInfo.class.getSimpleName();
-            throw new IllegalArgumentException("Wrapper ID cannot be null in " + className + "!");
+    /**
+     * The configuration of how to access the service wrapper.
+     */
+    private final T config;
+
+    /**
+     * The last time we made a request to this service wrapper.
+     */
+    private long lastRequestTimestamp;
+
+    /* ---------- CONSTRUCTORS ---------- */
+
+    /**
+     * Creates a ServiceWrapperInfo instance with the given configuration,
+     * and the last request timestamp is set at the current system
+     * time in milliseconds since the epoch.
+     *
+     * @param config The configuration of how to access the service wrapper.
+     */
+    public ServiceWrapperInfo(T config) {
+        this(config, System.currentTimeMillis());
+    }
+
+    /**
+     * Creates a ServiceWrapperInfo instance with the given configuration,
+     * and the last request timestamp is set at the given timestamp.
+     *
+     * @param config           The configuration of how to access the service wrapper.
+     * @param initialTimestamp The initial timestamp to set the last request timestamp to.
+     */
+    public ServiceWrapperInfo(T config, long initialTimestamp) {
+
+        if (config == null) {
+            throw new RuntimeException("Cannot create ServiceWrapperInfo will null service wrapper configuration!");
         }
+
+        this.config = config;
+        this.lastRequestTimestamp = initialTimestamp;
 
     }
 
-    @Override
-    public boolean equals(Object other) {
+    /* ---------- METHODS ---------- */
 
-        if (other == null) {
-            return false;
-        }
-
-        if (!(other instanceof ServiceWrapperInfo otherConfig)) {
-            return false;
-        }
-
-        return wrapperID.equals(otherConfig.wrapperID);
-
+    /**
+     * Get the configuration of how to access the service wrapper.
+     *
+     * @return The configuration.
+     */
+    public T getConfig() {
+        return this.config;
     }
 
+    /**
+     * Set the last time that we sent a request
+     * to this service wrapper as the current
+     * time.
+     */
+    public void updateWhenLastRequestSent() {
+        this.lastRequestTimestamp = System.currentTimeMillis();
+    }
+
+    /**
+     * Compare this service wrapper info object to
+     * another service wrapper info object on the
+     * basis of the last request timestamp.
+     *
+     * @param o the object to be compared.
+     * @return 0 if the timestamps are equal, a negative
+     * number if this object's timestamp is less
+     * than the other object's timestamp, and a
+     * positive number if this object's timestamp
+     * is greater than the other object's timestamp.
+     */
     @Override
-    public int hashCode() {
-
-        return wrapperID.hashCode();
-
+    public int compareTo(@NotNull ServiceWrapperInfo<?> o) {
+        return Long.compare(this.lastRequestTimestamp, o.lastRequestTimestamp);
     }
 
 }

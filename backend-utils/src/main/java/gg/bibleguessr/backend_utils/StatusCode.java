@@ -1,5 +1,8 @@
 package gg.bibleguessr.backend_utils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Represents status codes that are returned by the
  * service wrapper and the API gateway.
@@ -50,6 +53,14 @@ public enum StatusCode {
      */
     INTERNAL_ERROR(500);
 
+    // Mapping from integer to object
+    private static final Map<Integer, StatusCode> intToObjMap = new HashMap<>();
+    static {
+        for (StatusCode statusCode : StatusCode.values()) {
+            intToObjMap.put(statusCode.getStatusCode(), statusCode);
+        }
+    }
+
     /**
      * The actual HTTP status code value.
      */
@@ -62,6 +73,18 @@ public enum StatusCode {
      */
     StatusCode(final int httpStatusCode) {
         this.httpStatusCode = httpStatusCode;
+    }
+
+    /**
+     * Get the StatusCode object corresponding with the given
+     * status code.
+     *
+     * @param i The status code.
+     * @return The corresponding StatusCode object, or null
+     * if none exists for the given code.
+     */
+    public static StatusCode fromInt(int i) {
+        return intToObjMap.get(i);
     }
 
     /**
