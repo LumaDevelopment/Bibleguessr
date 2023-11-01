@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ public class TestServiceWrapper {
       "",
       false,
       0,
+      new ArrayList<>(),
       false,
       RabbitMQConfiguration.getDefault()
     );

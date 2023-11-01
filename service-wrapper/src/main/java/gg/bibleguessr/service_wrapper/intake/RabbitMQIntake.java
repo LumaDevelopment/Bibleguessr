@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rabbitmq.client.*;
 import gg.bibleguessr.backend_utils.*;
+import gg.bibleguessr.service_wrapper.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,7 +174,7 @@ public class RabbitMQIntake implements CommsIntake {
         // from the JSON object. If the request
         // has no UUID, remove it from the
         // queue.
-        JsonNode uuidNode = node.get("uuid");
+        JsonNode uuidNode = node.get(Request.UUID_PARAMETER_NAME);
 
         if (uuidNode == null || !uuidNode.isTextual()) {
           logger.error("Received unidentifiable request, removing from queue.");

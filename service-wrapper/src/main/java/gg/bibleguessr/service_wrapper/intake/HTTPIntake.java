@@ -4,11 +4,16 @@ import gg.bibleguessr.backend_utils.CommsCallback;
 import gg.bibleguessr.backend_utils.StatusCode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CorsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,19 +58,27 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
    */
   private final int port;
 
+  /**
+   * The origins that are allowed to make CORS
+   * requests to the Service Wrapper.
+   */
+  private final List<String> allowedCorsOrigins;
+
   /* ---------- CONSTRUCTORS ---------- */
 
   /**
    * Default constructor. Service Wrapper is passed in
    * for config access, request execution, etc.
    *
-   * @param intakeMgr The IntakeMgr instance.
-   * @param apiKey    The API key required to authenticate HTTP
-   *                  requests. If empty, do not validate or
-   *                  check for key.
-   * @param port      The port this web server should be hosted on.
+   * @param intakeMgr          The IntakeMgr instance.
+   * @param apiKey             The API key required to authenticate HTTP
+   *                           requests. If empty, do not validate or
+   *                           check for key.
+   * @param port               The port this web server should be hosted on.
+   * @param allowedCorsOrigins The origins that are allowed to make CORS
+   *                           requests to the Service Wrapper.
    */
-  public HTTPIntake(IntakeMgr intakeMgr, String apiKey, int port) {
+  public HTTPIntake(IntakeMgr intakeMgr, String apiKey, int port, List<String> allowedCorsOrigins) {
 
     if (intakeMgr == null) {
       throw new RuntimeException("IntakeMgr passed into HTTPIntake cannot be null!");
@@ -75,6 +88,7 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
     this.intakeMgr = intakeMgr;
     this.apiKey = apiKey;
     this.port = port;
+    this.allowedCorsOrigins = allowedCorsOrigins;
 
   }
 
@@ -109,6 +123,23 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
    */
   @Override
   public void start(Promise<Void> startPromise) {
+
+    // Create new HttpServer and Router
+    HttpServer server = vertx.createHttpServer();
+    Router router = Router.router(vertx);
+
+    // Add a route to avoid CORS issues
+    router.route().handler(CorsHandler.create()
+      .addOrigins(allowedCorsOrigins)
+      .allowedMethod(HttpMethod.GET)
+      .allowedMethod(HttpMethod.POST)
+      .allowedMethod(HttpMethod.OPTIONS)
+      .allowedHeader("Access-Control-Request-Method")
+      .allowedHeader("Access-Control-Allow-Credentials")
+      .allowedHeader("Access-Control-Allow-Origin")
+      .allowedHeader("Access-Control-Allow-Headers")
+      .allowedHeader("Content-Type")
+    );
 
     vertx.createHttpServer().requestHandler(req -> {
 

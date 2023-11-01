@@ -37,8 +37,6 @@ public class ServiceWrapper {
 
   /* ---------- VARIABLES ---------- */
 
-  // CORE VARIABLES
-
   /**
    * The logger which all class statements
    * are routed through.
@@ -72,7 +70,10 @@ public class ServiceWrapper {
    */
   private final Map<Class<? extends Request>, Microservice> reqTypeToService;
 
-  // REQUEST INTAKE MANAGER
+  /**
+   * Accepts requests from all communication protocols
+   * (HTTP, RabbitMQ).
+   */
   private final IntakeMgr intakeMgr;
 
   /* ---------- CONSTRUCTORS ---------- */
