@@ -35,7 +35,7 @@ public record ServiceWrapperConfig(
     return new ServiceWrapperConfig(
       "",
       true,
-      8888,
+      8890,
       false,
       RabbitMQConfiguration.getDefault()
     );

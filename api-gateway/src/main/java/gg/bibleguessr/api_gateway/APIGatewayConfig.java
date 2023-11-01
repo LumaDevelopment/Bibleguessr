@@ -1,4 +1,58 @@
 package gg.bibleguessr.api_gateway;
 
-public record APIGatewayConfig() {
+import gg.bibleguessr.api_gateway.comms.CommsProtocol;
+import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
+
+/**
+ * @param port                         The port on which the API Gateway takes HTTP requests.
+ * @param reqExecutionProtocol         The communication protocol used to connect to the
+ *                                     configured Service Wrappers. We execute requests by
+ *                                     sending messages over this protocol to the Service
+ *                                     Wrappers. Possible options:<br>
+ *                                     - <code>HTTP</code><br>
+ *                                     - <code>RabbitMQ</code>
+ * @param wrapperDetectionIntervalInMs The interval in milliseconds at which the API Gateway
+ *                                     will detect service wrappers and check which ones are
+ *                                     still alive.
+ * @param apiKey                       The API key used to identify ourselves to service wrappers
+ *                                     we send HTTP requests to. If this value is blank, it will
+ *                                     not be sent.
+ * @param httpHosts                    The hosts of all Service Wrappers we are connected to
+ *                                     using HTTP. Only used if <code>reqExecutionProtocol</code>
+ *                                     is <code>HTTP</code>.
+ * @param rabbitMQConfig               The configuration for RabbitMQ. Requests are made to all possible
+ *                                     Service Wrappers connected to this broker. Only used if
+ *                                     <code>reqExecutionProtocol</code> is <code>RabbitMQ</code>.
+ */
+public record APIGatewayConfig(
+        int port,
+        CommsProtocol reqExecutionProtocol,
+        long wrapperDetectionIntervalInMs,
+        String apiKey,
+        String[] httpHosts,
+        RabbitMQConfiguration rabbitMQConfig
+) {
+
+    /**
+     * Gets the default configuration for the API Gateway:<br>
+     * - {@code port} is {@code 8891}<br>
+     * - {@code reqExecutionProtocol} is {@code HTTP}<br>
+     * - {@code wrapperDetectionIntervalInMs} is {@code 5_000} (5 seconds).<br>
+     * - {@code apiKey} is blank.<br>
+     * - {@code httpHosts} is {@code ["localhost:8890"]}<br>
+     * - {@code rabbitMQConfig} is the default.<br>
+     *
+     * @return The default configuration for the API Gateway
+     */
+    public static APIGatewayConfig getDefault() {
+        return new APIGatewayConfig(
+                8891,
+                CommsProtocol.HTTP,
+                5_000,
+                "",
+                new String[]{"localhost:8890"},
+                RabbitMQConfiguration.getDefault()
+        );
+    }
+
 }
