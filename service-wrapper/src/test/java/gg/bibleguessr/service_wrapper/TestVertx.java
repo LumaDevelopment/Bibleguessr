@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.ArrayList;
+
 @ExtendWith(VertxExtension.class)
 public class TestVertx {
 
@@ -19,13 +21,18 @@ public class TestVertx {
       "",
       false,
       0,
+      new ArrayList<>(),
       false,
       RabbitMQConfiguration.getDefault()
     );
 
     ServiceWrapper wrapper = new ServiceWrapper(config);
     vertx.deployVerticle(
-      new HTTPIntake(wrapper.getIntakeMgr(), wrapper.getConfig().apiKey(), wrapper.getConfig().vertxPort()),
+      new HTTPIntake(
+        wrapper.getIntakeMgr(),
+        wrapper.getConfig().apiKey(),
+        wrapper.getConfig().vertxPort(),
+        wrapper.getConfig().allowedCorsOrigins()),
       testContext.succeeding(id -> testContext.completeNow())
     );
 

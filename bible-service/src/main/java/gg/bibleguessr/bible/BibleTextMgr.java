@@ -200,7 +200,7 @@ public class BibleTextMgr {
             double fileSizeInMBs = fileSizeInBytes / 1_000_000.0;
 
             // Print statistics
-            String format =  "Successfully added Bible version: \"%s\". %.2f MB file loaded in %d milliseconds. %d " +
+            String format = "Successfully added Bible version: \"%s\". %.2f MB file loaded in %d milliseconds. %d " +
                     "verses stored per second.";
             logger.info(String.format(format, versionName, fileSizeInMBs, timeToAddInMs, versesPerSecond));
 
