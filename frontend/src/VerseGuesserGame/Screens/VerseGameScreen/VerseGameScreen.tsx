@@ -4,6 +4,7 @@ import "./VerseGameScreen.css"
 import { Verse } from "../../../DataStructures/Global/Verse"
 import { BibleData } from "../../../DataStructures/Global/BibleData"
 import { VerseGameStore } from "../../VerseGameStore"
+import { VerseGuess } from "../../../DataStructures/Global/VerseGuess"
 
 export interface VerseGameScreenProps {
    verseGameStore: VerseGameStore
@@ -48,32 +49,40 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
          <h2>Guess the verse</h2>
          <p>{bibleVersion}</p>
          <p>{guesses}</p>
-         {contextVersesBelow.map((currentVerse: Verse) => {
-            return <p>{currentVerse.text}</p>
-         })}
-         <p>{verseToGuess.text}</p>
-         {contextVersesAbove.map((currentVerse: Verse) => {
-            return <p>{currentVerse.text}</p>
-         })}
-         <div className="VerseGameScreen">
-            <p>Book Name {bibleVersion}</p>
-            {/**
-             * Todo: Add select function to this dropdown.
-             */}
-            <select onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-               setBookGuess(event.target.value)
-            }}>
-               {bibleData.bibleBookNames.get(bibleVersion)?.map((name: string) => <option>{name}</option>)}
-            </select>
-            <p>Chapter Number</p>
-            <input min={1} max={bibleData.getChapterCountForBook(bibleVersion, bookGuess)} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-               setChapterGuess(event.target.value as unknown as number)
-            }} />
-            <p>Current Verse</p>
-            <input min={1} max={bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess)} value={verseNumberGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-               setVerseNumberGuess(event.target.value as unknown as number)
-            }} />
+         <p>{contextVersesBelow.map((currentVerse: Verse) => currentVerse.text + " ")}<b>{verseToGuess.text + " "}</b>{contextVersesAbove.map((currentVerse: Verse) => currentVerse.text + " ")}</p>
+         <div className="VerseGameScreen-guessing">
+            <div>
+               <p>Book</p>
+               <select onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                  setBookGuess(event.target.value)
+               }}>
+                  {bibleData.bibleBookNames.get(bibleVersion)?.map((name: string, i: number) => <option key={"VerseGameScreen_bible_version_option_" + i}>{name}</option>)}
+               </select>
+            </div>
+            <div>
+               <p>Chapter</p>
+               <input min={1} max={bibleData.getChapterCountForBook(bibleVersion, bookGuess)} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setChapterGuess(event.target.value as unknown as number)
+               }} />
+            </div>
+            <div>
+               <p>Verse</p>
+               <input min={1} max={bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess)} value={verseNumberGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setVerseNumberGuess(event.target.value as unknown as number)
+               }} />
+            </div>
          </div>
+         <a className="VerseGameScreen-guess-button" onClick={() => {
+            console.log("Hello")
+            let correct = bookGuess === verseToGuess.bookName && chapterGuess === verseToGuess.chapter && verseNumberGuess === verseToGuess.verseNumber
+            let verseUserGuessed = new VerseGuess(bibleVersion, bookGuess, chapterGuess, verseNumberGuess, correct);
+            activeGameSegment.addPreviousGuess(verseUserGuessed);
+            if (correct) {
+               // Do stuff
+            }
+         }}>
+            Guess
+         </a>
       </div>
    )
 }

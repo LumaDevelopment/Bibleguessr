@@ -2,6 +2,7 @@ import { BibleData } from "../Global/BibleData";
 import { Subscribable } from "../Global/Subscribable";
 import { Verse } from "../Global/Verse";
 import { getRandomVerseGameSegment } from "../../../src/AppRoutes/../AppRoutes/../AppRoutes/Middlelayer"
+import { VerseGuess } from "../Global/VerseGuess";
 
 /**
  * Since the user will have the ability to change the settings during a play sesson, then 
@@ -24,7 +25,7 @@ export class VerseGameSegment extends Subscribable {
     * Verses that are below the verse to guess (higher global number)
     */
    private contextVersesBelow: Verse[] = [];
-   private previousVerses: Verse[] = []
+   private previousGuesses: VerseGuess[] = []
    private verseToGuess!: Verse
    constructor(bibleVersion: string, contextVerseDefault: number) {
       super()
@@ -51,17 +52,19 @@ export class VerseGameSegment extends Subscribable {
       this.emitChange();
    }
    setContextVersesBelow = (below: Verse[]) => {
-      this.contextVersesAbove = [...below]
+      this.contextVersesBelow = [...below]
       this.emitChange();
+   }
+   addPreviousGuess = (verseUserGuessed: VerseGuess) => {
+      this.guesses+=1;
+      this.previousGuesses = [...this.previousGuesses, verseUserGuessed]
+      this.emitChange()
    }
    getContextVersesDefault = (): number => {
       return this.contextVerseDefault;
    }
    getBibleVersion = (): string => {
       return this.bibleVersion;
-   }
-   addPreviousGuess = (verseUserGuessed: Verse) => {
-      this.previousVerses = [...this.previousVerses, verseUserGuessed]
    }
    getGuesses = (): number => {
       return this.guesses;

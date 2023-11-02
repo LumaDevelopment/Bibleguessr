@@ -67,20 +67,31 @@ export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment
       console.log(data)
       // Process the data here
       try {
-         let verses: Verse[] = []
-         for (let i = 0; i < data.verseArray; i++) {
-            verses.push(new Verse(
+         const belowVerses: Verse[] = []
+         const aboveVerses: Verse[] = []
+         for (let i = 0; i < data.verseArray.length; i++) {
+            const verseData = data.verseArray[i];
+            const verseObject: Verse = new Verse(
                data.bibleVersion,
-               data.bookName,
-               data.chapter,
-               data.verseNumber,
-               data.globalVerseNumber,
-               data.verseArray[i]
-            ))
+               verseData.book,
+               verseData.chapter,
+               verseData.verse,
+               verseData.universalIndex,
+               verseData.text
+            )
+            if (i < data.localVerseIndex) {
+               console.log("Below")
+               belowVerses.push(verseObject)
+            } else if (i > data.localVerseIndex) {
+               console.log("above")
+               aboveVerses.push(verseObject)
+            } else {
+               currentSegment.setVerseToGuess(verseObject)
+            }
          }
-         currentSegment.setVerseToGuess(verses[data.localVerseIndex])
-         currentSegment.setContextVersesBelow(verses.slice(0, data.localVerseIndex))
-         currentSegment.setContextVersesAbove(verses.slice(data.localVerseIndex+1, verses.length))
+         currentSegment.setContextVersesAbove(aboveVerses)
+         currentSegment.setContextVersesBelow(belowVerses)
+         console.log(currentSegment)
       } catch (e) {
          if (e instanceof Error) {
             console.error("Middlelayer | getRandomVerse | Parsing Error: " + e.message);

@@ -11,3 +11,17 @@
     width: 100%;
     border: 1px solid red;
 }
+
+.VerseGameScreen-guessing {
+   display: flex;
+   width: 100%;
+   justify-content: center;
+   gap: 20px;
+}
+
+.VerseGameScreen-guess-button {
+   width: 100px;
+   height: 50px;
+   background-color: green;
+   color: black;
+}
