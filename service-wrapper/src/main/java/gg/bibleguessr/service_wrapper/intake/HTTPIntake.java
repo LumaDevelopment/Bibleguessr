@@ -141,7 +141,10 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
       .allowedHeader("Content-Type")
     );
 
-    vertx.createHttpServer().requestHandler(req -> {
+    // Handle requests
+    router.route().handler(ctx -> {
+
+      HttpServerRequest req = ctx.request();
 
       // Load parameters into map
       Map<String, String> parameters = new HashMap<>();
@@ -181,7 +184,9 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
       // Attempt to execute the request
       intakeMgr.receiveRequest(req.path(), parameters, callback);
 
-    }).listen(port, http -> {
+    });
+
+    server.requestHandler(router).listen(port, http -> {
       if (http.succeeded()) {
         startPromise.complete();
         logger.info("Vert.x launched successfully on port {}!", port);

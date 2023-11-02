@@ -11,16 +11,12 @@ const SERVER_URL = "http://localhost:8888"
  */
 export const getServerBibleData = async (): Promise<BibleData | undefined> => {
    console.log("Middlelayer | getServerBibleData")
-   await fetch(SERVER_URL + "/bible/get-bible-data", {
-      headers: {
-         "Access-Control-Allow-Origin": "no-cors"
-      }
-   }).then((response) => {
+   await fetch(SERVER_URL + "/bible/get-bible-data", {}).then((response) => {
       console.log(response)
       return response.json()
    }).then((data) => {
       try {
-         console.log("Middlelayer | getServerBibleData | Retrieved: " + data)
+         console.log("Middlelayer | getServerBibleData | Retrieved data!")
          return new BibleData(
             data.bibleNames as string[],
             // Converts a Record<string, string[]> to a Map<string, string[]>
