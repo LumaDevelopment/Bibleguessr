@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
 import "./VerseGameScreen.css"
 import { Verse } from "../../../DataStructures/Global/Verse"
@@ -25,6 +25,12 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    const [bookGuess, setBookGuess] = useState((bibleData.bibleBookNames.get(bibleVersion) as string[])[0] as string)
    const [chapterGuess, setChapterGuess] = useState(1)
    const [verseNumberGuess, setVerseNumberGuess] = useState(1)
+
+   useEffect(() => {
+      activeGameSegment.initVerses();
+   }, [])
+
+   console.log(activeGameSegment)
 
    if (bibleData === undefined || verseToGuess == undefined) {
       return (

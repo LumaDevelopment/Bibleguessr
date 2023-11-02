@@ -6,7 +6,7 @@ import "../NavigationBar/NavigationBar.css"
 import "./App.css"
 import { VerseGameManager } from "../VerseGuesserGame/Screens/VerseGameManager/VerseGameManger";
 
-function App() {
+export const App: React.FC = () => {
   return (
     <div className="App-container">
       <NavigationBar />

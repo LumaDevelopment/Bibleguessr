@@ -11,29 +11,37 @@ const SERVER_URL = "http://localhost:8888"
  */
 export const getServerBibleData = async (): Promise<BibleData | undefined> => {
    console.log("Middlelayer | getServerBibleData")
-   await fetch(SERVER_URL + "/bible/get-bible-data", {}).then((response) => {
-      console.log(response)
-      return response.json()
-   }).then((data) => {
+   return fetch(SERVER_URL + "/bible/get-bible-data").then((response) => response.json()).then((data) => {
       try {
          console.log("Middlelayer | getServerBibleData | Retrieved data!")
          return new BibleData(
             data.bibleNames as string[],
-            // Converts a Record<string, string[]> to a Map<string, string[]>
             Object.entries(data.bibleBookNames as Record<string, string[]>).reduce((accum: Map<string, string[]>, entry: [string, string[]]) => {
                return accum.set(entry[0], entry[1]), accum;
             }, new Map<string, string[]>()),
             data.dataMatrix as number[][]
          )
+         /**
+          * Error in TypeScript are not known until run time, so the type can be any (Not sure how that makes sense)
+          * https://byby.dev/ts-try-catch-error-type
+          * Therefor, I need to check if the error... is an error before printing its message.
+          */
       } catch (e) {
-         console.error(e)
-         return;
+         if (e instanceof Error) {
+            console.error("Middlelayer | getServerBibleData | Parsing Error: " + e.message);
+         } else {
+            console.error("Middlelayer | getServerBibleData | Parsing Error: " + e);
+         }
+         return undefined;
       }
-   }).catch((error) => {
-      console.log("Middlelayer | getServerBibleData | Failed to retrieve data")
-      console.error(error)
+   }).catch((e) => {
+      if (e instanceof Error) {
+         console.error("Middlelayer | getServerBibleData | Retrieval Error: " + e.message);
+      } else {
+         console.error("Middlelayer | getServerBibleData | Retrieval Error: " + e);
+      }
+      return undefined;
    })
-   return;
 }
 
 
@@ -41,24 +49,45 @@ export const getServerBibleData = async (): Promise<BibleData | undefined> => {
  * Note: The context is not guranteed. If you request 5 context, you expect 11 verses back. However, if the random verse is at the start of the book (genesis: 1, 1), then
  * it will return genesis chapter 1 as the verse to guess and 10 verse below and zero verses above.
  * 
- * @param bibleVersion The version of the bible according to the getServerBibleStandards
- * @param requestedContext The number of verses above and below the verse you requested. 
  * @returns 
  */
-export const getRandomVerseSegment = async (bibleVersion: string, requestedContext: number): Promise<VerseGameSegment | undefined> => {
-   console.log("Middlelayer | getRandomVerseSegment")
+export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment): Promise<VerseGameSegment | undefined> => {
+   console.log("Middlelayer | getRandomVerse")
    const urlParams: Record<string, string> = {
-      version: bibleVersion,
+      version: currentSegment.getBibleVersion(),
       // Convert to string.
-      numOfContextVerses: requestedContext + ""
+      numOfContextVerses: currentSegment.getContextVersesDefault() + ""
    }
-   console.log("Middlelayer | getRandomVerseSegment | URL Params: " + urlParams.toString())
-   await fetch(SERVER_URL + "/bible/random-verse?" + new URLSearchParams(urlParams).toString().replace("+", "%20")).then((response => response.json())).then((data) => {
+   console.log("Middlelayer | getRandomVerse | URL Params: " + urlParams.toString())
+   await fetch(SERVER_URL + "/bible/random-verse?" + new URLSearchParams(urlParams).toString().replace("+", "%20"), {
+      headers: {
+         "Access-Control-Allow-Origin": "no-cors"
+      }
+   }).then((response => response.json())).then((data) => {
+      console.log(data)
+      // Process the data here
       try {
-         return;
+         let verses: Verse[] = []
+         for (let i = 0; i < data.verseArray; i++) {
+            verses.push(new Verse(
+               data.bibleVersion,
+               data.bookName,
+               data.chapter,
+               data.verseNumber,
+               data.globalVerseNumber,
+               data.verseArray[i]
+            ))
+         }
+         currentSegment.setVerseToGuess(verses[data.localVerseIndex])
+         currentSegment.setContextVersesBelow(verses.slice(0, data.localVerseIndex))
+         currentSegment.setContextVersesAbove(verses.slice(data.localVerseIndex+1, verses.length))
       } catch (e) {
-         console.error(e)
-         return;
+         if (e instanceof Error) {
+            console.error("Middlelayer | getRandomVerse | Parsing Error: " + e.message);
+         } else {
+            console.error("Middlelayer | getRandomVerse | Parsing Error: " + e);
+         }
+         return undefined;
       }
    })
    return;
