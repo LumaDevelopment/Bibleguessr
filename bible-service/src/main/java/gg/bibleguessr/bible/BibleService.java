@@ -171,41 +171,38 @@ public class BibleService extends Microservice {
 
         }
 
-        // Obtain the random verse and the random verse with context as an array and define the random verse index
-        String randomText = bibleTextMgr.getVerseText(version, randomIndex);
-
-        // -- Experimentation with earlier implementations of this method; ignore --
-        //String randomTextWithContext = bibleTextMgr.getPassageText(version, startIndex, endIndex);
-        //String[] contextArray = new String[2*numOfContextVerses+1];
-
-        // Define the contextArray and the index of the selected verse
-        ArrayNode contextArray = GlobalObjectMapper.get().createArrayNode();
+        // Fill the verse array with objects that represent every verse
+        // (including the context verse), and store the index of the
+        // random verse within the array.
+        ArrayNode verseArray = GlobalObjectMapper.get().createArrayNode();
         int randomLocalIndex = -1;
 
         // Add each piece of text to the context array and set the verse index when appropriate
         for (int i = startIndex; i <= endIndex; i++) {
-            String currentText = bibleTextMgr.getVerseText(version, i);
-            contextArray.add(currentText);
-            if (currentText.equals(randomText)) randomLocalIndex = i - startIndex;
+
+            ObjectNode verseJSON = GlobalObjectMapper.get().createObjectNode();
+            Verse verseObj = Bible.getInstance().getVerseByUniversalIndex(i);
+
+            verseJSON.put("universalIndex", i);
+            verseJSON.put("book", version.getBookNameByObject(verseObj.chapter().book()));
+            verseJSON.put("chapter", verseObj.chapter().number());
+            verseJSON.put("verse", verseObj.number());
+            verseJSON.put("text", bibleTextMgr.getVerseText(version, i));
+
+            if (i == randomIndex) {
+                // This is the random verse, all other
+                // verses are context
+                randomLocalIndex = i - startIndex;
+            }
+
+            verseArray.add(verseJSON);
+
         }
-
-        // Retrieve the verse information from the Bible instance
-        Bible bible = Bible.getInstance();
-        Verse verseInfo = bible.getVerseByUniversalIndex(randomIndex);
-
-        // Retrieve the book name, chapter number, and verse number from the verse object
-        String bookName = version.getBookNameByObject(verseInfo.chapter().book());
-        int chapter = verseInfo.chapter().number();
-        int verseNum = verseInfo.number();
 
         // Put all requested information into the JSON object
         responseContent.put("bibleVersion", versionName);
-        responseContent.put("bookName", bookName);
-        responseContent.put("chapter", chapter);
-        responseContent.put("verseNumber", verseNum);
-        responseContent.set("verseArray", contextArray);
+        responseContent.set("verseArray", verseArray);
         responseContent.put("localVerseIndex", randomLocalIndex);
-        responseContent.put("globalVerseIndex", randomIndex);
 
         return new Response(responseContent, request.getUUID());
 
