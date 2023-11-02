@@ -19,7 +19,7 @@ export const InitialSettings: React.FC<InitialSettingsProps> = (props) => {
             <h2>Game Settings</h2>
             <p>You can update these during the game</p>
          </div>
-         {!props.bibleData && <div className="InitialSettings-loading"><p><b>Loading Bible Data...</b></p></div>}
+         {(!props.bibleData || !props.activeUserGameSegment) && <div className="InitialSettings-loading"><p><b>Loading Bible Data...</b></p></div>}
          {props.bibleData && <div className="InitialSettings-body">
             <p>Surrounding Verses</p>
             <input type="number" min={0} value={allowedSurroundingVerses} onChange={(event) => {

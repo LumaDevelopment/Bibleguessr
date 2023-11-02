@@ -57,7 +57,10 @@ export const getRandomVerseSegment = async (bibleVersion: string, requestedConte
       numOfContextVerses: requestedContext + ""
    }
    console.log("Middlelayer | getRandomVerseSegment | URL Params: " + urlParams.toString())
-   await fetch(SERVER_URL + "/bible/random-verse?" + new URLSearchParams(urlParams).toString().replace("+", "%20")).then((response => response.json())).then((data) => {
+   await fetch(SERVER_URL + "/bible/random-verse?" + new URLSearchParams(urlParams).toString().replace("+", "%20"), {headers: {
+      "Access-Control-Allow-Origin": "no-cors"
+   }}).then((response => response.json())).then((data) => {
+      // Process the data here
       try {
          return;
       } catch (e) {
