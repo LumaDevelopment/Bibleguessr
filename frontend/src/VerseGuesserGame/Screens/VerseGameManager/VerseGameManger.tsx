@@ -10,15 +10,14 @@ import { Verse } from "../../../DataStructures/Global/Verse"
 export const VerseGameManager: React.FC = () => {
     const gameStore = useMemo(() => {
         let store = new VerseGameStore();
-        let firstSegment = new VerseGameSegment("King James Version",5)
+        let firstSegment = new VerseGameSegment("King James Bible", 5)
         store.addGameSegment(firstSegment)
         return store;
     }, [])
-    const activeUserGameSegment: VerseGameSegment = useSyncExternalStore(gameStore.subscribe, gameStore.getActiveGameSegment)
     const currentUserScreen: VerseGameScreenSelector = useSyncExternalStore(gameStore.subscribe, gameStore.getCurrentUserScreen)
     return (
         <>
-            {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings activeUserGameSegment={activeUserGameSegment} bibleData={gameStore.getBibleData()} />}
+            {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings verseGameStore={gameStore} />}
             {currentUserScreen === "MAIN GUESSER" && <VerseGameScreen verseGameStore={gameStore} />}
             <div className="VerseGameManager-footer">
                 <a className="VerseGameManager-button" onClick={() => {
