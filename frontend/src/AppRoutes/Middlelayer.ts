@@ -53,18 +53,18 @@ export const getServerBibleData = async (): Promise<BibleData | undefined> => {
  */
 export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment): Promise<VerseGameSegment | undefined> => {
    console.log("Middlelayer | getRandomVerse")
+   currentSegment.setIsLoadingVerses(true);
+   currentSegment.setErrorLoadingVerses(false);
    const urlParams: Record<string, string> = {
       version: currentSegment.getBibleVersion(),
       // Convert to string.
       numOfContextVerses: currentSegment.getContextVersesDefault() + ""
    }
-   console.log("Middlelayer | getRandomVerse | URL Params: " + urlParams.toString())
    await fetch(SERVER_URL + "/bible/random-verse?" + new URLSearchParams(urlParams).toString().replace("+", "%20"), {
       headers: {
          "Access-Control-Allow-Origin": "no-cors"
       }
    }).then((response => response.json())).then((data) => {
-      console.log(data)
       // Process the data here
       try {
          const belowVerses: Verse[] = []
@@ -80,10 +80,8 @@ export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment
                verseData.text
             )
             if (i < data.localVerseIndex) {
-               console.log("Below")
                belowVerses.push(verseObject)
             } else if (i > data.localVerseIndex) {
-               console.log("above")
                aboveVerses.push(verseObject)
             } else {
                currentSegment.setVerseToGuess(verseObject)
@@ -91,15 +89,22 @@ export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment
          }
          currentSegment.setContextVersesAbove(aboveVerses)
          currentSegment.setContextVersesBelow(belowVerses)
-         console.log(currentSegment)
+         currentSegment.setIsLoadingVerses(false);
+         currentSegment.setErrorLoadingVerses(false);
+         return currentSegment;
       } catch (e) {
          if (e instanceof Error) {
             console.error("Middlelayer | getRandomVerse | Parsing Error: " + e.message);
          } else {
             console.error("Middlelayer | getRandomVerse | Parsing Error: " + e);
          }
+         currentSegment.setIsLoadingVerses(false);
+         currentSegment.setErrorLoadingVerses(true);
          return undefined;
       }
    })
-   return;
+   // This code hypothetically should never be reached.
+   currentSegment.setIsLoadingVerses(false);
+   currentSegment.setErrorLoadingVerses(false);
+   return currentSegment;
 }

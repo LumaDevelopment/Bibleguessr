@@ -5,6 +5,7 @@ import { Verse } from "../../../DataStructures/Global/Verse"
 import { BibleData } from "../../../DataStructures/Global/BibleData"
 import { VerseGameStore } from "../../VerseGameStore"
 import { VerseGuess } from "../../../DataStructures/Global/VerseGuess"
+import { getRandomVerseGameSegment } from "../../../AppRoutes/Middlelayer"
 
 export interface VerseGameScreenProps {
    verseGameStore: VerseGameStore
@@ -23,25 +24,42 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    const verseToGuess = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getVerseToGuess)
    const guesses = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getGuesses)
 
+   const errorLoadingSegment: boolean = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getErrorLoadingVerses)
+   const isLoadingVerses: boolean = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getIsLoadingVerses)
+
    const [bookGuess, setBookGuess] = useState((bibleData.bibleBookNames.get(bibleVersion) as string[])[0] as string)
    const [chapterGuess, setChapterGuess] = useState(1)
    const [verseNumberGuess, setVerseNumberGuess] = useState(1)
 
-   useEffect(() => {
-      activeGameSegment.initVerses();
-   }, [])
-
    console.log(activeGameSegment)
 
-   if (bibleData === undefined || verseToGuess == undefined) {
+   if (bibleData === undefined || verseToGuess === undefined) {
       return (
          <div className="VerseGameScreen-container">
             <div className="VerseGameScreen-loading">
                <h2>Guess the verse</h2>
-               <p>Loading...</p>
+               <p>Loading Bible Data...</p>
             </div>
          </div>
       )
+   }
+
+   if (isLoadingVerses) {
+      return (<div className="VerseGameScreen-container">
+         <div className="VerseGameScreen-loading">
+            <h2>Guess the verse</h2>
+            <p>Loading verse...</p>
+         </div>
+      </div>)
+   }
+
+   if (errorLoadingSegment) {
+      return (<div className="VerseGameScreen-container">
+         <div className="VerseGameScreen-loading">
+            <h2>Guess the verse</h2>
+            <p>Unable to load verse</p>
+         </div>
+      </div>)
    }
 
    return (
@@ -49,6 +67,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
          <h2>Guess the verse</h2>
          <p>{bibleVersion}</p>
          <p>{guesses}</p>
+         <p>{verseToGuess.bookName}, {verseToGuess.chapter}, {verseToGuess.verseNumber}</p>
          <p>{contextVersesBelow.map((currentVerse: Verse) => currentVerse.text + " ")}<b>{verseToGuess.text + " "}</b>{contextVersesAbove.map((currentVerse: Verse) => currentVerse.text + " ")}</p>
          <div className="VerseGameScreen-guessing">
             <div>
@@ -62,23 +81,27 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
             <div>
                <p>Chapter</p>
                <input min={1} max={bibleData.getChapterCountForBook(bibleVersion, bookGuess)} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  setChapterGuess(event.target.value as unknown as number)
+                  setChapterGuess(Number(event.target.value))
                }} />
             </div>
             <div>
                <p>Verse</p>
                <input min={1} max={bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess)} value={verseNumberGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  setVerseNumberGuess(event.target.value as unknown as number)
+                  setVerseNumberGuess(Number(event.target.value))
                }} />
             </div>
          </div>
          <a className="VerseGameScreen-guess-button" onClick={() => {
-            console.log("Hello")
             let correct = bookGuess === verseToGuess.bookName && chapterGuess === verseToGuess.chapter && verseNumberGuess === verseToGuess.verseNumber
             let verseUserGuessed = new VerseGuess(bibleVersion, bookGuess, chapterGuess, verseNumberGuess, correct);
             activeGameSegment.addPreviousGuess(verseUserGuessed);
             if (correct) {
-               // Do stuff
+               console.log("Correct")
+               let nextSegment: VerseGameSegment = new VerseGameSegment(activeGameSegment.getBibleVersion(), activeGameSegment.getContextVersesDefault());
+               nextSegment.initVerses();
+               verseGameStore.addNewGameSegment(nextSegment);
+            } else {
+               console.log("Incorrect");
             }
          }}>
             Guess

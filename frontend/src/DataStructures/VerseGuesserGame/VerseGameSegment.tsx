@@ -26,14 +26,24 @@ export class VerseGameSegment extends Subscribable {
     */
    private contextVersesBelow: Verse[] = [];
    private previousGuesses: VerseGuess[] = []
-   private verseToGuess!: Verse
+   private verseToGuess: Verse | undefined;
+   private isLoadingVerses: boolean = false;
+   private errorLoadingVerses: boolean = false;
    constructor(bibleVersion: string, contextVerseDefault: number) {
       super()
       this.bibleVersion = bibleVersion;
       this.contextVerseDefault = contextVerseDefault;
    }
    initVerses = () => {
-      getRandomVerseGameSegment(this)
+       getRandomVerseGameSegment(this)
+   }
+   setErrorLoadingVerses = (errorLoadingVerses: boolean) => {
+      this.errorLoadingVerses = errorLoadingVerses;
+      this.emitChange();
+   }
+   setIsLoadingVerses = (isLoading: boolean) => {
+      this.isLoadingVerses = isLoading;
+      this.emitChange();
    }
    setBibleVersion = (version: string) => {
       this.bibleVersion = version
@@ -45,6 +55,9 @@ export class VerseGameSegment extends Subscribable {
    }
    setContextVerseDefault = (context: number) => {
       this.contextVerseDefault = context;
+      this.contextVersesAbove = []
+      this.contextVersesBelow = []
+      this.verseToGuess = undefined;
       this.emitChange();
    }
    setContextVersesAbove = (above: Verse[]) => {
@@ -59,6 +72,12 @@ export class VerseGameSegment extends Subscribable {
       this.guesses+=1;
       this.previousGuesses = [...this.previousGuesses, verseUserGuessed]
       this.emitChange()
+   }
+   getErrorLoadingVerses = (): boolean => {
+      return this.errorLoadingVerses;
+   }
+   getIsLoadingVerses = (): boolean => {
+      return this.isLoadingVerses;
    }
    getContextVersesDefault = (): number => {
       return this.contextVerseDefault;
@@ -75,7 +94,7 @@ export class VerseGameSegment extends Subscribable {
    getContextVersesBelow = (): Verse[] => {
       return this.contextVersesBelow;
    }
-   getVerseToGuess = (): Verse => {
+   getVerseToGuess = (): Verse | undefined => {
       return this.verseToGuess;
    }
 }

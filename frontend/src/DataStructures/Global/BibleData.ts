@@ -13,8 +13,8 @@ export class BibleData {
       this.dataMatrix = dataMatrix;
       this.bibleBookNames = bibleBookNames;
    }
-   getBookNamesInVersion = (bibleVersion: string) => {
-      return this.bibleBookNames.get(bibleVersion)
+   getBookNamesInVersion = (bibleVersion: string): string[]  => {
+      return this.bibleBookNames.get(bibleVersion) as string[]
    }
    getChapterCountForBook = (bibleVersion: string, bookName: string): number => {
       return this.dataMatrix[(this.bibleBookNames.get(bibleVersion) as string[])?.indexOf(bookName)].length   

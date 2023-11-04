@@ -26,11 +26,6 @@ export class VerseGameStore extends Subscribable {
    getBibleData = (): BibleData => {
       return this.bibleData;
    }
-   addGameSegment = (newSegment: VerseGameSegment) => {
-      this.gameSegments = [...this.gameSegments, newSegment]
-      this.activeGameSegment = newSegment
-      this.emitChange()
-   }
 
    addNewGameSegment = (newSegment: VerseGameSegment) => {
       this.gameSegments = [...this.gameSegments, this.activeGameSegment]

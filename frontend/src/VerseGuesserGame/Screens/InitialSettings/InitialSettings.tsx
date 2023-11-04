@@ -30,7 +30,7 @@ export const InitialSettings: React.FC<InitialSettingsProps> = (props) => {
          {bibleData && <div className="InitialSettings-body">
             <p>Surrounding Verses</p>
             <input type="number" min={0} value={allowedSurroundingVerses} onChange={(event) => {
-               activeUserGameSegment.setContextVerseDefault(event.target.value as unknown as number)
+               activeUserGameSegment.setContextVerseDefault(Number(event.target.value))
             }} />
             <p>Choose A Bible Version</p>
             <select value={currentBook as string} onChange={(event) => {

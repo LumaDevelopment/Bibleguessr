@@ -1,11 +1,11 @@
 export class Verse {
-    bibleVersion!: String;
-    bookName!: String;
+    bibleVersion!: string;
+    bookName!: string;
     chapter!: number;
     verseNumber!: number;
     globalVerseNumber: number;
     text!: string
-    constructor(bibleVersion: String, bookName: String, chapter: number, verseNumber: number, globalVerseNumber: number, text: string) {
+    constructor(bibleVersion: string, bookName: string, chapter: number, verseNumber: number, globalVerseNumber: number, text: string) {
         this.bibleVersion = bibleVersion;
         this.bookName = bookName;
         this.chapter = chapter;
