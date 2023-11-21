@@ -8,6 +8,7 @@ import gg.bibleguessr.bible.data_structures.Verse;
 import gg.bibleguessr.bible.data_structures.Version;
 import gg.bibleguessr.bible.requests.FrontendBibleDataMgr;
 import gg.bibleguessr.bible.requests.FrontendBibleDataRequest;
+import gg.bibleguessr.bible.requests.GetVerseIndexByReferenceRequest;
 import gg.bibleguessr.bible.requests.RandomVerseRequest;
 import gg.bibleguessr.bible.versions.BibleVersionMgr;
 import gg.bibleguessr.service_wrapper.Microservice;
@@ -113,6 +114,46 @@ public class BibleService extends Microservice {
 
 
     /* ---------- METHODS ---------- */
+
+    /**
+     * Responds to a request to get the global index of
+     * a verse based on its reference.
+     *
+     * @param indexReq The request to respond to.
+     * @return The response. The index will be the
+     * verse's global index if the reference is valid,
+     * or the index will be -1 if the reference is invalid.
+     */
+    public Response executeGetVerseIndexByReferenceRequest(GetVerseIndexByReferenceRequest indexReq) {
+
+        // Attempt to get verse object from request parameters
+        Verse verse = Bible.getInstance().getVerseByReference(
+                indexReq.getBookIndex(),
+                indexReq.getChapterNum(),
+                indexReq.getVerseNum()
+        );
+
+        int index;
+
+        // If a verse with that index exists, return
+        // its universal index. If not, return -1.
+        if (verse != null) {
+            index = verse.universalIndex();
+        } else {
+            index = -1;
+        }
+
+        // Assemble response JSOn
+        ObjectNode responseContent = GlobalObjectMapper.get().createObjectNode();
+        responseContent.put("index", index);
+
+        // Assemble and return Response object.
+        return new Response(
+                responseContent,
+                indexReq.getUUID()
+        );
+
+    }
 
     /**
      * Executes the given random verse request.
@@ -225,6 +266,8 @@ public class BibleService extends Microservice {
             );
         } else if (request instanceof RandomVerseRequest randomVerseReq) {
             return executeRandomVerseRequest(randomVerseReq);
+        } else if (request instanceof GetVerseIndexByReferenceRequest indexReq) {
+            return executeGetVerseIndexByReferenceRequest(indexReq);
         } else {
             // Unknown type of request
             logger.error("Received request of unknown type: {}!", request.getClass().getSimpleName());
@@ -332,6 +375,7 @@ public class BibleService extends Microservice {
     public void initializeRequestTypesMap() {
         initializeRequestType(FrontendBibleDataRequest.class);
         initializeRequestType(RandomVerseRequest.class);
+        initializeRequestType(GetVerseIndexByReferenceRequest.class);
     }
 
     /**
