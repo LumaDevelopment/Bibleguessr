@@ -1,11 +1,11 @@
 import { useMemo, useSyncExternalStore } from "react"
-import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
-import { VerseGameStore } from "../../VerseGameStore"
-import { VerseGameScreenSelector } from "../../../DataStructures/VerseGuesserGame/VerseGameScreenSelector"
-import { InitialSettings } from "../InitialSettings/InitialSettings"
+import { VerseGameSegment } from "../../DataStructures/VerseGuesserGame/VerseGameSegment"
+import { VerseGameStore } from "./VerseGameStore"
+import { VerseGameScreenSelector } from "../../DataStructures/VerseGuesserGame/VerseGameScreenSelector"
+import { InitialSettings } from "../Screens/InitialSettings/InitialSettings"
 import "./VerseGameManager.css"
-import { VerseGameScreen } from "../VerseGameScreen/VerseGameScreen"
-import { Verse } from "../../../DataStructures/Global/Verse"
+import { VerseGameScreen } from "../Screens/VerseGameScreen/VerseGameScreen"
+import { Verse } from "../../DataStructures/Global/Verse"
 
 export const VerseGameManager: React.FC = () => {
    const gameStore = useMemo(() => {
@@ -20,6 +20,9 @@ export const VerseGameManager: React.FC = () => {
       <>
          {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings verseGameStore={gameStore} />}
          {currentUserScreen === "MAIN GUESSER" && <VerseGameScreen verseGameStore={gameStore} />}
+         {currentUserScreen === "FINISH SCREEN" && <></>}
+
+         
          <div className="VerseGameManager-footer">
             <a className="VerseGameManager-button" onClick={() => {
                if (currentUserScreen !== "INITIAL SETTINGS") {

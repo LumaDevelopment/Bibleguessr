@@ -1,8 +1,8 @@
-import { BibleData } from "../DataStructures/Global/BibleData";
-import { Subscribable } from "../DataStructures/Global/Subscribable"
-import { VerseGameScreenSelector } from "../DataStructures/VerseGuesserGame/VerseGameScreenSelector";
-import { VerseGameSegment } from "../DataStructures/VerseGuesserGame/VerseGameSegment";
-import { getServerBibleData } from "../AppRoutes/Middlelayer"
+import { BibleData } from "../../DataStructures/Global/BibleData";
+import { Subscribable } from "../../DataStructures/Global/Subscribable"
+import { VerseGameScreenSelector } from "../../DataStructures/VerseGuesserGame/VerseGameScreenSelector";
+import { VerseGameSegment } from "../../DataStructures/VerseGuesserGame/VerseGameSegment";
+import { getServerBibleData } from "../../AppRoutes/Middlelayer"
 
 export class VerseGameStore extends Subscribable {
    private bibleData!: BibleData;
@@ -11,7 +11,7 @@ export class VerseGameStore extends Subscribable {
    private currentUserScreen: VerseGameScreenSelector = "INITIAL SETTINGS"
    constructor() {
       super();
-      // Since async is not allowed in the constructor, the bible data must be loaded in a seperate method.
+      // Since async is not allowed in the constructor, the bible data must be loaded in a separate method.
       this.loadServerBibleData();
    }
    getGameSegments = (): VerseGameSegment[] => {
@@ -46,12 +46,20 @@ export class VerseGameStore extends Subscribable {
       if (this.currentUserScreen === "INITIAL SETTINGS") {
          this.currentUserScreen = "MAIN GUESSER"
       }
+      if (this.currentUserScreen === "MAIN GUESSER") {
+         this.currentUserScreen = "FINISH SCREEN"
+      }
       this.emitChange();
    }
 
    previousScreen = () => {
       if (this.currentUserScreen === "MAIN GUESSER") {
          this.currentUserScreen = "INITIAL SETTINGS"
+      }
+      // Note, the user can not go back to their current play session.
+      // Its possible and the data is not lost, but it would be best for them to start over.
+      if (this.currentUserScreen === "FINISH SCREEN") {
+         this.currentUserScreen = "INITIAL SETTINGS";
       }
       this.emitChange();
    }

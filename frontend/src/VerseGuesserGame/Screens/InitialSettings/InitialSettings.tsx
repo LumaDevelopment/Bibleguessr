@@ -2,7 +2,7 @@ import { useMemo, useSyncExternalStore } from "react"
 import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
 import { BibleData } from "../../../DataStructures/Global/BibleData"
 import "./InitialSettings.css"
-import { VerseGameStore } from "../../VerseGameStore"
+import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
 
 export interface InitialSettingsProps {
    verseGameStore: VerseGameStore

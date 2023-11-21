@@ -3,8 +3,7 @@ import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/Verse
 import "./VerseGameScreen.css"
 import { Verse } from "../../../DataStructures/Global/Verse"
 import { BibleData } from "../../../DataStructures/Global/BibleData"
-import { VerseGameStore } from "../../VerseGameStore"
-import { VerseGuess } from "../../../DataStructures/Global/VerseGuess"
+import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
 import { getRandomVerseGameSegment } from "../../../AppRoutes/Middlelayer"
 
 export interface VerseGameScreenProps {
@@ -93,10 +92,9 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
          </div>
          <a className="VerseGameScreen-guess-button" onClick={() => {
             let correct = bookGuess === verseToGuess.bookName && chapterGuess === verseToGuess.chapter && verseNumberGuess === verseToGuess.verseNumber
-            let verseUserGuessed = new VerseGuess(bibleVersion, bookGuess, chapterGuess, verseNumberGuess, correct);
+            let verseUserGuessed = new Verse(bibleVersion, bookGuess, chapterGuess, verseNumberGuess, -1, "");
             activeGameSegment.addPreviousGuess(verseUserGuessed);
             if (correct) {
-               console.log("Correct")
                let nextSegment: VerseGameSegment = new VerseGameSegment(activeGameSegment.getBibleVersion(), activeGameSegment.getContextVersesDefault());
                nextSegment.initVerses();
                verseGameStore.addNewGameSegment(nextSegment);

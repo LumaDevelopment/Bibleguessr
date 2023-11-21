@@ -4,7 +4,7 @@ import { NavigationBar } from "../NavigationBar/NavigationBar";
 import { HomePage2 } from "../HomePage2/HomePage2";
 import "../NavigationBar/NavigationBar.css"
 import "./App.css"
-import { VerseGameManager } from "../VerseGuesserGame/Screens/VerseGameManager/VerseGameManger";
+import { VerseGameManager } from "../VerseGuesserGame/VerseGameManager/VerseGameManger";
 
 export const App: React.FC = () => {
   return (
