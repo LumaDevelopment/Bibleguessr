@@ -61,14 +61,25 @@ All requests and responses have the following parameters in common:
     - `numOfContextVerses` - An integer. The number of verses to include before and after the random verse to provide
       context. The minimum of this number is `0`, the maximum is `15550`.
 - **Response Parameters:**
-    - `uuid` (Text) (Optional) - Matches UUID from request. Only useful for something like RabbitMQ where we can't
-      deliver a direct response to a request.
     - `bibleVersion` - The version of the Bible the text is in.
-    - `bookName` - The name of the book the random verse is pulled from according, to the chosen version.
-    - `chapter` - The number of the chapter the verse is from.
-    - `verseNumber` - The number of the verse within its chapter.
-    - `verseArray` - The array of verse text, including any context verses that were requested.
+    - `verseArray` - An array of verse objects, including any context verses that were requested. Object attributes:
+        - `universalIndex` - The universal index of the verse in respect to the entire Bible.
+        - `book` - The name of the book this verse is in, according to the version that the verse text comes from.
+        - `chapter` - The number of the chapter this verse is in.
+        - `verse` - The number of this verse, in respect to its chapter (i.e. `24` for Genesis 1:24).
+        - `text` - The real text of the verse.
     - `localVerseIndex` - The index of the random verse within the `verseArray`. This is useful for picking out the
       random verse from the context verses. The UI can use this to highlight the verse with the actual reference that
       needs to be guessed.
-    - `globalVerseIndex` - The index of the random verse within the entire Bible.
+
+### Get Verse Index by Reference Request
+
+- **Request Path:** `index-by-reference`
+- **Vert.x Path:** `/bible/index-by-reference`
+- **Request Parameters:**
+    - `bookIndex` - The index of the book of the verse.
+    - `chapterNum` - The number of the chapter of the verse within its book.
+    - `verseNum` - The number of the verse within its chapter.
+- **Response Parameters:**
+    - `index` (Integer) - The universal index of the verse in respect to the entire Bible. If the reference is invalid,
+      this will be `-1`.

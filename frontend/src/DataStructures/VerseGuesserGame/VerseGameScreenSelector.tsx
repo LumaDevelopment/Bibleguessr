@@ -1,0 +1,1 @@
+export type VerseGameScreenSelector = "INITIAL SETTINGS" | "MAIN GUESSER" | "FINISH SCREEN"
