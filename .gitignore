@@ -1,1 +1,3 @@
 /.idea/Bibleguessr.iml
+/bible-service/.gradle/*
+/rabbitmq-client-test/.gradle/*
