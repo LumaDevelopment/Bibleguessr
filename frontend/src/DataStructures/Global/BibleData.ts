@@ -13,11 +13,22 @@ export class BibleData {
       this.dataMatrix = dataMatrix;
       this.bibleBookNames = bibleBookNames;
    }
-   getBookNamesInVersion = (bibleVersion: string): string[]  => {
+   getBookIndex(bibleVersion: string, bookName: string): number {
+      if (!this.bibleBookNames.has(bibleVersion)) {
+         console.error("BibleData | getBookIndex | Unknown BibleVersion: " + bibleVersion)
+         return -1;
+      } else if (this.bibleBookNames.has(bibleVersion) && !(this.bibleBookNames.get(bibleVersion) as string[]).includes(bookName)) {
+         console.error("BibleData | getBookIndex | Unknown BookName for bible version " + bibleVersion + " with book name: " + bookName)
+         return -1;
+      } else {
+         return (this.bibleBookNames.get(bibleVersion) as string[]).indexOf(bookName)
+      }
+   }
+   getBookNamesInVersion = (bibleVersion: string): string[] => {
       return this.bibleBookNames.get(bibleVersion) as string[]
    }
    getChapterCountForBook = (bibleVersion: string, bookName: string): number => {
-      return this.dataMatrix[(this.bibleBookNames.get(bibleVersion) as string[])?.indexOf(bookName)].length   
+      return this.dataMatrix[(this.bibleBookNames.get(bibleVersion) as string[])?.indexOf(bookName)].length
    }
    getVerseCountForChapter = (bibleVersion: string, bookName: string, chapter: number) => {
       return this.dataMatrix[(this.bibleBookNames.get(bibleVersion) as string[])?.indexOf(bookName)][chapter]

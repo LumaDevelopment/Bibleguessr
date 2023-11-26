@@ -2,9 +2,10 @@ import { useSyncExternalStore } from "react"
 import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
 import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
 import { Verse } from "../../../DataStructures/Global/Verse"
-
+import "./FinishScreen.css"
 interface SegmentBreakdown {
    gameSegment: VerseGameSegment
+   roundIndex: number
 }
 
 /**
@@ -18,20 +19,25 @@ interface SegmentBreakdown {
  * @returns 
  */
 const SegmentBreakdown: React.FC<SegmentBreakdown> = (props) => {
-   const { gameSegment } = props;
-   const verseToGuess: Verse = useSyncExternalStore(gameSegment.subscribe, gameSegment.getVerseToGuess) as Verse;
-   const guesses = useSyncExternalStore(gameSegment.subscribe, gameSegment.getGuesses);
-   const pastGuesses = useSyncExternalStore(gameSegment.subscribe, gameSegment.getPreviousGuesses)
+   console.log("SegmentBreakDown | Received", props)
+   const verseToGuess: Verse = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getVerseToGuess) as Verse;
+   const guesses = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getGuesses);
+   const pastGuesses = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getPreviousGuesses)
+   const hasSuccessfullyGuessed = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getHasSuccessfullyGuessed)
    return (
-      <div className="SegmentBreakdown-container">
-         <p>Actual Verse: {verseToGuess.getVerseIdentifier()}</p>
-         <p>Round Score: 5000 out of 4000</p>
-         {guesses > 1 && <><p>Guesses:</p>
+      <div className="SegmentBreakdown-container"
+         style={{ "backgroundColor": (props.roundIndex % 2 === 0 ? "#FFFFFF" : "#EFEFEF") }}
+      >
+         <h2 className="SegmentBreakdown-verse">{verseToGuess.getVerseIdentifier()}</h2>
+         <p>Round {props.roundIndex + 1} Score: <b>5000</b></p>
+
+         {guesses > 1 && <div className="SegmentBreakdown-guess-list-wrapper"><p>Guesses:</p>
             <ol>
-               {pastGuesses.map((value: Verse) => {
-                  return <li>{value.getVerseIdentifier()} at distance {value.getDistance(verseToGuess)}</li>
+               {pastGuesses.map((value: Verse, index: number) => {
+                  return <li key={"SegmentBreakdown_order_list_item" + index}>{value.getVerseIdentifier()} at distance {value.getDistance(verseToGuess)}</li>
                })}
-            </ol></>}
+            </ol></div>}
+         {!hasSuccessfullyGuessed && <p><b>This round was skipped</b></p>}
       </div>
    )
 }
@@ -43,6 +49,7 @@ export interface FinishScreenProps {
 
 export const FinishScreen: React.FC<FinishScreenProps> = (props) => {
    const pastGameSegments = useSyncExternalStore(props.verseGameStore.subscribe, props.verseGameStore.getGameSegments)
+   // <SegmentBreakdown gameSegment={value} key={"SegmentBreakdown_item_"+index}/>
    return (
       <div className="FinishScreen-container">
          <div className="FinishScreen-header">
@@ -51,7 +58,9 @@ export const FinishScreen: React.FC<FinishScreenProps> = (props) => {
          </div>
          <h2 className="FinishScreen-score">4000 / 5000</h2>
          <p>Here is a breakdown of your gameplay</p>
-         {pastGameSegments.map(value => <SegmentBreakdown gameSegment={value}/>)}
+         <div className="FinishScreen-past-segments-wrapper">
+            {pastGameSegments.map((value: VerseGameSegment, index: number) => <SegmentBreakdown gameSegment={value} key={"SegmentBreakdown_item_" + index} roundIndex={index} />)}
+         </div>
       </div>
    )
 }

@@ -13,7 +13,7 @@ import { getRandomVerseGameSegment } from "../../../src/AppRoutes/../AppRoutes/.
  * Every GameSegment must also be subscribable. This allows for the active game instance to keep the UI and the data structure in sync.
  */
 export class VerseGameSegment extends Subscribable {
-   private bibleVersion: string = "King James Bible"
+   private bibleVersion: string = "King James Version"
    private guesses: number = 0;
    private contextVerseDefault: number = 5;
    /**
@@ -28,6 +28,7 @@ export class VerseGameSegment extends Subscribable {
    private verseToGuess: Verse | undefined;
    private isLoadingVerses: boolean = false;
    private errorLoadingVerses: boolean = false;
+   private hasSuccessfullyGuessed: boolean = false;
    constructor(bibleVersion: string, contextVerseDefault: number) {
       super()
       this.bibleVersion = bibleVersion;
@@ -35,6 +36,24 @@ export class VerseGameSegment extends Subscribable {
    }
    initVerses = () => {
       getRandomVerseGameSegment(this)
+   }
+   previousGuessesContainsVerse = (other: Verse): boolean => {
+      if (other.getGlobalVerseNumber() === -1) {
+         console.warn("VerseGameSegment | previousGuessesContainsVerse | Verse global number is -1: ", other)
+      }
+      for (let currentVerse of this.previousGuesses) {
+         console.log("VerseGameSegment | previousGuessesContainsVerse | ", other.getGlobalVerseNumber(), currentVerse.getGlobalVerseNumber())
+         if (other.getGlobalVerseNumber() === currentVerse.getGlobalVerseNumber()) {
+            console.log("VerseGameSegment | previousGuessesContainsVerse | True")
+            return true;
+         }
+      }
+      console.log("VerseGameSegment | previousGuessesContainsVerse | False")
+      return false;
+   }
+   setHasSuccessfullyGuessed = (gussed: boolean) => {
+      this.hasSuccessfullyGuessed = gussed
+      this.emitChange()
    }
    setErrorLoadingVerses = (errorLoadingVerses: boolean) => {
       this.errorLoadingVerses = errorLoadingVerses;
@@ -68,9 +87,15 @@ export class VerseGameSegment extends Subscribable {
       this.emitChange();
    }
    addPreviousGuess = (verseUserGuessed: Verse) => {
-      this.guesses+=1;
+      if (verseUserGuessed.getGlobalVerseNumber() === -1) {
+         console.warn("VerseGameSegment | addPreviousGuess | Added previous user guess but the global index is -1")
+      }
+      this.guesses += 1;
       this.previousGuesses = [...this.previousGuesses, verseUserGuessed]
       this.emitChange()
+   }
+   getHasSuccessfullyGuessed = (): boolean => {
+      return this.hasSuccessfullyGuessed;
    }
    getErrorLoadingVerses = (): boolean => {
       return this.errorLoadingVerses;
@@ -97,6 +122,13 @@ export class VerseGameSegment extends Subscribable {
       return this.verseToGuess;
    }
    getPreviousGuesses = (): Verse[] => {
-      return [...this.previousGuesses]
+      return this.previousGuesses
    }
+   // calculauteScore = (): number => {
+   //    if (!this.hasSuccessfullyGuessed) {
+   //       return 0;
+   //    } else {
+   //       // return (100 - Math.abs(this.verseToGuess.getGlobalVerseNumber() - ))
+   //    }
+   // }
 }

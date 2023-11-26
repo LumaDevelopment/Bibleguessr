@@ -10,7 +10,6 @@ const SERVER_URL = "http://localhost:8888"
  * @returns A promise for a BibleData object or undefined if the server is offline.
  */
 export const getServerBibleData = async (): Promise<BibleData | undefined> => {
-   console.log("Middlelayer | getServerBibleData")
    return fetch(SERVER_URL + "/bible/get-bible-data").then((response) => response.json()).then((data) => {
       try {
          console.log("Middlelayer | getServerBibleData | Retrieved data!")
@@ -46,13 +45,15 @@ export const getServerBibleData = async (): Promise<BibleData | undefined> => {
 
 
 /**
- * Note: The context is not guranteed. If you request 5 context, you expect 11 verses back. However, if the random verse is at the start of the book (genesis: 1, 1), then
+ * Note: The context is not guaranteed. If you request 5 context, you expect 11 verses back. However, if the random verse is at the start of the book (genesis: 1, 1), then
  * it will return genesis chapter 1 as the verse to guess and 10 verse below and zero verses above.
+ * 
+ * This function is designed to be blocking, hence why it doesn't return a promise.
  * 
  * @returns 
  */
 export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment): Promise<VerseGameSegment | undefined> => {
-   console.log("Middlelayer | getRandomVerse")
+   console.log("Middlelayer | getRandomVerseGameSegment | Called")
    currentSegment.setIsLoadingVerses(true);
    currentSegment.setErrorLoadingVerses(false);
    const urlParams: Record<string, string> = {
@@ -60,12 +61,13 @@ export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment
       // Convert to string.
       numOfContextVerses: currentSegment.getContextVersesDefault() + ""
    }
-   await fetch(SERVER_URL + "/bible/random-verse?" + new URLSearchParams(urlParams).toString().replace("+", "%20"), {
+   return await fetch(SERVER_URL + "/bible/random-verse?" + new URLSearchParams(urlParams).toString().replace("+", "%20"), {
       headers: {
          "Access-Control-Allow-Origin": "no-cors"
       }
    }).then((response => response.json())).then((data) => {
       // Process the data here
+      console.log("Middlelayer | getRandomVerseGameSegment | Received Response", data)
       try {
          const belowVerses: Verse[] = []
          const aboveVerses: Verse[] = []
@@ -91,20 +93,37 @@ export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment
          currentSegment.setContextVersesBelow(belowVerses)
          currentSegment.setIsLoadingVerses(false);
          currentSegment.setErrorLoadingVerses(false);
+         console.log("Middlelayer | getRandomVerseGameSegment | Finished Processing Data", currentSegment)
          return currentSegment;
       } catch (e) {
-         if (e instanceof Error) {
-            console.error("Middlelayer | getRandomVerse | Parsing Error: " + e.message);
-         } else {
-            console.error("Middlelayer | getRandomVerse | Parsing Error: " + e);
-         }
+         console.error("Middlelayer | getRandomVerse | Parsing Error: ", e);
          currentSegment.setIsLoadingVerses(false);
          currentSegment.setErrorLoadingVerses(true);
          return undefined;
       }
    })
-   // This code hypothetically should never be reached.
-   currentSegment.setIsLoadingVerses(false);
-   currentSegment.setErrorLoadingVerses(false);
-   return currentSegment;
+}
+
+
+export const setGlobalIndexFromVerse = async (verse: Verse, bibleData: BibleData): Promise<number> => {
+   console.log("Middlelayer | setGlobalIndexFromVerse | Called For "+verse.getVerseIdentifier());
+   const bookIndex = bibleData.getBookIndex(verse.getBibleVersion(), verse.getBookName())
+   const URL = `${SERVER_URL}/bible/index-by-reference?bookIndex=${bookIndex}&chapterNum=${verse.getChapter()}&verseNum=${verse.getVerseNumber()}`
+   return await fetch(URL, {headers: {
+      "Access-Control-Allow-Origin": "no-cors"
+   }}).then((response => response.json())).then((data) => {
+      try {
+         const index = Number(data.index)
+         if (index=== -1) {
+            console.error("Middlelayer | getGlobalIndexFromVerse | Unable to find global index for verse");
+         }
+         console.log("Middlelayer | getGlobalIndexFromVerse | Found global index for verse: "+index+" w/ "+verse.getVerseIdentifier());
+         verse.setGlobalVerseNumber(index);
+         return index;
+      } catch (e) {
+         console.error("Middlelayer | getGlobalIndexFromVerse | Parsing Error: ", e);
+         verse.setGlobalVerseNumber(-1)
+         return -1;
+      }
+   });
 }

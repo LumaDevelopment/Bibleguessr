@@ -9,7 +9,7 @@
     align-items: center;
     flex-direction: column;
     width: 100%;
-    border: 1px solid red;
+    cursor: wait;
 }
 
 .VerseGameScreen-guessing {
@@ -17,11 +17,81 @@
    width: 100%;
    justify-content: center;
    gap: 20px;
+   font-size: 18px;
+   font-weight: 600;
+}
+
+.VerseGameScreen-guesses-count {
+   font-size: 25px;
 }
 
 .VerseGameScreen-guess-button {
-   width: 100px;
+   width: 130px;
    height: 50px;
+   border-radius: 5px;
    background-color: green;
-   color: black;
+   color: white;
+   margin: 20px auto;
+   display: block;
+   font-size: 20px;
+   transition: 0.3s ease-in-out;
+}
+
+.VerseGameScreen-guess-button:hover {
+   cursor: pointer;
+   transform: scale(1.05);
+   box-shadow: 2px 2px 5px black;
+}
+
+.VerseGameScreen-guess-button:active {
+   cursor: pointer;
+   transform: scale(0.95);
+   box-shadow: 0px black;
+}
+
+.VerseGameScreen-bibleVersion {
+   text-align: left;
+   font-size: 20px;
+   font-weight: 500;
+}
+
+.VerseGameScreen-text-container > p {
+   padding: 5px;
+   margin: 5px;
+}
+
+.VerseGameScreen-text-container {
+   display: flex;
+   flex-direction: column;
+   text-align: left;
+   gap: 0px;
+   margin: 0 auto;
+   width: 100%;
+   max-width: 800px;
+   /* max-height: 800px;
+   overflow-y: auto; */
+   border: 1px solid black;
+   box-shadow: 2px 2px 5px black;
+   background-color: #f5f5eb;
+   border-radius: 10px;
+   padding-left: 20px;
+   padding-right: 20px;
+}
+
+.VerseGameScreen-select {
+   width: 200px;
+   font-size: 18px;
+   padding:5px;
+}
+
+.VerseGameScreen-number {
+   width: 75px;
+   font-size: 18px;
+   padding:5px;
+}
+
+.VerseGameScreen-previous-guesses-selected {
+   font-weight: 600;
+   color: red;
+   transition: 0.3s ease-in-out;
 }

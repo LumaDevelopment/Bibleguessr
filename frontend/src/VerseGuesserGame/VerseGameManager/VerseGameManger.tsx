@@ -6,37 +6,29 @@ import { InitialSettings } from "../Screens/InitialSettings/InitialSettings"
 import "./VerseGameManager.css"
 import { VerseGameScreen } from "../Screens/VerseGameScreen/VerseGameScreen"
 import { Verse } from "../../DataStructures/Global/Verse"
+import { FinishScreen } from "../Screens/FinishScreen/FinishScreen"
 
 export const VerseGameManager: React.FC = () => {
    const gameStore = useMemo(() => {
       let store = new VerseGameStore();
-      let firstSegment = new VerseGameSegment("King James Bible", 5)
+      let firstSegment = new VerseGameSegment(store.getDefaultBibleVersion(), store.getDefaultContextVerses())
       store.addNewGameSegment(firstSegment)
       return store;
    }, [])
    const currentUserScreen: VerseGameScreenSelector = useSyncExternalStore(gameStore.subscribe, gameStore.getCurrentUserScreen)
-   const activeGameSegment: VerseGameSegment = useSyncExternalStore(gameStore.subscribe, gameStore.getActiveGameSegment)
+   console.log("Current Store", gameStore)
    return (
       <>
          {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings verseGameStore={gameStore} />}
          {currentUserScreen === "MAIN GUESSER" && <VerseGameScreen verseGameStore={gameStore} />}
-         {currentUserScreen === "FINISH SCREEN" && <></>}
-
-         
+         {currentUserScreen === "FINISH SCREEN" && <FinishScreen verseGameStore={gameStore}/>}
          <div className="VerseGameManager-footer">
             <a className="VerseGameManager-button" onClick={() => {
-               if (currentUserScreen !== "INITIAL SETTINGS") {
-                  gameStore.previousScreen()
-               }
-               // Todo: Fix this back logic.
-            }} href={currentUserScreen !== "INITIAL SETTINGS" ? "/" : "#"}>Back</a>
+               gameStore.previousScreen()
+            }} href="#">Back</a>
+      
             <a className="VerseGameManager-button" onClick={() => {
-               if (!(currentUserScreen === "INITIAL SETTINGS" && (gameStore.getBibleData() === undefined || gameStore.getActiveGameSegment() === undefined))) {
-                  gameStore.nextScreen()
-               }
-               if (currentUserScreen === "INITIAL SETTINGS") {
-                  activeGameSegment.initVerses();
-               }
+               gameStore.nextScreen()
             }} href="#">{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</a>
          </div>
       </>

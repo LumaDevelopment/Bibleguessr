@@ -1,0 +1,33 @@
+.SegmentBreakdown-container {
+   display: flex;
+   align-items: center;
+   flex-direction: column;
+   border: 1px solid gray;
+   border-radius: 10px;
+   width: 100%;
+   max-width: 600px;
+   padding: 15px;
+   margin: 0 auto;
+}
+
+.SegmentBreakdown-verse {
+   font-size: 25px;
+   margin: 0;
+   line-height: 30px;
+}
+
+.SegmentBreakdown-guess-list-wrapper {
+   text-align: left;
+}
+
+.FinishScreen-container {
+   text-align: center;
+}
+
+.FinishScreen-past-segments-wrapper {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   flex-direction: column;
+   gap: 30px;
+}

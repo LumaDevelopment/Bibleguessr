@@ -17,9 +17,6 @@ export const InitialSettings: React.FC<InitialSettingsProps> = (props) => {
    const currentBook = useSyncExternalStore(activeUserGameSegment.subscribe, activeUserGameSegment.getBibleVersion)
    const allowedSurroundingVerses = useSyncExternalStore(activeUserGameSegment.subscribe, activeUserGameSegment.getContextVersesDefault)
    
-   console.log("Initial Settings | props: ")
-   console.log(props)
-
    return (
       <div className="InitialSettings-container">
          <div className="InitialSettings-header">
