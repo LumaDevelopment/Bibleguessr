@@ -169,6 +169,20 @@ public class BibleService extends Microservice {
         // Now that we're here, we can do a couple of parameter sanity checks
         String versionName = request.getVersion();
         Version version = bibleVersionMgr.getVersionByName(versionName);
+
+        // Handling for invalid version name
+        if (version == null) {
+
+            logger.error("Received request for invalid version name: \"{}\"!", versionName);
+
+            responseContent.put("bibleVersion", versionName);
+            responseContent.set("verseArray", GlobalObjectMapper.get().createArrayNode());
+            responseContent.put("localVerseIndex", -1);
+
+            return new Response(responseContent, request.getUUID());
+
+        }
+
         int numOfContextVerses = request.getNumOfContextVerses();
 
         // Sanity checks are done in the parse() method of RandomVerseRequest
