@@ -1,5 +1,6 @@
 package gg.bibleguessr.api_gateway.comms;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rabbitmq.client.*;
 import gg.bibleguessr.backend_utils.CommsCallback;
@@ -182,55 +183,59 @@ public class RabbitMQRequestExecutor {
                 public void handleDelivery(String consumerTag,
                                            Envelope envelope,
                                            AMQP.BasicProperties properties,
-                                           byte[] body) {
+                                           byte[] body) throws IOException {
 
-                    // Convert byte array to String
-                    String messageBody = new String(body, charset);
+                    String uuid = null;
 
-                    // Pull the UUID from the message body without
-                    // deserializing the entire message
-                    int indexOfUUID = messageBody.indexOf("\"uuid\":\"") + 8;
+                    // Convert the message body to JSON object
+                    ObjectNode objectNode = GlobalObjectMapper.parseBytesAsJSONObject(body);
 
-                    // Attempt to pull the UUID from the
-                    // message body
-                    try {
+                    if (objectNode != null) {
+                        JsonNode jsonNode = objectNode.get("uuid");
+                        if (jsonNode != null && jsonNode.isTextual()) {
+                            uuid = jsonNode.asText();
+                        }
+                    }
 
-                        String uuid = messageBody.substring(indexOfUUID, indexOfUUID + 36);
+                    if (uuid == null) {
+                        logger.error("Received malformed response from service wrapper: {}", new String(body, charset));
+                        channel.basicAck(envelope.getDeliveryTag(), false);
+                        return;
+                    }
 
-                        // If the UUID is valid and is a key in the single responses
-                        // map or multi responses map, then either called the
-                        // SingleResponseCallback or add the
+                    // If the UUID is valid and is a key in the single responses
+                    // map or multi responses map, then either called the
+                    // SingleResponseCallback or add the
 
-                        synchronized (singleResponses) {
+                    synchronized (singleResponses) {
 
-                            SingleResponseCallback src = singleResponses.remove(uuid);
+                        SingleResponseCallback src = singleResponses.remove(uuid);
 
-                            if (src != null) {
+                        if (src != null) {
 
-                                src.onResponse(messageBody);
+                            src.onResponse(new String(body, charset));
+                            channel.basicAck(envelope.getDeliveryTag(), false);
 
-                                // Don't need to proceed if we've found a single response
-                                // callback, since we've already called it
-                                return;
-
-                            }
+                            // Don't need to proceed if we've found a single response
+                            // callback, since we've already called it
+                            return;
 
                         }
 
-                        synchronized (multiResponses) {
+                    }
 
-                            LinkedList<String> responses = multiResponses.get(uuid);
+                    synchronized (multiResponses) {
 
-                            if (responses == null) {
-                                return;
-                            }
+                        LinkedList<String> responses = multiResponses.get(uuid);
 
-                            responses.push(messageBody);
-
+                        if (responses == null) {
+                            channel.basicReject(envelope.getDeliveryTag(), true);
+                            return;
                         }
 
-                    } catch (IndexOutOfBoundsException e) {
-                        logger.error("Received malformed response from service wrapper: {}", messageBody);
+                        responses.push(new String(body, charset));
+                        channel.basicAck(envelope.getDeliveryTag(), false);
+
                     }
 
                 }
@@ -299,6 +304,8 @@ public class RabbitMQRequestExecutor {
                 callbackCalled.set(true);
 
             }
+
+            latch.countDown();
 
         };
 
