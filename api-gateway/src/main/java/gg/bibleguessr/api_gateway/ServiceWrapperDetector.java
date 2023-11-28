@@ -1,5 +1,6 @@
 package gg.bibleguessr.api_gateway;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.api_gateway.comms.CommsOrchestrator;
@@ -7,16 +8,14 @@ import gg.bibleguessr.backend_utils.CommsCallback;
 import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
 import gg.bibleguessr.backend_utils.StatusCode;
+import gg.bibleguessr.service_wrapper.Request;
 import gg.bibleguessr.service_wrapper.self_service.GetIDsRequest;
 import gg.bibleguessr.service_wrapper.self_service.SelfService;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 public class ServiceWrapperDetector {
@@ -143,19 +142,83 @@ public class ServiceWrapperDetector {
     }
 
     /**
-     * Given a RabbitMQ configuration, detect all
-     * running Service Wrappers connected to the
-     * RabbitMQ broker, and the services they run.
+     * Given the communications orchestrator,
+     * send a RabbitMQ request which will prompt
+     * all service wrappers to respond with which
+     * services they have running. From here, compile
+     * a set of services that we can access. Uses the
+     * RabbitMQ configuration, so we have the microservice
+     * ID field and request path field names.
      *
-     * @param rabbitMQConfig The RabbitMQ configuration.
+     * @param config         The RabbitMQ configuration.
      * @param orchestrator   The CommsOrchestrator, through
      *                       which we can send requests.
      * @return A set of the IDs of all services that are
      * hosted across all service wrappers connected to
      * the RabbitMQ broker.
      */
-    public static HashSet<String> detectRabbitMQServiceWrappers(RabbitMQConfiguration rabbitMQConfig, CommsOrchestrator orchestrator) {
-        return new HashSet<>();
+    public static HashSet<String> detectRabbitMQServiceWrappers(RabbitMQConfiguration config, CommsOrchestrator orchestrator) {
+
+        Logger logger = LoggerFactory.getLogger(ServiceWrapperDetector.class.getSimpleName());
+        HashSet<String> serviceIDs = new HashSet<>();
+
+        // Generate a unique ID for this request
+        String uuid = UUID.randomUUID().toString();
+
+        // Create JSON object
+        ObjectNode request = GlobalObjectMapper.get().createObjectNode();
+
+        // Put in meta-level parameters like UUID,
+        // microservice ID and request path.
+        request.put(Request.UUID_PARAMETER_NAME, uuid);
+        request.put(config.microserviceIDField(), SelfService.ID);
+        request.put(config.requestPathField(), GetIDsRequest.REQUEST_PATH);
+
+        byte[] body;
+
+        try {
+            body = GlobalObjectMapper.get().writeValueAsBytes(request);
+        } catch (JsonProcessingException e) {
+            logger.error("Encountered error while converting request to byte array!", e);
+            return serviceIDs;
+        }
+
+        // Make the request and get the responses.
+        List<ObjectNode> responses = orchestrator.makeRabbitMQRequest(uuid, body);
+
+        // Iterate through all responses and add IDs to set
+        while (!responses.isEmpty()) {
+            ObjectNode response = responses.remove(0);
+            JsonNode idsProperty = response.get("ids");
+
+            if (idsProperty == null || !idsProperty.isArray()) {
+                logger.warn("Received response from service wrapper that did not contain an array of IDs!");
+                continue;
+            }
+
+            // Iterate through all the elements of the ids array
+            for (int i = 0; i < idsProperty.size(); i++) {
+
+                // Get what should be an ID
+                JsonNode rawID = idsProperty.get(i);
+
+                // Insure it's actually an ID
+                if (!rawID.isTextual()) {
+                    logger.warn("Service Wrapper's get-data response contained a non-textual ID!");
+                    continue;
+                }
+
+                // Add to set
+                String id = rawID.asText();
+                serviceIDs.add(id);
+
+            }
+
+        }
+
+        // Finally, add all service IDs
+        return serviceIDs;
+
     }
 
 }
