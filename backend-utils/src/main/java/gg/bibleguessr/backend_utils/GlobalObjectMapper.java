@@ -49,6 +49,32 @@ public class GlobalObjectMapper {
      * @return The parsed message as a JSON object, or null if
      * the message could not be parsed.
      */
+    public static ObjectNode parseBytesAsJSONObject(byte[] message) {
+
+        try {
+
+            JsonNode jsonNode = get().readTree(message);
+            if (jsonNode.isObject()) {
+                return (ObjectNode) jsonNode;
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
+
+    /**
+     * Attempts to parse the given message as a JSON object.
+     * If this fails at any point along the process, null is
+     * returned.
+     *
+     * @param message The message to parse.
+     * @return The parsed message as a JSON object, or null if
+     * the message could not be parsed.
+     */
     public static ObjectNode parseStringAsJSONObject(String message) {
 
         try {
@@ -61,10 +87,8 @@ public class GlobalObjectMapper {
             }
 
         } catch (Exception e) {
-            // Ignore.
+            return null;
         }
-
-        return null;
 
     }
 

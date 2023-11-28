@@ -28,6 +28,12 @@ import java.util.List;
  * @param rabbitMQConfig               The configuration for RabbitMQ. Requests are made to all possible
  *                                     Service Wrappers connected to this broker. Only used if
  *                                     <code>reqExecutionProtocol</code> is <code>RabbitMQ</code>.
+ * @param singleResponseTimeoutInMs    The timeout in milliseconds for single-response requests. How long
+ *                                     to wait for a response to a request before declaring that the
+ *                                     communication failed.
+ * @param multiResponseTimeoutInMs     The timeout in milliseconds for multi-response requests. How long
+ *                                     to go without receiving a response before declaring that all
+ *                                     responses have been received.
  */
 public record APIGatewayConfig(
         int port,
@@ -36,7 +42,9 @@ public record APIGatewayConfig(
         String apiKey,
         List<String> httpSockets,
         List<String> allowedCorsOrigins,
-        RabbitMQConfiguration rabbitMQConfig
+        RabbitMQConfiguration rabbitMQConfig,
+        long singleResponseTimeoutInMs,
+        long multiResponseTimeoutInMs
 ) {
 
     /**
@@ -48,6 +56,8 @@ public record APIGatewayConfig(
      * - {@code httpSockets} is {@code ["localhost:8890"]}<br>
      * - {@code allowedCorsOrigins} is {@code ["http://localhost:5173"]}<br>
      * - {@code rabbitMQConfig} is the default.<br>
+     * - {@code singleResponseTimeoutInMs} is {@code 500} (500 milliseconds).<br>
+     * - {@code multiResponseTimeoutInMs} is {@code 300} (300 milliseconds).
      *
      * @return The default configuration for the API Gateway
      */
@@ -59,7 +69,9 @@ public record APIGatewayConfig(
                 "",
                 List.of("localhost:8890"),
                 List.of("http://localhost:5173"),
-                RabbitMQConfiguration.getDefault()
+                RabbitMQConfiguration.getDefault(),
+                500,
+                300
         );
     }
 
