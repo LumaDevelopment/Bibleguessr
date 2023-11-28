@@ -31,6 +31,10 @@
    background-color: blue;
 }
 
+.Block-button-orange {
+   background-color: orange;
+}
+
 .Block-button:hover {
    cursor: pointer;
    transform: scale(1.05);

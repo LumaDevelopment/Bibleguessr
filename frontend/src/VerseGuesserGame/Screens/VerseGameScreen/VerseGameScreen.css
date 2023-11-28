@@ -73,3 +73,16 @@
    transition: 0.3s ease-in-out;
 }
 
+
+.VerseGameScreen-select-border {
+   border: 2px solid red !important;
+   border-radius: 5px;
+}
+
+.VerseGameScreen-select-border:active {
+   border: 2px solid red !important;
+}
+
+.VerseGameScreen-hints > p {
+   font-size: 18px;
+}

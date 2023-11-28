@@ -42,6 +42,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    const { verseGameStore } = props
 
    const activeGameSegment: VerseGameSegment = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getActiveGameSegment)
+   const hintCount = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getHints)
    const bibleData = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getBibleData)
    const bibleVersion = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getBibleVersion)
    const contextVersesAbove = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getContextVersesAbove)
@@ -56,6 +57,8 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    const [bookGuess, setBookGuess] = useState((bibleData.bibleBookNames.get(bibleVersion) as string[])[0] as string)
    const [chapterGuess, setChapterGuess] = useState(1)
    const [verseNumberGuess, setVerseNumberGuess] = useState(1)
+
+   // const navigator = useNavigate()
 
    const hasUserAlreadyGuessedThisVerse: boolean = useMemo(() => {
       if (guesses === 0) {
@@ -101,7 +104,9 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
       </div>)
    }
 
-   // const navigator = useNavigate()
+   const shouldDisplayHint1 = (hintCount >= 1) && (bookGuess !== verseToGuess.getBookName())
+   const shouldDisplayHint2 = (hintCount >= 2) && (chapterGuess !== verseToGuess.getChapter())
+   const shouldDisplayHint3 = (hintCount >= 3) && (verseNumberGuess !== verseToGuess.getVerseNumber())
 
    return (
       <div className="VerseGameScreen-container" style={isProcessingUserGuess ? { "cursor": "wait" } : {}}>
@@ -122,28 +127,39 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
          <div className="VerseGameScreen-guessing">
             <div>
                <p>Book</p>
-               <select className="VerseGameScreen-select" onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                  setBookGuess(event.target.value)
-               }}>
+               <select
+                  className={"VerseGameScreen-select " + (shouldDisplayHint1 ? "VerseGameScreen-select-border" : "")}
+                  onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                     setBookGuess(event.target.value)
+                  }}>
                   {bibleData.bibleBookNames.get(bibleVersion)?.map((name: string, i: number) => <option key={"VerseGameScreen_bible_version_option_" + i}>{name}</option>)}
                </select>
             </div>
             <div>
                <p>Chapter</p>
-               <input className="VerseGameScreen-number" min={1} max={bibleData.getChapterCountForBook(bibleVersion, bookGuess)} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  setChapterGuess(Number(event.target.value))
-               }} />
+               <input
+                  className={"VerseGameScreen-number " + (shouldDisplayHint2 ? "VerseGameScreen-select-border" : "")}
+                  min={1}
+                  max={bibleData.getChapterCountForBook(bibleVersion, bookGuess)} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                     setChapterGuess(Number(event.target.value))
+                  }} />
             </div>
             <div>
                <p>Verse</p>
-               <input className="VerseGameScreen-number" min={1} max={bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess)} value={verseNumberGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  setVerseNumberGuess(Number(event.target.value))
-               }} />
+               <input
+                  className={"VerseGameScreen-number " + (shouldDisplayHint3 ? "VerseGameScreen-select-border" : "")}
+                  min={1}
+                  max={bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess)} value={verseNumberGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                     setVerseNumberGuess(Number(event.target.value))
+                  }} />
             </div>
          </div>
          <div className="Block-button-wrapper">
+            {hintCount < 3 && <button className="Block-button Block-button-orange" onClick={() => activeGameSegment.addHint()}>
+               Hint
+            </button>}
             <button
-               className={"Block-button Block-button-yellow"}
+               className={"Block-button " + (hintCount < 3 ? "Block-button-yellow" : "Block-button-green")}
                onClick={async () => {
                   if (isProcessingUserGuess || hasUserAlreadyGuessedThisVerse) {
                      return;
@@ -154,9 +170,9 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                   verseGameStore.addNewGameSegment(nextSegment);
                   verseGameStore.setIsProcessingUserGuess(false)
                }}>
-               Skip
+               {hintCount < 3 ? "Skip" : "Next"}
             </button>
-            <button
+            {hintCount < 3 && <button
                className={"Block-button" + (hasUserAlreadyGuessedThisVerse ? " Block-button-red" : " Block-button-green")}
                onClick={async () => {
                   if (isProcessingUserGuess || hasUserAlreadyGuessedThisVerse) {
@@ -178,8 +194,14 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                   verseGameStore.setIsProcessingUserGuess(false)
                }}>
                Guess {guesses + 1}
-            </button>
+            </button>}
          </div>
+         {hintCount > 0 && <div className="VerseGameScreen-hints">
+            <p><b>Hints</b></p>
+            {hintCount >= 1 && <p>Book: {verseToGuess.getBookName()}</p>}
+            {hintCount >= 2 && <p>Chapter: {verseToGuess.getChapter()}</p>}
+            {hintCount >= 3 && <p>Verse: {verseToGuess.getVerseNumber()}</p>}
+         </div>}
          {guesses > 0 && <div className="VerseGameScreen-previous-guesses">
             <h4>Previous Guesses</h4>
             {activeGameSegment.getPreviousGuesses().map((value: Verse, index: number) => {

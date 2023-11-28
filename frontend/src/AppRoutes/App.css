@@ -5,7 +5,7 @@
     margin: none;
     padding: none;
     height: 100vh;
-    overflow-x: none;
+    overflow-x: hidden;
     overflow-y: auto;
     scroll-behavior: smooth;
 

@@ -21,7 +21,7 @@ export class VerseGameSegment extends Subscribable {
     */
    private contextVersesAbove: Verse[] = [];
    /**
-    * Verses that are below the verse to guess (higher global number)
+    * Verses that are below the verse to guess (lower global number)
     */
    private contextVersesBelow: Verse[] = [];
    private previousGuesses: Verse[] = []
@@ -29,6 +29,7 @@ export class VerseGameSegment extends Subscribable {
    private isLoadingVerses: boolean = false;
    private errorLoadingVerses: boolean = false;
    private hasSuccessfullyGuessed: boolean = false;
+   private hintCount: number = 0;
    constructor(bibleVersion: string, contextVerseDefault: number) {
       super()
       this.bibleVersion = bibleVersion;
@@ -50,6 +51,10 @@ export class VerseGameSegment extends Subscribable {
       }
       console.log("VerseGameSegment | previousGuessesContainsVerse | False")
       return false;
+   }
+   addHint = () => {
+      this.hintCount+=1;
+      this.emitChange()
    }
    setHasSuccessfullyGuessed = (gussed: boolean) => {
       this.hasSuccessfullyGuessed = gussed
@@ -93,6 +98,9 @@ export class VerseGameSegment extends Subscribable {
       this.guesses += 1;
       this.previousGuesses = [...this.previousGuesses, verseUserGuessed]
       this.emitChange()
+   }
+   getHints = (): number => {
+      return this.hintCount;
    }
    getHasSuccessfullyGuessed = (): boolean => {
       return this.hasSuccessfullyGuessed;
