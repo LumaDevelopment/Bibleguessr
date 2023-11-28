@@ -158,6 +158,12 @@ public class BibleTextMgr {
                 } else {
 
                     // This is verse text
+
+                    if (verseIndex == verseText.length) {
+                        logger.error("Too many verses in Bible version: " + versionName);
+                        return false;
+                    }
+
                     verseText[verseIndex] = line;
                     verseIndex++;
 

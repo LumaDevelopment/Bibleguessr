@@ -1,7 +1,9 @@
 package gg.bibleguessr.api_gateway.comms;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import gg.bibleguessr.api_gateway.APIGateway;
 import gg.bibleguessr.backend_utils.CommsCallback;
+import gg.bibleguessr.backend_utils.RabbitMQConfiguration;
 import gg.bibleguessr.backend_utils.StatusCode;
 import io.vertx.core.Vertx;
 import okhttp3.HttpUrl;
@@ -177,7 +179,7 @@ public class CommsOrchestrator {
     }
 
     /**
-     * Passes RabbitMQ requests off to the RabbitMQ Request Executor.
+     * Makes a single response RabbitMQ request.
      *
      * @param uuid     The unique ID of the request.
      * @param body     The JSON request body, serialized into a byte array.
@@ -185,6 +187,17 @@ public class CommsOrchestrator {
      */
     public void makeRabbitMQRequest(String uuid, byte[] body, CommsCallback callback) {
         this.rabbitMQReqExec.singleResponseRequest(uuid, body, callback);
+    }
+
+    /**
+     * Makes a multi response RabbitMQ request.
+     *
+     * @param uuid The unique ID of the request.
+     * @param body The JSON request body, serialized into a byte array.
+     * @return A list of responses received from the service wrappers.
+     */
+    public List<ObjectNode> makeRabbitMQRequest(String uuid, byte[] body) {
+        return this.rabbitMQReqExec.multiResponseRequest(uuid, body);
     }
 
     /**
@@ -201,9 +214,16 @@ public class CommsOrchestrator {
 
     /**
      * Shuts down the HTTP server and the Vert.x instance.
+     * Also, shuts down the RabbitMQ executor if it exists.
      */
     public void shutdown() {
+
         vertx.close();
+
+        if (this.rabbitMQReqExec != null) {
+            this.rabbitMQReqExec.shutdown();
+        }
+
     }
 
     /* ---------- CONFIG RETRIEVAL METHODS ---------- */
@@ -235,6 +255,38 @@ public class CommsOrchestrator {
      */
     public int getHTTPRequestReceiverPort() {
         return this.apiGateway.getConfig().port();
+    }
+
+    /**
+     * Gets the amount of time that must have passed since
+     * we last received a response to a multi response request
+     * until we conclude we have received all responses.
+     *
+     * @return The multi-response timeout in milliseconds.
+     */
+    public long getMultiResponseTimeoutInMs() {
+        return this.apiGateway.getConfig().multiResponseTimeoutInMs();
+    }
+
+    /**
+     * Gets the configuration by which the API gateway
+     * can connect to the RabbitMQ broker.
+     *
+     * @return The RabbitMQ configuration.
+     */
+    public RabbitMQConfiguration getRabbitMQConfig() {
+        return this.apiGateway.getConfig().rabbitMQConfig();
+    }
+
+    /**
+     * Gets the amount of time that must pass without
+     * a response to a single response message before
+     * we declare the request has failed.
+     *
+     * @return The single-response timeout in milliseconds.
+     */
+    public long getSingleResponseTimeoutInMs() {
+        return this.apiGateway.getConfig().singleResponseTimeoutInMs();
     }
 
 }

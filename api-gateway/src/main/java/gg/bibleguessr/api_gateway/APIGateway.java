@@ -395,7 +395,7 @@ public class APIGateway {
             // Create JSON object
             ObjectNode request = GlobalObjectMapper.get().createObjectNode();
 
-            // Put in meta-level parameters like UUId,
+            // Put in meta-level parameters like UUID,
             // microservice ID and request path.
             request.put(Request.UUID_PARAMETER_NAME, uuid);
             request.put(this.config.rabbitMQConfig().microserviceIDField(), microserviceID);
