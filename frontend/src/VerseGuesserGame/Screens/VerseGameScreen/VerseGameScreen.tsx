@@ -5,6 +5,8 @@ import { Verse } from "../../../DataStructures/Global/Verse"
 import { BibleData } from "../../../DataStructures/Global/BibleData"
 import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
 import { getRandomVerseGameSegment, setGlobalIndexFromVerse } from "../../../AppRoutes/Middlelayer"
+import "../../../DataStructures/Global/Buttons.css"
+import { useNavigate, useNavigation } from "react-router-dom"
 
 interface VerseGameScreenVerseTextProps {
    verse: Verse
@@ -22,7 +24,10 @@ const VerseGameScreenVerseText: React.FC<VerseGameScreenVerseTextProps> = (props
          "border": (verseHasBeenGuessed ? "1px solid red" : ""),
          "borderRadius": "10px",
          "fontWeight": (shouldBeBolded ? "600" : "400"),
-      }} key={"VerseGameScreen_Verse_" + verse.getGlobalVerseNumber()}>
+      }}
+         key={"VerseGameScreen_Verse_" + verse.getGlobalVerseNumber()}
+         id={text.split(" ").join("-")}
+      >
          {!verseHasBeenGuessed ? <b>✞ </b> : <b>{verse.getVerseNumber()} </b>}
          {text}
       </p>
@@ -97,13 +102,20 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
       </div>)
    }
 
+   // const navigator = useNavigate()
+
    return (
       <div className="VerseGameScreen-container" style={isProcessingUserGuess ? { "cursor": "wait" } : {}}>
-         <h2>Guess bolded the verse</h2>
+         <h2>Guess the bolded verse</h2>
          <h3>Round {verseGameStore.getGameSegments().length + 1}</h3>
-         <p>{verseToGuess.getBookName()}, {verseToGuess.getChapter()}, {verseToGuess.getVerseNumber()}</p>
+         {/* <p>{verseToGuess.getBookName()}, {verseToGuess.getChapter()}, {verseToGuess.getVerseNumber()}</p> */}
+         <div className="Block-button-wrapper">
+            <button className="Block-button Block-button-blue Block-button-extended" onClick={() => {
+               // navigator(verseToGuess.getText().split(" ").join("-"))
+            }}>Jump To Verse</button>
+         </div>
          <div className="VerseGameScreen-text-container">
-            <p className="VerseGameScreen-bibleVersion"><b>{bibleVersion}</b></p>
+            <p className="VerseGameScreen-bibleVersion"><b>{bibleVersion}📖</b></p>
             {contextVersesBelow.map((currentVerse: Verse) => <VerseGameScreenVerseText key={"VerseGameScreen-context-verse-below-" + currentVerse.getGlobalVerseNumber()} verse={currentVerse} verseHasBeenGuessed={activeGameSegment.previousGuessesContainsVerse(currentVerse)} shouldBeBolded={false} />)}
             <VerseGameScreenVerseText verse={verseToGuess} verseHasBeenGuessed={false} shouldBeBolded={true} />
             {contextVersesAbove.map((currentVerse: Verse) => <VerseGameScreenVerseText key={"VerseGameScreen-context-verse-above-" + currentVerse.getGlobalVerseNumber()} verse={currentVerse} verseHasBeenGuessed={activeGameSegment.previousGuessesContainsVerse(currentVerse)} shouldBeBolded={false} />)}
@@ -130,30 +142,45 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                }} />
             </div>
          </div>
-         <button
-            className={"VerseGameScreen-guess-button"}
-            style={hasUserAlreadyGuessedThisVerse ? {"backgroundColor": "red"} : {}}
-            onClick={async () => {
-               if (isProcessingUserGuess || hasUserAlreadyGuessedThisVerse) {
-                  return;
-               }
-               verseGameStore.setIsProcessingUserGuess(true)
-               let correct = bookGuess === verseToGuess.getBookName() && chapterGuess === verseToGuess.getChapter() && verseNumberGuess === verseToGuess.getVerseNumber()
-               let verseUserGuessed = new Verse(bibleVersion, bookGuess, chapterGuess, verseNumberGuess, -1, "");
-               await setGlobalIndexFromVerse(verseUserGuessed, bibleData)
-               activeGameSegment.addPreviousGuess(verseUserGuessed);
-               if (correct) {
-                  activeGameSegment.setHasSuccessfullyGuessed(true)
+         <div className="Block-button-wrapper">
+            <button
+               className={"Block-button Block-button-yellow"}
+               onClick={async () => {
+                  if (isProcessingUserGuess || hasUserAlreadyGuessedThisVerse) {
+                     return;
+                  }
+                  verseGameStore.setIsProcessingUserGuess(true)
                   let nextSegment: VerseGameSegment = new VerseGameSegment(activeGameSegment.getBibleVersion(), activeGameSegment.getContextVersesDefault());
                   nextSegment.initVerses()
                   verseGameStore.addNewGameSegment(nextSegment);
-               } else {
-                  console.log("VerseGameScreen | Incorrect");
-               }
-               verseGameStore.setIsProcessingUserGuess(false)
-            }}>
-            Guess {guesses + 1}
-         </button>
+                  verseGameStore.setIsProcessingUserGuess(false)
+               }}>
+               Skip
+            </button>
+            <button
+               className={"Block-button" + (hasUserAlreadyGuessedThisVerse ? " Block-button-red" : " Block-button-green")}
+               onClick={async () => {
+                  if (isProcessingUserGuess || hasUserAlreadyGuessedThisVerse) {
+                     return;
+                  }
+                  verseGameStore.setIsProcessingUserGuess(true)
+                  let correct = bookGuess === verseToGuess.getBookName() && chapterGuess === verseToGuess.getChapter() && verseNumberGuess === verseToGuess.getVerseNumber()
+                  let verseUserGuessed = new Verse(bibleVersion, bookGuess, chapterGuess, verseNumberGuess, -1, "");
+                  await setGlobalIndexFromVerse(verseUserGuessed, bibleData)
+                  activeGameSegment.addPreviousGuess(verseUserGuessed);
+                  if (correct) {
+                     activeGameSegment.setHasSuccessfullyGuessed(true)
+                     let nextSegment: VerseGameSegment = new VerseGameSegment(activeGameSegment.getBibleVersion(), activeGameSegment.getContextVersesDefault());
+                     nextSegment.initVerses()
+                     verseGameStore.addNewGameSegment(nextSegment);
+                  } else {
+                     console.log("VerseGameScreen | Incorrect");
+                  }
+                  verseGameStore.setIsProcessingUserGuess(false)
+               }}>
+               Guess {guesses + 1}
+            </button>
+         </div>
          {guesses > 0 && <div className="VerseGameScreen-previous-guesses">
             <h4>Previous Guesses</h4>
             {activeGameSegment.getPreviousGuesses().map((value: Verse, index: number) => {
@@ -165,7 +192,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                ) {
                   currentlySelected = true;
                }
-               return <p key={"VerseGameScreen-previousGuesses-"+index}> {index+1}) <span className={currentlySelected ? "VerseGameScreen-previous-guesses-selected" : ""}>{value.getVerseIdentifier()}</span></p>
+               return <p key={"VerseGameScreen-previousGuesses-" + index}> {index + 1}) <span className={currentlySelected ? "VerseGameScreen-previous-guesses-selected" : ""}>{value.getVerseIdentifier()}</span></p>
             })}
          </div>}
       </div>

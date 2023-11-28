@@ -26,11 +26,11 @@ export const InitialSettings: React.FC<InitialSettingsProps> = (props) => {
          {(!bibleData || !activeUserGameSegment) && <div className="InitialSettings-loading"><p><b>Loading Bible Data...</b></p></div>}
          {bibleData && <div className="InitialSettings-body">
             <p>Surrounding Verses</p>
-            <input type="number" min={0} value={allowedSurroundingVerses} onChange={(event) => {
+            <input className="InitialSettings-context" type="number" min={0} value={allowedSurroundingVerses} onChange={(event) => {
                activeUserGameSegment.setContextVerseDefault(Number(event.target.value))
             }} />
             <p>Choose A Bible Version</p>
-            <select value={currentBook as string} onChange={(event) => {
+            <select className="InitialSettings-version" value={currentBook as string} onChange={(event) => {
                activeUserGameSegment.setBibleVersion(event.target.value)
             }}>
                {bibleData.bibleNames.map((book) => {

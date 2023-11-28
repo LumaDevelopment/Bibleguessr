@@ -1,0 +1,53 @@
+.Block-button {
+   width: 130px;
+   height: 50px;
+   border-radius: 5px;
+   background-color: rgb(220, 220, 85);
+   color: white;
+   display: block;
+   font-size: 20px;
+   transition: 0.3s ease-in-out;
+   text-shadow: 2px 2px 5px black;
+   /* z-index:-5; */
+}
+
+.Block-button-extended {
+   width: 200px !important
+}
+
+.Block-button-yellow {
+   background-color: rgb(220, 220, 85);
+}
+
+.Block-button-green {
+   background-color: green
+}
+
+.Block-button-red {
+   background-color: red;
+}
+
+.Block-button-blue {
+   background-color: blue;
+}
+
+.Block-button:hover {
+   cursor: pointer;
+   transform: scale(1.05);
+   box-shadow: 2px 2px 5px black;
+}
+
+.Block-button:active {
+   cursor: pointer;
+   transform: scale(0.95);
+   box-shadow: 0px black;
+}
+
+.Block-button-wrapper {
+   display: flex;
+   width: 100%;
+   justify-content: center;
+   gap: 2%;
+   padding: 20px;
+   margin: 0 auto;
+}

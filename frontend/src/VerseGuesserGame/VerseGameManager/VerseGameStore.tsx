@@ -68,7 +68,9 @@ export class VerseGameStore extends Subscribable {
          this.currentUserScreen = "MAIN GUESSER"
       }
       else if (this.currentUserScreen === "MAIN GUESSER") {
-         this.gameSegments = [...this.gameSegments, this.activeGameSegment]
+         if (this.activeGameSegment.getGuesses() !== 0 || this.gameSegments.length === 0) {
+            this.gameSegments = [...this.gameSegments, this.activeGameSegment]
+         }
          this.currentUserScreen = "FINISH SCREEN"
       }
       this.emitChange();

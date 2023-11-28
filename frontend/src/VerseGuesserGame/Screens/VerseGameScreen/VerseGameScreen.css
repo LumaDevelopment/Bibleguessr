@@ -25,29 +25,6 @@
    font-size: 25px;
 }
 
-.VerseGameScreen-guess-button {
-   width: 130px;
-   height: 50px;
-   border-radius: 5px;
-   background-color: green;
-   color: white;
-   margin: 20px auto;
-   display: block;
-   font-size: 20px;
-   transition: 0.3s ease-in-out;
-}
-
-.VerseGameScreen-guess-button:hover {
-   cursor: pointer;
-   transform: scale(1.05);
-   box-shadow: 2px 2px 5px black;
-}
-
-.VerseGameScreen-guess-button:active {
-   cursor: pointer;
-   transform: scale(0.95);
-   box-shadow: 0px black;
-}
 
 .VerseGameScreen-bibleVersion {
    text-align: left;
@@ -95,3 +72,4 @@
    color: red;
    transition: 0.3s ease-in-out;
 }
+
