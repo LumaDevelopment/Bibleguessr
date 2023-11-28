@@ -26,8 +26,7 @@ const VerseGameScreenVerseText: React.FC<VerseGameScreenVerseTextProps> = (props
          "fontWeight": (shouldBeBolded ? "600" : "400"),
       }}
          key={"VerseGameScreen_Verse_" + verse.getGlobalVerseNumber()}
-         id={text.split(" ").join("-")}
-      >
+         id={text.split(" ").join("-")}>
          {!verseHasBeenGuessed ? <b>✞ </b> : <b>{verse.getVerseNumber()} </b>}
          {text}
       </p>
