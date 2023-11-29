@@ -20,24 +20,23 @@ interface SegmentBreakdown {
  */
 const SegmentBreakdown: React.FC<SegmentBreakdown> = (props) => {
    console.log("SegmentBreakDown | Received", props)
-   useEffect(() => {
-      props.gameSegment.calculateScore()
-   }, [])
    const verseToGuess: Verse = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getVerseToGuess) as Verse;
    const guesses = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getGuesses);
    const pastGuesses = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getPreviousGuesses)
    const hasSuccessfullyGuessed = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getHasSuccessfullyGuessed)
+   const guessScores = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getGuessScore)
+   const finalRoundScore = useSyncExternalStore(props.gameSegment.subscribe,props.gameSegment.getFinalRoundScore)
+   const hintHistory = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getHintHistory)
    return (
       <div className="SegmentBreakdown-container"
-         style={{ "backgroundColor": (props.roundIndex % 2 === 0 ? "#FFFFFF" : "#EFEFEF") }}
-      >
+         style={{ "backgroundColor": (props.roundIndex % 2 === 0 ? "#FFFFFF" : "#EFEFEF") }}>
          <h2 className="SegmentBreakdown-verse">{verseToGuess.getVerseIdentifier()}</h2>
-         <p>Round {props.roundIndex + 1} Score: <b>5000</b></p>
-
+         <p>Round {props.roundIndex + 1} Score: <b>{finalRoundScore}</b></p>
          {guesses > 1 && <div className="SegmentBreakdown-guess-list-wrapper"><p>Guesses:</p>
             <ol>
                {pastGuesses.map((value: Verse, index: number) => {
-                  return <li key={"SegmentBreakdown_order_list_item" + index}>{value.getVerseIdentifier()} at distance {value.getDistance(verseToGuess)}</li>
+                  const hintText = hintHistory[index] === 0 ? "" : `hint${hintHistory[index] === 1 ? "" : "s"}`
+                  return <li key={"SegmentBreakdown_order_list_item" + index}>{value.getVerseIdentifier()} scored {guessScores[index]} with {hintHistory[index]} {hintText}</li>
                })}
             </ol></div>}
          {!hasSuccessfullyGuessed && <p><b>This round was skipped</b></p>}
@@ -59,7 +58,7 @@ export const FinishScreen: React.FC<FinishScreenProps> = (props) => {
             <h2>Finished</h2>
             <p>Here is your total score</p>
          </div>
-         <h2 className="FinishScreen-score">4000 / 5000</h2>
+         <h2 className="FinishScreen-score">{props.verseGameStore.getGameScore()}</h2>
          <p>Here is a breakdown of your gameplay</p>
          <div className="FinishScreen-past-segments-wrapper">
             {pastGameSegments.map((value: VerseGameSegment, index: number) => <SegmentBreakdown gameSegment={value} key={"SegmentBreakdown_item_" + index} roundIndex={index} />)}

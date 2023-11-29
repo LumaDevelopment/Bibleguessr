@@ -60,7 +60,14 @@ export class VerseGameStore extends Subscribable {
       this.emitChange();
    }
 
-
+   getGameScore = (): number => {
+      let roundScores: number[] = [];
+      for (let i = 0; i < this.gameSegments.length; i++) {
+         this.gameSegments[i].calculateScore()
+         roundScores.push(this.gameSegments[i].getFinalRoundScore())
+      }
+      return Math.max(...roundScores)
+   }
 
    nextScreen = () => {
       if (this.currentUserScreen === "INITIAL SETTINGS") {

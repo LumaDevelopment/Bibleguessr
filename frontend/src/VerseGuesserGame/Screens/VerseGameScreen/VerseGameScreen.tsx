@@ -204,7 +204,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
             {hintCount >= 3 && <p>Verse: {verseToGuess.getVerseNumber()}</p>}
          </div>}
          {guesses > 0 && <div className="VerseGameScreen-previous-guesses">
-            <h4>Previous Guesses</h4>
+            <p><b>Previous Guesses</b></p>
             {activeGameSegment.getPreviousGuesses().map((value: Verse, index: number) => {
                var currentlySelected: boolean = false;
                if (

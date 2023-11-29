@@ -32,6 +32,8 @@ export class VerseGameSegment extends Subscribable {
    private errorLoadingVerses: boolean = false;
    private hasSuccessfullyGuessed: boolean = false;
    private hintCount: number = 0;
+   private hintHistory: number[] = [];
+   private finalRoundScore: number = 0;
    constructor(bibleVersion: string, contextVerseDefault: number) {
       super()
       this.bibleVersion = bibleVersion;
@@ -98,8 +100,12 @@ export class VerseGameSegment extends Subscribable {
          console.warn("VerseGameSegment | addPreviousGuess | Added previous user guess but the global index is -1")
       }
       this.guesses += 1;
+      this.hintHistory.push(this.hintCount);
       this.previousGuesses = [...this.previousGuesses, verseUserGuessed]
       this.emitChange()
+   }
+   getHintHistory = (): number[] => {
+      return this.hintHistory;
    }
    getHints = (): number => {
       return this.hintCount;
@@ -137,11 +143,29 @@ export class VerseGameSegment extends Subscribable {
    getPreviousGuesses = (): Verse[] => {
       return this.previousGuesses
    }
-   calculateScore = (): number => {
+   getFinalRoundScore = () => {
+      return this.finalRoundScore;
+   }
+   calculateScore = () => {
+      if (this.guesses === 0) {
+         console.log("VerseGameSegment | calculateScore | " + this.getVerseToGuess()?.getVerseIdentifier()+" round score was 0");
+         this.finalRoundScore = 0;
+         this.emitChange()
+         return;
+      }
       this.guessScores = []
       for (let i = 0; i < this.previousGuesses.length; i++) {
-         this.guessScores.push(this.versesInBible - (this.verseToGuess?.getGlobalVerseNumber() as number) - Math.abs(this.previousGuesses[i].getGlobalVerseNumber()))
+         this.guessScores.push(Math.round(
+            // Actual High Score
+            (this.versesInBible -
+               // Reduction due to distance
+               Math.abs((this.verseToGuess?.getGlobalVerseNumber() as number) - (this.previousGuesses[i].getGlobalVerseNumber())) -
+               // Reduction due to hints
+               ((1 / 3) * this.hintHistory[i]))));
+         console.log("VerseGameSegment | calculateScore | Previous guess " + this.previousGuesses[i].getVerseIdentifier() +" Scored " + this.guessScores[i]);
       }
-      return Math.max(...this.guessScores)
+      this.finalRoundScore = Math.max(...this.guessScores);
+      console.log("VerseGameSegment | calculateScore | " + this.getVerseToGuess()?.getVerseIdentifier()+" round score was "+this.finalRoundScore);
+      this.emitChange();
    }
 }
