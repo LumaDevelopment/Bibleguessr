@@ -14,6 +14,7 @@ import { getRandomVerseGameSegment } from "../../../src/AppRoutes/../AppRoutes/.
  */
 export class VerseGameSegment extends Subscribable {
    private bibleVersion: string = "King James Version"
+   private versesInBible: number = 31102;
    private guesses: number = 0;
    private contextVerseDefault: number = 5;
    /**
@@ -25,6 +26,7 @@ export class VerseGameSegment extends Subscribable {
     */
    private contextVersesBelow: Verse[] = [];
    private previousGuesses: Verse[] = []
+   private guessScores: number[] = [];
    private verseToGuess: Verse | undefined;
    private isLoadingVerses: boolean = false;
    private errorLoadingVerses: boolean = false;
@@ -53,7 +55,7 @@ export class VerseGameSegment extends Subscribable {
       return false;
    }
    addHint = () => {
-      this.hintCount+=1;
+      this.hintCount += 1;
       this.emitChange()
    }
    setHasSuccessfullyGuessed = (gussed: boolean) => {
@@ -102,6 +104,9 @@ export class VerseGameSegment extends Subscribable {
    getHints = (): number => {
       return this.hintCount;
    }
+   getGuessScore = (): number[] => {
+      return this.guessScores
+   }
    getHasSuccessfullyGuessed = (): boolean => {
       return this.hasSuccessfullyGuessed;
    }
@@ -132,11 +137,11 @@ export class VerseGameSegment extends Subscribable {
    getPreviousGuesses = (): Verse[] => {
       return this.previousGuesses
    }
-   // calculauteScore = (): number => {
-   //    if (!this.hasSuccessfullyGuessed) {
-   //       return 0;
-   //    } else {
-   //       // return (100 - Math.abs(this.verseToGuess.getGlobalVerseNumber() - ))
-   //    }
-   // }
+   calculateScore = (): number => {
+      this.guessScores = []
+      for (let i = 0; i < this.previousGuesses.length; i++) {
+         this.guessScores.push(this.versesInBible - (this.verseToGuess?.getGlobalVerseNumber() as number) - Math.abs(this.previousGuesses[i].getGlobalVerseNumber()))
+      }
+      return Math.max(...this.guessScores)
+   }
 }

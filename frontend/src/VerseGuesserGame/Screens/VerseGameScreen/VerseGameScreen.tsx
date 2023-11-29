@@ -112,7 +112,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
       <div className="VerseGameScreen-container" style={isProcessingUserGuess ? { "cursor": "wait" } : {}}>
          <h2>Guess the bolded verse</h2>
          <h3>Round {verseGameStore.getGameSegments().length + 1}</h3>
-         {/* <p>{verseToGuess.getBookName()}, {verseToGuess.getChapter()}, {verseToGuess.getVerseNumber()}</p> */}
+         <p>{verseToGuess.getBookName()}, {verseToGuess.getChapter()}, {verseToGuess.getVerseNumber()}</p>
          <div className="Block-button-wrapper">
             <button className="Block-button Block-button-blue Block-button-extended" onClick={() => {
                // navigator(verseToGuess.getText().split(" ").join("-"))
@@ -161,7 +161,8 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
             <button
                className={"Block-button " + (hintCount < 3 ? "Block-button-yellow" : "Block-button-green")}
                onClick={async () => {
-                  if (isProcessingUserGuess || hasUserAlreadyGuessedThisVerse) {
+                  if (isProcessingUserGuess) {
+                     console.log("Busy")
                      return;
                   }
                   verseGameStore.setIsProcessingUserGuess(true)

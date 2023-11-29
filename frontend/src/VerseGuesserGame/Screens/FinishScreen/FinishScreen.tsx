@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react"
+import { useEffect, useSyncExternalStore } from "react"
 import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
 import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
 import { Verse } from "../../../DataStructures/Global/Verse"
@@ -20,6 +20,9 @@ interface SegmentBreakdown {
  */
 const SegmentBreakdown: React.FC<SegmentBreakdown> = (props) => {
    console.log("SegmentBreakDown | Received", props)
+   useEffect(() => {
+      props.gameSegment.calculateScore()
+   }, [])
    const verseToGuess: Verse = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getVerseToGuess) as Verse;
    const guesses = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getGuesses);
    const pastGuesses = useSyncExternalStore(props.gameSegment.subscribe, props.gameSegment.getPreviousGuesses)
