@@ -74,7 +74,7 @@ public class Response {
 
     // Add "uuid" field if applicable.
     if (uuid != null && !uuid.isBlank() && !content.has(Request.UUID_PARAMETER_NAME)) {
-      content.put("uuid", uuid);
+      content.put(Request.UUID_PARAMETER_NAME, uuid);
     }
 
     return content;

@@ -27,7 +27,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
 
     // Logging provider
-    implementation("org.slf4j:slf4j-api:2.0.7")
+    implementation("ch.qos.logback:logback-classic:1.4.13")
 
     // Annotations
     implementation("org.jetbrains:annotations:24.0.1")

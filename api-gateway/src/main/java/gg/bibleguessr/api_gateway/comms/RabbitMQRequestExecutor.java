@@ -6,6 +6,7 @@ import com.rabbitmq.client.*;
 import gg.bibleguessr.backend_utils.CommsCallback;
 import gg.bibleguessr.backend_utils.GlobalObjectMapper;
 import gg.bibleguessr.backend_utils.StatusCode;
+import gg.bibleguessr.service_wrapper.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,7 +192,7 @@ public class RabbitMQRequestExecutor {
                     ObjectNode objectNode = GlobalObjectMapper.parseBytesAsJSONObject(body);
 
                     if (objectNode != null) {
-                        JsonNode jsonNode = objectNode.get("uuid");
+                        JsonNode jsonNode = objectNode.get(Request.UUID_PARAMETER_NAME);
                         if (jsonNode != null && jsonNode.isTextual()) {
                             uuid = jsonNode.asText();
                         }
@@ -241,6 +242,8 @@ public class RabbitMQRequestExecutor {
                 }
 
             });
+
+            logger.info("The RabbitMQ executor has been successfully initialized!");
 
         } catch (Exception e) {
 
@@ -326,7 +329,7 @@ public class RabbitMQRequestExecutor {
 
         } catch (IOException e) {
 
-            logger.error("Unable to publish to the requests queue.", e);
+            logger.debug("Unable to publish to the requests queue.", e);
 
             synchronized (callbackCalled) {
 
@@ -349,7 +352,7 @@ public class RabbitMQRequestExecutor {
 
             if (!receivedResponse) {
 
-                logger.error("Timed out while waiting for response to request with UUID: {}", uuid);
+                logger.trace("Timed out while waiting for response to request with UUID: {}", uuid);
 
                 synchronized (callbackCalled) {
 
@@ -366,7 +369,7 @@ public class RabbitMQRequestExecutor {
 
         } catch (InterruptedException e) {
 
-            logger.error("Interrupted while waiting for a response.");
+            logger.error("Interrupted while waiting for a response.", e);
 
             synchronized (callbackCalled) {
 
@@ -417,7 +420,7 @@ public class RabbitMQRequestExecutor {
 
         } catch (IOException e) {
 
-            logger.error("Unable to publish to the requests queue.", e);
+            logger.debug("Unable to publish to the requests queue.", e);
 
             synchronized (multiResponses) {
                 this.multiResponses.remove(uuid);

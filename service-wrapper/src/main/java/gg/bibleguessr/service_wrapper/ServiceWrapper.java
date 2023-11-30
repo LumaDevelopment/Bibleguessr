@@ -128,6 +128,8 @@ public class ServiceWrapper {
     // Run the self-service of the Service Wrapper
     run(new SelfService(this));
 
+    logger.info("Service Wrapper initialized!");
+
   }
 
   /* ---------- PUBLIC METHODS ---------- */
@@ -303,6 +305,8 @@ public class ServiceWrapper {
     for (Microservice service : runningMicroservices.values()) {
       service.shutdown();
     }
+
+    logger.info("Shut down Service Wrapper!");
 
   }
 

@@ -55,6 +55,7 @@ public enum StatusCode {
 
     // Mapping from integer to object
     private static final Map<Integer, StatusCode> intToObjMap = new HashMap<>();
+
     static {
         for (StatusCode statusCode : StatusCode.values()) {
             intToObjMap.put(statusCode.getStatusCode(), statusCode);

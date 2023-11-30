@@ -10,6 +10,7 @@ import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -186,7 +187,15 @@ public class CommsOrchestrator {
      * @param callback The callback to call when the request is complete.
      */
     public void makeRabbitMQRequest(String uuid, byte[] body, CommsCallback callback) {
+
+        if (this.rabbitMQReqExec == null) {
+            logger.error("Cannot make RabbitMQ request because the executor has not been instantiated!");
+            callback.commFailed(StatusCode.INTERNAL_ERROR);
+            return;
+        }
+
         this.rabbitMQReqExec.singleResponseRequest(uuid, body, callback);
+
     }
 
     /**
@@ -197,7 +206,14 @@ public class CommsOrchestrator {
      * @return A list of responses received from the service wrappers.
      */
     public List<ObjectNode> makeRabbitMQRequest(String uuid, byte[] body) {
+
+        if (this.rabbitMQReqExec == null) {
+            logger.error("Cannot make RabbitMQ request because the executor has not been instantiated!");
+            return new LinkedList<>();
+        }
+
         return this.rabbitMQReqExec.multiResponseRequest(uuid, body);
+
     }
 
     /**
@@ -209,7 +225,14 @@ public class CommsOrchestrator {
      * @param callback   The callback to call when we have the request response.
      */
     public void receiveRequest(String path, Map<String, String> parameters, CommsCallback callback) {
+
+        if (this.apiGateway == null) {
+            logger.error("Cannot receive request, because somehow, the API Gateway isntance does not exist!");
+            return;
+        }
+
         this.apiGateway.receiveRequest(path, parameters, callback);
+
     }
 
     /**
@@ -218,7 +241,9 @@ public class CommsOrchestrator {
      */
     public void shutdown() {
 
-        vertx.close();
+        if (this.vertx != null) {
+            this.vertx.close();
+        }
 
         if (this.rabbitMQReqExec != null) {
             this.rabbitMQReqExec.shutdown();

@@ -99,7 +99,8 @@ public class ServiceWrapperDetector {
 
                     @Override
                     public void onFailure(StatusCode errorCode) {
-                        logger.error("Failed to get IDs from service wrapper. Error code: {}", errorCode);
+                        logger.trace("Failed to get IDs from service wrapper with socket \"" + socket + "\". " +
+                                "Error code: {}", errorCode);
                         finish();
                     }
 
@@ -137,6 +138,8 @@ public class ServiceWrapperDetector {
             logger.error("Interrupted while waiting for response from service wrappers over HTTP!", e);
         }
 
+        logger.debug("Detected {} service wrappers using HTTP!", serviceIDToSockets.size());
+
         return serviceIDToSockets;
 
     }
@@ -150,9 +153,9 @@ public class ServiceWrapperDetector {
      * RabbitMQ configuration, so we have the microservice
      * ID field and request path field names.
      *
-     * @param config         The RabbitMQ configuration.
-     * @param orchestrator   The CommsOrchestrator, through
-     *                       which we can send requests.
+     * @param config       The RabbitMQ configuration.
+     * @param orchestrator The CommsOrchestrator, through
+     *                     which we can send requests.
      * @return A set of the IDs of all services that are
      * hosted across all service wrappers connected to
      * the RabbitMQ broker.
@@ -215,6 +218,8 @@ public class ServiceWrapperDetector {
             }
 
         }
+
+        logger.debug("Detected {} service wrappers using RabbitMQ!", serviceIDs.size());
 
         // Finally, add all service IDs
         return serviceIDs;

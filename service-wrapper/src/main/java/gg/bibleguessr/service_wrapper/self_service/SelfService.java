@@ -62,6 +62,14 @@ public class SelfService extends Microservice {
 
   /* ---------- METHODS ---------- */
 
+  /**
+   * Execute a request to gather the IDs of all microservices
+   * that are running on this Service Wrapper.
+   *
+   * @param request The request to execute.
+   * @return A JSON object containing a list of the IDs of all
+   * microservices that are running on this Service Wrapper.
+   */
   private Response executeGetIDsRequest(GetIDsRequest request) {
 
     ObjectNode content = GlobalObjectMapper.get().createObjectNode();
@@ -89,6 +97,14 @@ public class SelfService extends Microservice {
 
   }
 
+  /**
+   * Handles a request. Must be a GetIDsRequest or
+   * another request supported by the Self Service.
+   *
+   * @param request The request to execute.
+   * @return The response to the request, or null
+   * if we don't support the request type.
+   */
   @Override
   public Response executeRequest(Request request) {
 
@@ -102,11 +118,17 @@ public class SelfService extends Microservice {
 
   }
 
+  /**
+   * Initializes the request types map for this microservice.
+   */
   @Override
   public void initializeRequestTypesMap() {
     initializeRequestType(GetIDsRequest.class);
   }
 
+  /**
+   * Doesn't do anything.
+   */
   @Override
   public void shutdown() {
   }

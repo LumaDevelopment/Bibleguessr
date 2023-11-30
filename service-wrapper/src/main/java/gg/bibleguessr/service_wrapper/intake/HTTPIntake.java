@@ -145,6 +145,7 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
     router.route().handler(ctx -> {
 
       HttpServerRequest req = ctx.request();
+      logger.trace("Received request: {}", req.absoluteURI());
 
       // Load parameters into map
       Map<String, String> parameters = new HashMap<>();
@@ -182,7 +183,10 @@ public class HTTPIntake extends AbstractVerticle implements CommsIntake {
       };
 
       // Attempt to execute the request
+      long startTime = System.currentTimeMillis();
       intakeMgr.receiveRequest(req.path(), parameters, callback);
+      long endTime = System.currentTimeMillis();
+      logger.trace("Intake manager handled request in {} ms.", endTime - startTime);
 
     });
 

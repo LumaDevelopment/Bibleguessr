@@ -117,7 +117,7 @@ public class TestServiceWrapper {
   void isRequestIdentifiableWhenUUIDPresent() {
     Map<String, String> content = new HashMap<>();
     content.put("msg", "Hi");
-    content.put("uuid", "d2004b89-ffb4-449f-9888-85188d5bc75a");
+    content.put(Request.UUID_PARAMETER_NAME, "d2004b89-ffb4-449f-9888-85188d5bc75a");
     Request request = Request.parse(ExampleRequest.class, content);
 
     Assertions.assertTrue(request.isIdentifiable());

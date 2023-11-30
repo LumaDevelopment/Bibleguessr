@@ -257,7 +257,10 @@ public class RabbitMQIntake implements CommsIntake {
         };
 
         // Send the request off to the intake manager
+        long startTime = System.currentTimeMillis();
         intakeMgr.receiveRequest(fullPath, parameters, callback);
+        long endTime = System.currentTimeMillis();
+        logger.trace("Intake manager handled request in {} ms.", endTime - startTime);
 
       }
     };
@@ -367,7 +370,7 @@ public class RabbitMQIntake implements CommsIntake {
     ObjectNode response = GlobalObjectMapper.get().createObjectNode();
 
     // Put in uuid and error code
-    response.put("uuid", uuid);
+    response.put(Request.UUID_PARAMETER_NAME, uuid);
     response.put("error", errorCode.getStatusCode());
 
     // Publish response to responses queue

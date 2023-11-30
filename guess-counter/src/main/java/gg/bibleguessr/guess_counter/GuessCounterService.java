@@ -132,6 +132,8 @@ public class GuessCounterService extends Microservice {
         this.timer = new Timer();
         scheduleCounterFileUpdate();
 
+        logger.info("{} initialized!", LOGGER_NAME);
+
     }
 
     /* ---------- METHODS ---------- */
@@ -146,7 +148,7 @@ public class GuessCounterService extends Microservice {
     @Override
     public Response executeRequest(Request request) {
 
-        if (request instanceof GetCountRequest gcReq) {
+        if (request instanceof GetCountRequest) {
 
             // Node to insert response data into
             ObjectNode responseContent = GlobalObjectMapper.get().createObjectNode();
@@ -180,7 +182,7 @@ public class GuessCounterService extends Microservice {
 
             return new Response(responseContent, request.getUUID());
 
-        } else if (request instanceof IncrementCountRequest gcReq) {
+        } else if (request instanceof IncrementCountRequest) {
 
             synchronized (countMutex) {
 
@@ -209,7 +211,7 @@ public class GuessCounterService extends Microservice {
 
         } else {
             // Unknown type of request
-            logger.error("Received unknown request type: " + request.getClass().getSimpleName());
+            logger.error("Received unknown request type: {}", request.getClass().getSimpleName());
             return null;
         }
 

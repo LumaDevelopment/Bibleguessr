@@ -95,6 +95,7 @@ public class HTTPRequestReceiver extends AbstractVerticle {
         router.route().handler(ctx -> {
 
             HttpServerRequest req = ctx.request();
+            logger.trace("Received request: {}", req.absoluteURI());
 
             // Load parameters into map
             Map<String, String> parameters = new HashMap<>();

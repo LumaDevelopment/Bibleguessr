@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class APIGateway {
@@ -167,6 +168,8 @@ public class APIGateway {
             throw new RuntimeException("Invalid request execution protocol: " + this.config.reqExecutionProtocol());
         }
 
+        logger.trace("APIGateway instantiated with communication protocol: {}", this.config.reqExecutionProtocol());
+
     }
 
     /* ---------- METHODS ---------- */
@@ -270,7 +273,7 @@ public class APIGateway {
         String[] splitPath = fullPath.split("/");
 
         if (splitPath.length != 3) {
-            logger.error("Received request with invalid path: \"{}\"", fullPath);
+            logger.trace("Received request with invalid path: \"{}\"", fullPath);
             callback.commFailed(StatusCode.HTTP_BAD_URL);
             return;
         }
@@ -284,6 +287,7 @@ public class APIGateway {
         if (!haveServiceWithID) {
             // No service wrapper is running this service,
             // return error code.
+            logger.trace("Received a request for service with an ID we don't have: \"{}\"", microserviceID);
             callback.commFailed(StatusCode.NO_MICROSERVICE_WITH_ID);
             return;
         }
@@ -353,7 +357,7 @@ public class APIGateway {
                 // service wrappers that are running
                 // that service.
 
-                logger.error("We know of a service wrapper that is running a service with ID \"{}\", but we don't " +
+                logger.debug("We know of a service wrapper that is running a service with ID \"{}\", but we don't " +
                         "have any service wrappers that are running that service!", microserviceID);
                 callback.commFailed(StatusCode.INTERNAL_ERROR);
                 return;
@@ -384,6 +388,7 @@ public class APIGateway {
 
             // Make the request
             // TODO if we can't access this service wrapper then try another one and remove this one
+            logger.trace("Making HTTP request to URL: {}", urlBuilder.build());
             this.orchestrator.makeHTTPRequest(urlBuilder, callback);
 
         } else if (this.config.reqExecutionProtocol().equals(CommsProtocol.RabbitMQ)) {
@@ -411,6 +416,8 @@ public class APIGateway {
                 // Serialize the JSON object and pass it off to
                 // make the actual RabbitMQ request
                 byte[] body = GlobalObjectMapper.get().writeValueAsBytes(request);
+
+                logger.trace("Making RabbitMQ Request: {}", new String(body, StandardCharsets.UTF_8));
 
                 this.orchestrator.makeRabbitMQRequest(
                         uuid,
@@ -568,6 +575,8 @@ public class APIGateway {
             this.orchestrator.shutdown();
         }
 
+        logger.info("Shut down the API Gateway!");
+
     }
 
     /**
@@ -584,6 +593,8 @@ public class APIGateway {
 
         // Schedule detection of service wrappers
         scheduleDetection();
+
+        logger.info("The API Gateway has initialized!");
 
     }
 

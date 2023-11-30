@@ -191,6 +191,8 @@ public class IntakeMgr {
         // Store in the map of running intakes
         this.intakes.put(intake.getClass(), intake);
 
+        logger.info("Successfully initialized {}!", intake.getClass().getSimpleName());
+
       }
 
     }
@@ -218,7 +220,7 @@ public class IntakeMgr {
     String[] splitPath = fullPath.split("/");
 
     if (splitPath.length != 3) {
-      logger.error("Received request with invalid path: \"{}\"", fullPath);
+      logger.trace("Received request with invalid path: \"{}\"", fullPath);
       callback.commFailed(StatusCode.HTTP_BAD_URL);
       return;
     }
@@ -256,7 +258,10 @@ public class IntakeMgr {
     }
 
     // Execute the request and get a response object
+    long startTime = System.currentTimeMillis();
     Response response = this.wrapper.executeRequest(request);
+    long endTime = System.currentTimeMillis();
+    logger.trace("Request executed and response obtained in {} ms.", endTime - startTime);
 
     if (response == null) {
       logger.error("Internal error while executing response with type \"{}\".", requestClass.getSimpleName());
