@@ -107,7 +107,7 @@ public class HTTPRequestExecutor {
             }
 
         } catch (Exception e) {
-            logger.error("Encountered an error while attempting to execute an HTTP request!", e);
+            logger.trace("Encountered an error while attempting to execute an HTTP request!");
             callback.commFailed(StatusCode.INTERNAL_ERROR);
         }
 
