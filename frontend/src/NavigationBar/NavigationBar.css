@@ -10,6 +10,10 @@
     position: sticky;
     top: 0;
     z-index:5;
+    text-shadow: 2px 2px 5px black;
+    box-shadow: 2px 2px 5px black;
+    padding-bottom: 5px;
+    padding-top: 5px;
 }
 
 .NavigationBar-nav-item {
@@ -24,4 +28,26 @@
     display: flex;
     width: 100%;
     align-items: flex-start;
+    justify-content: flex-start;
+}
+
+
+.NavigationBar-nav-logo {
+   display: flex;
+   align-items: center;
+   max-height: 50px;
+}
+
+.NavigationBar-nav-logo > img {
+   width: auto;
+   height: 50px;
+}
+
+.NavigationBar-nav-logo > p {
+   font-size: 25px;
+}
+
+.NavigationBar-nav-logo-anchor {
+   text-decoration: underline;
+   text-decoration-color: blueviolet;
 }

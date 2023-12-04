@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react"
+import { forwardRef, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
 import "./VerseGameScreen.css"
 import { Verse } from "../../../DataStructures/Global/Verse"
 import { BibleData } from "../../../DataStructures/Global/BibleData"
 import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
-import { getRandomVerseGameSegment, setGlobalIndexFromVerse } from "../../../AppRoutes/Middlelayer"
+import { getRandomVerseGameSegment, increaseCount, setGlobalIndexFromVerse } from "../../../AppRoutes/Middlelayer"
 import "../../../DataStructures/Global/Buttons.css"
 import { useNavigate, useNavigation } from "react-router-dom"
 
@@ -12,19 +12,21 @@ interface VerseGameScreenVerseTextProps {
    verse: Verse
    verseHasBeenGuessed: boolean
    shouldBeBolded: boolean
+   innerRef: React.RefObject<HTMLParagraphElement> | undefined
 }
 
 // Hold a "If verse is on screen and it has been guessed boolean array"
 const VerseGameScreenVerseText: React.FC<VerseGameScreenVerseTextProps> = (props) => {
    const { verse, verseHasBeenGuessed, shouldBeBolded } = props;
    const text = useSyncExternalStore(verse.subscribe, verse.getText)
-   console.log("VerseGameScreenVerseText | Rendering with guessed status " + verseHasBeenGuessed)
    return (
       <p style={{
-         "border": (verseHasBeenGuessed ? "1px solid red" : ""),
-         "borderRadius": "10px",
+         "border": (verseHasBeenGuessed ? "1px solid red" : shouldBeBolded ? "1px solid black" : ""),
+         "borderRadius": "5px",
          "fontWeight": (shouldBeBolded ? "600" : "400"),
+         "boxShadow": shouldBeBolded ? "1px 1px 10px black" : ""
       }}
+         ref={props.innerRef}
          key={"VerseGameScreen_Verse_" + verse.getGlobalVerseNumber()}
          id={text.split(" ").join("-")}>
          {!verseHasBeenGuessed ? <b>✞ </b> : <b>{verse.getVerseNumber()} </b>}
@@ -58,7 +60,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    const [chapterGuess, setChapterGuess] = useState(1)
    const [verseNumberGuess, setVerseNumberGuess] = useState(1)
 
-   // const navigator = useNavigate()
+   const verseRef = useRef<HTMLParagraphElement>(null)
 
    const hasUserAlreadyGuessedThisVerse: boolean = useMemo(() => {
       if (guesses === 0) {
@@ -112,17 +114,19 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
       <div className="VerseGameScreen-container" style={isProcessingUserGuess ? { "cursor": "wait" } : {}}>
          <h2>Guess the bolded verse</h2>
          <h3>Round {verseGameStore.getGameSegments().length + 1}</h3>
-         <p>{verseToGuess.getBookName()}, {verseToGuess.getChapter()}, {verseToGuess.getVerseNumber()}</p>
+         {/* <p>{verseToGuess.getBookName()}, {verseToGuess.getChapter()}, {verseToGuess.getVerseNumber()}</p> */}
          <div className="Block-button-wrapper">
             <button className="Block-button Block-button-blue Block-button-extended" onClick={() => {
-               // navigator(verseToGuess.getText().split(" ").join("-"))
+               if (verseRef.current) {
+                  verseRef.current.scrollIntoView({behavior: 'smooth', block:"center"})
+               }
             }}>Jump To Verse</button>
          </div>
          <div className="VerseGameScreen-text-container">
             <p className="VerseGameScreen-bibleVersion"><b>{bibleVersion}📖</b></p>
-            {contextVersesBelow.map((currentVerse: Verse) => <VerseGameScreenVerseText key={"VerseGameScreen-context-verse-below-" + currentVerse.getGlobalVerseNumber()} verse={currentVerse} verseHasBeenGuessed={activeGameSegment.previousGuessesContainsVerse(currentVerse)} shouldBeBolded={false} />)}
-            <VerseGameScreenVerseText verse={verseToGuess} verseHasBeenGuessed={false} shouldBeBolded={true} />
-            {contextVersesAbove.map((currentVerse: Verse) => <VerseGameScreenVerseText key={"VerseGameScreen-context-verse-above-" + currentVerse.getGlobalVerseNumber()} verse={currentVerse} verseHasBeenGuessed={activeGameSegment.previousGuessesContainsVerse(currentVerse)} shouldBeBolded={false} />)}
+            {contextVersesBelow.map((currentVerse: Verse) => <VerseGameScreenVerseText innerRef={undefined} key={"VerseGameScreen-context-verse-below-" + currentVerse.getGlobalVerseNumber()} verse={currentVerse} verseHasBeenGuessed={activeGameSegment.previousGuessesContainsVerse(currentVerse)} shouldBeBolded={false} />)}
+            <VerseGameScreenVerseText innerRef={verseRef} verse={verseToGuess} verseHasBeenGuessed={false} shouldBeBolded={true} />
+            {contextVersesAbove.map((currentVerse: Verse) => <VerseGameScreenVerseText innerRef={undefined} key={"VerseGameScreen-context-verse-above-" + currentVerse.getGlobalVerseNumber()} verse={currentVerse} verseHasBeenGuessed={activeGameSegment.previousGuessesContainsVerse(currentVerse)} shouldBeBolded={false} />)}
          </div>
          <div className="VerseGameScreen-guessing">
             <div>
@@ -162,7 +166,6 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                className={"Block-button " + (hintCount < 3 ? "Block-button-yellow" : "Block-button-green")}
                onClick={async () => {
                   if (isProcessingUserGuess) {
-                     console.log("Busy")
                      return;
                   }
                   verseGameStore.setIsProcessingUserGuess(true)
@@ -179,6 +182,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                   if (isProcessingUserGuess || hasUserAlreadyGuessedThisVerse) {
                      return;
                   }
+                  increaseCount()
                   verseGameStore.setIsProcessingUserGuess(true)
                   let correct = bookGuess === verseToGuess.getBookName() && chapterGuess === verseToGuess.getChapter() && verseNumberGuess === verseToGuess.getVerseNumber()
                   let verseUserGuessed = new Verse(bibleVersion, bookGuess, chapterGuess, verseNumberGuess, -1, "");

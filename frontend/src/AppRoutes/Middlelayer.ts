@@ -2,7 +2,7 @@ import { BibleData } from "../DataStructures/Global/BibleData";
 import { Verse } from "../DataStructures/Global/Verse";
 import { VerseGameSegment } from "../DataStructures/VerseGuesserGame/VerseGameSegment";
 
-const SERVER_URL = "http://localhost:8888"
+const SERVER_URL = "http://localhost:8890"
 
 /**
  * Retrieves the bible data off of the server, including all bible versions and their chapter names.
@@ -106,18 +106,20 @@ export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment
 
 
 export const setGlobalIndexFromVerse = async (verse: Verse, bibleData: BibleData): Promise<number> => {
-   console.log("Middlelayer | setGlobalIndexFromVerse | Called For "+verse.getVerseIdentifier());
+   console.log("Middlelayer | setGlobalIndexFromVerse | Called For " + verse.getVerseIdentifier());
    const bookIndex = bibleData.getBookIndex(verse.getBibleVersion(), verse.getBookName())
    const URL = `${SERVER_URL}/bible/index-by-reference?bookIndex=${bookIndex}&chapterNum=${verse.getChapter()}&verseNum=${verse.getVerseNumber()}`
-   return await fetch(URL, {headers: {
-      "Access-Control-Allow-Origin": "no-cors"
-   }}).then((response => response.json())).then((data) => {
+   return await fetch(URL, {
+      headers: {
+         "Access-Control-Allow-Origin": "no-cors"
+      }
+   }).then((response => response.json())).then((data) => {
       try {
          const index = Number(data.index)
-         if (index=== -1) {
+         if (index === -1) {
             console.error("Middlelayer | getGlobalIndexFromVerse | Unable to find global index for verse");
          }
-         console.log("Middlelayer | getGlobalIndexFromVerse | Found global index for verse: "+index+" w/ "+verse.getVerseIdentifier());
+         console.log("Middlelayer | getGlobalIndexFromVerse | Found global index for verse: " + index + " w/ " + verse.getVerseIdentifier());
          verse.setGlobalVerseNumber(index);
          return index;
       } catch (e) {
@@ -126,4 +128,33 @@ export const setGlobalIndexFromVerse = async (verse: Verse, bibleData: BibleData
          return -1;
       }
    });
+}
+
+
+export const getCount = async (): Promise<number | undefined> => {
+   return await fetch(SERVER_URL + "/guess-counter/get-count", {
+      headers: {
+         "Access-Control-Allow-Origin": "no-cors"
+      }
+   }).then((response => response.json())).then((data) => {
+      try {
+         const num = data.count;
+         console.log("Middlelayer | getCount | Fetched count data", num)
+         return num
+      } catch (e) {
+         console.log("Middlelayer | getCount | Unable to process getCount data", e)
+      }
+   }).catch((e) => {
+      console.error("Middlelayer | getCount | Unable to fetch count with error", e)
+   })
+}
+
+export const increaseCount = async (): Promise<void> => {
+   await fetch(SERVER_URL + "/guess-counter/increment-count", {
+      headers: {
+         "Access-Control-Allow-Origin": "no-cors"
+      }
+   }).catch((e) => {
+      console.error("Middlelayer | increaseCount | Unable to increase count with error", e)
+   })
 }

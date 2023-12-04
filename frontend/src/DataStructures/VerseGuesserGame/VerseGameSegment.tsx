@@ -47,13 +47,10 @@ export class VerseGameSegment extends Subscribable {
          console.warn("VerseGameSegment | previousGuessesContainsVerse | Verse global number is -1: ", other)
       }
       for (let currentVerse of this.previousGuesses) {
-         console.log("VerseGameSegment | previousGuessesContainsVerse | ", other.getGlobalVerseNumber(), currentVerse.getGlobalVerseNumber())
          if (other.getGlobalVerseNumber() === currentVerse.getGlobalVerseNumber()) {
-            console.log("VerseGameSegment | previousGuessesContainsVerse | True")
             return true;
          }
       }
-      console.log("VerseGameSegment | previousGuessesContainsVerse | False")
       return false;
    }
    addHint = () => {

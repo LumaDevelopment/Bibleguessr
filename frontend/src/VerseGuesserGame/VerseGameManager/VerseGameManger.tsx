@@ -19,7 +19,7 @@ export const VerseGameManager: React.FC = () => {
       return store;
    }, [])
    const currentUserScreen: VerseGameScreenSelector = useSyncExternalStore(gameStore.subscribe, gameStore.getCurrentUserScreen)
-   // const navigationHandler = useNavigate();
+   const navigationHandler = useNavigate();
    const backButtonColor = "Block-button " + (currentUserScreen === "FINISH SCREEN" ? "Block-button-blue" : currentUserScreen === "INITIAL SETTINGS" ? "Block-button-blue" : "Block-button-red")
    const nextButtonColor = "Block-button " + (currentUserScreen === "INITIAL SETTINGS" ? "Block-button-green" : currentUserScreen === "MAIN GUESSER" ? "Block-button-blue" : "Block-button-green")
    return (
@@ -30,7 +30,7 @@ export const VerseGameManager: React.FC = () => {
          <div className="Block-button-wrapper">
             <button className={backButtonColor} onClick={() => {
                if (currentUserScreen === "INITIAL SETTINGS") {
-                  // navigationHandler('/');
+                  navigationHandler('/');
                } else {
                   gameStore.previousScreen()
                }
