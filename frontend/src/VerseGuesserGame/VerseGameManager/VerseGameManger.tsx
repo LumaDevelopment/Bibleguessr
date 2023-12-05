@@ -21,6 +21,9 @@ export const VerseGameManager: React.FC = () => {
    const navigationHandler = useNavigate();
    const backButtonColor = "Block-button " + (currentUserScreen === "FINISH SCREEN" ? "Block-button-blue" : currentUserScreen === "INITIAL SETTINGS" ? "Block-button-blue" : "Block-button-red")
    const nextButtonColor = "Block-button " + (currentUserScreen === "INITIAL SETTINGS" ? "Block-button-green" : currentUserScreen === "MAIN GUESSER" ? "Block-button-blue" : "Block-button-green")
+   const activeUserSegment = useSyncExternalStore(gameStore.subscribe, gameStore.getActiveGameSegment);
+   const isLoading = useSyncExternalStore(activeUserSegment.subscribe, activeUserSegment.getIsLoadingVerses)
+   const isError = useSyncExternalStore(activeUserSegment.subscribe, activeUserSegment.getErrorLoadingVerses)
    return (
       <div className="VerseGameManager-container">
          {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings verseGameStore={gameStore} />}
@@ -34,8 +37,8 @@ export const VerseGameManager: React.FC = () => {
                   gameStore.previousScreen()
                }
             }}>{currentUserScreen === "INITIAL SETTINGS" ? "Home" : "Exit"}</button>
-            {currentUserScreen !== "FINISH SCREEN" && <button className={nextButtonColor} onClick={() => {
-                  gameStore.nextScreen()
+            {!isLoading && !isError && currentUserScreen !== "FINISH SCREEN" && <button className={nextButtonColor} onClick={() => {
+               gameStore.nextScreen()
             }}>{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</button>}
          </div>
       </div>
