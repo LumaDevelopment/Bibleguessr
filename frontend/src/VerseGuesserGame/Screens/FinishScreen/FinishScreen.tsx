@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from "react"
+import { useSyncExternalStore } from "react"
 import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
 import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
 import { Verse } from "../../../DataStructures/Global/Verse"

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { NavigationBar } from "../NavigationBar/NavigationBar"
 import "./HomePage2.css"
 import { getCount } from "../AppRoutes/Middlelayer"
 

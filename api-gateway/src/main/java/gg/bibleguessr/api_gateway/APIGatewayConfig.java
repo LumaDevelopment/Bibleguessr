@@ -54,7 +54,7 @@ public record APIGatewayConfig(
      * - {@code wrapperDetectionIntervalInMs} is {@code 5_000} (5 seconds).<br>
      * - {@code apiKey} is blank.<br>
      * - {@code httpSockets} is {@code ["localhost:8890"]}<br>
-     * - {@code allowedCorsOrigins} is {@code ["http://localhost:5173"]}<br>
+     * - {@code allowedCorsOrigins} is {@code ["*"]}<br>
      * - {@code rabbitMQConfig} is the default.<br>
      * - {@code singleResponseTimeoutInMs} is {@code 500} (500 milliseconds).<br>
      * - {@code multiResponseTimeoutInMs} is {@code 300} (300 milliseconds).
@@ -68,7 +68,7 @@ public record APIGatewayConfig(
                 15_000,
                 "",
                 List.of("localhost:8890"),
-                List.of("http://localhost:5173"),
+                List.of("*"),
                 RabbitMQConfiguration.getDefault(),
                 500,
                 300

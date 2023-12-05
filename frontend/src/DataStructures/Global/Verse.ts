@@ -1,4 +1,3 @@
-import { Printable } from "./Printable";
 import { Subscribable } from "./Subscribable";
 
 export class Verse extends Subscribable {

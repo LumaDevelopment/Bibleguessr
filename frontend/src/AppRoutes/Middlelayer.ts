@@ -2,7 +2,7 @@ import { BibleData } from "../DataStructures/Global/BibleData";
 import { Verse } from "../DataStructures/Global/Verse";
 import { VerseGameSegment } from "../DataStructures/VerseGuesserGame/VerseGameSegment";
 
-const SERVER_URL = "http://localhost:8890"
+const SERVER_URL = "https://api.bibleguessr.gg"
 
 /**
  * Retrieves the bible data off of the server, including all bible versions and their chapter names.

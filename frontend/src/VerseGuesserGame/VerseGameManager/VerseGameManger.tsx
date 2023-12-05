@@ -6,7 +6,6 @@ import { InitialSettings } from "../Screens/InitialSettings/InitialSettings"
 import "./VerseGameManager.css"
 import "../../../src/DataStructures/Global/Buttons.css"
 import { VerseGameScreen } from "../Screens/VerseGameScreen/VerseGameScreen"
-import { Verse } from "../../DataStructures/Global/Verse"
 import { FinishScreen } from "../Screens/FinishScreen/FinishScreen"
 import { useNavigate } from 'react-router-dom';
 
