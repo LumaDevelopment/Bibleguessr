@@ -1,15 +1,19 @@
 .VerseGameScreen-container {
-    text-align: center;
+   text-align: center;
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
 }
 
 .VerseGameScreen-loading {
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-    cursor: wait;
+   text-align: center;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   flex-direction: column;
+   width: 100%;
+   cursor: wait;
 }
 
 .VerseGameScreen-guessing {
@@ -32,7 +36,7 @@
    font-weight: 500;
 }
 
-.VerseGameScreen-text-container > p {
+.VerseGameScreen-text-container>p {
    padding: 5px;
    margin: 5px;
 }
@@ -42,7 +46,6 @@
    flex-direction: column;
    text-align: left;
    gap: 0px;
-   margin: 0 auto;
    width: 100%;
    max-width: 800px;
    /* max-height: 800px;
@@ -51,20 +54,28 @@
    box-shadow: 2px 2px 5px black;
    background-color: #f5f5eb;
    border-radius: 10px;
-   padding-left: 20px;
-   padding-right: 20px;
+   padding: 0px;
+   margin: 0px auto;
+}
+
+@media screen and (max-width: 800px) {
+   .VerseGameScreen-text-container {
+      padding: 5px;
+      border-radius: 0px;
+   }
 }
 
 .VerseGameScreen-select {
-   width: 200px;
+   width: 100%;
+   max-width: 200px;
    font-size: 18px;
-   padding:5px;
+   padding: 5px;
 }
 
 .VerseGameScreen-number {
    width: 75px;
    font-size: 18px;
-   padding:5px;
+   padding: 5px;
 }
 
 .VerseGameScreen-previous-guesses-selected {
@@ -83,6 +94,30 @@
    border: 2px solid red !important;
 }
 
-.VerseGameScreen-hints > p {
+.VerseGameScreen-hints>p {
    font-size: 18px;
+}
+
+@media screen and (max-width: 350px) {
+   .VerseGameScreen-container>.Block-button-wrapper {
+      flex-direction: column;
+      gap: 20px;
+   }
+
+   .VerseGameScreen-guessing {
+      width: 100%;
+      flex-direction: column;
+   }
+
+   .VerseGameScreen-select,
+   .VerseGameScreen-number,
+   .VerseGameScreen-bibleVersion,
+   .VerseGameScreen-select>option {
+      width: 200px;
+   }
+
+   .VerseGameScreen-text-container {
+      padding: 0px;
+      margin: 0px;
+   }
 }

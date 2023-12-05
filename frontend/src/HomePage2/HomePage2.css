@@ -1,48 +1,50 @@
 .HomePage2-banner-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-image: url('image_09.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    width: 100vw;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 100%;
+   background-image: url('image_09.png');
+   background-size: cover;
+   background-repeat: no-repeat;
+   background-attachment: fixed;
+   height: 100vh;
 }
 
 .HomePage2-banner-overlay {
-    text-align: center;
-    backdrop-filter: blur(8px);
-    gap: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 30px;
-    box-shadow: 2px 2px 5px black;
-    padding: 3%;
-    color: white;
-    background-color: rgba(0,0,0,0.1);
+   text-align: center;
+   backdrop-filter: blur(8px);
+   gap: 5px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   flex-direction: column;
+   gap: 30px;
+   box-shadow: 2px 2px 5px black;
+   padding: 3%;
+   color: white;
+   background-color: rgba(0, 0, 0, 0.1);
+   width: 100%;
+   max-width: 620px;
 }
 
 .HomePage2-play-button {
-    width: 300px;
-    margin: 0;
-    height: 60px;
-    background-color: #D4AF37;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 2px 2px 5px black;
-    margin: 0 auto;
-    font-size: 27px;
-    color: white;
-    font-weight: 1000;
-    text-decoration: none;
-    padding: 5px;
-    transition: 0.3s ease-in-out;
-    text-shadow: 2px 2px 5px black;
+   width: 100%;
+   max-width: 300px;
+   margin: 0;
+   height: 60px;
+   background-color: #D4AF37;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   box-shadow: 2px 2px 5px black;
+   margin: 0 auto;
+   font-size: 27px;
+   color: white;
+   font-weight: 1000;
+   text-decoration: none;
+   padding: 5px;
+   transition: 0.3s ease-in-out;
+   text-shadow: 2px 2px 5px black;
 }
 
 .HomePage2-play-button:hover {
@@ -57,28 +59,49 @@
 
 
 .HomePage2-banner-title {
-    font-size: 7.5em;
-    margin: 0;
-    padding: 0;
-    line-height: 100px;
-    text-shadow: 2px 2px 5px black;
+   font-size: 7.5em;
+   margin: 0;
+   padding: 0;
+   line-height: 100px;
+   text-shadow: 2px 2px 5px black;
 }
 
 .HomePage2-guessed {
-    font-size: 2em;
-    margin: 0;
-    padding: 0;
-    text-shadow: 2px 2px 5px black;
+   font-size: 2em;
+   margin: 0;
+   padding: 0;
+   text-shadow: 2px 2px 5px black;
 }
 
-.HomePage2-guessed > span {
-    color: #D4AF37;
-    text-shadow: 2px 2px 5px black;
+.HomePage2-guessed>span {
+   color: #D4AF37;
+   text-shadow: 2px 2px 5px black;
 
 }
 
 .HomePage2-container {
-    overflow-x: none;
-    overflow-y: auto;
-    border: 10x solid red;
+   overflow-x: none;
+   overflow-y: auto;
+   border: 10x solid red;
+}
+
+@media screen and (max-width: 650px) {
+
+   /* .HomePage2-banner-overlay {
+      width: 
+   } */
+   .HomePage2-banner-title {
+      font-size: 3em;
+      line-height: 40px;
+      text-wrap: wrap;
+   }
+
+   .HomePage2-guessed {
+      font-size: 25px;
+   }
+   .HomePage2-play-button {
+      font-size: 25px;
+      width: 150px;
+      height: 35px;
+   }
 }

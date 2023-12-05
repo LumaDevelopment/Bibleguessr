@@ -32,14 +32,15 @@ const SegmentBreakdown: React.FC<SegmentBreakdown> = (props) => {
          style={{ "backgroundColor": (props.roundIndex % 2 === 0 ? "#FFFFFF" : "#EFEFEF") }}>
          <h2 className="SegmentBreakdown-verse">{verseToGuess.getVerseIdentifier()}</h2>
          <p>Round {props.roundIndex + 1} Score: <b>{finalRoundScore}</b></p>
+         <p>Context Verses: <b>{props.gameSegment.getContextVersesBelow().length}, {props.gameSegment.getContextVersesAbove().length}</b></p>
          {guesses > 1 && <div className="SegmentBreakdown-guess-list-wrapper"><p>Guesses:</p>
             <ol>
                {pastGuesses.map((value: Verse, index: number) => {
-                  const hintText = hintHistory[index] === 0 ? "" : `hint${hintHistory[index] === 1 ? "" : "s"}`
-                  return <li key={"SegmentBreakdown_order_list_item" + index}>{value.getVerseIdentifier()} scored {guessScores[index]} with {hintHistory[index]} {hintText}</li>
+                  const hintText = hintHistory[index] === 0 ? "" : `with ${hintHistory[index]} hint${hintHistory[index] === 1 ? "" : "s"}`
+                  return <li key={"SegmentBreakdown_order_list_item" + index}>{value.getVerseIdentifier()} scored {guessScores[index]} {hintText}</li>
                })}
             </ol></div>}
-         {!hasSuccessfullyGuessed && <p><b>This round was skipped</b></p>}
+         {!hasSuccessfullyGuessed ? <p><b>This round was skipped</b></p> : <p><b>This round was successfully guessed</b></p>}
       </div>
    )
 }

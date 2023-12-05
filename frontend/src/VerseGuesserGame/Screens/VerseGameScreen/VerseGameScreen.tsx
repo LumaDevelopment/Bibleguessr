@@ -113,12 +113,12 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    return (
       <div className="VerseGameScreen-container" style={isProcessingUserGuess ? { "cursor": "wait" } : {}}>
          <h2>Guess the bolded verse</h2>
-         <h3>Round {verseGameStore.getGameSegments().length + 1}</h3>
+         <h2>Round {verseGameStore.getGameSegments().length + 1}</h2>
          {/* <p>{verseToGuess.getBookName()}, {verseToGuess.getChapter()}, {verseToGuess.getVerseNumber()}</p> */}
          <div className="Block-button-wrapper">
             <button className="Block-button Block-button-blue Block-button-extended" onClick={() => {
                if (verseRef.current) {
-                  verseRef.current.scrollIntoView({behavior: 'smooth', block:"center"})
+                  verseRef.current.scrollIntoView({ behavior: 'smooth', block: "center" })
                }
             }}>Jump To Verse</button>
          </div>
@@ -193,6 +193,9 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                      let nextSegment: VerseGameSegment = new VerseGameSegment(activeGameSegment.getBibleVersion(), activeGameSegment.getContextVersesDefault());
                      nextSegment.initVerses()
                      verseGameStore.addNewGameSegment(nextSegment);
+                     setBookGuess((bibleData.bibleBookNames.get(bibleVersion) as string[])[0] as string)
+                     setChapterGuess(1)
+                     setVerseNumberGuess(1)
                   } else {
                      console.log("VerseGameScreen | Incorrect");
                   }

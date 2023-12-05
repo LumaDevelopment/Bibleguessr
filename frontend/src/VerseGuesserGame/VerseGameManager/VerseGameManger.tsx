@@ -23,7 +23,7 @@ export const VerseGameManager: React.FC = () => {
    const backButtonColor = "Block-button " + (currentUserScreen === "FINISH SCREEN" ? "Block-button-blue" : currentUserScreen === "INITIAL SETTINGS" ? "Block-button-blue" : "Block-button-red")
    const nextButtonColor = "Block-button " + (currentUserScreen === "INITIAL SETTINGS" ? "Block-button-green" : currentUserScreen === "MAIN GUESSER" ? "Block-button-blue" : "Block-button-green")
    return (
-      <>
+      <div className="VerseGameManager-container">
          {currentUserScreen === "INITIAL SETTINGS" && <InitialSettings verseGameStore={gameStore} />}
          {currentUserScreen === "MAIN GUESSER" && <VerseGameScreen verseGameStore={gameStore} />}
          {currentUserScreen === "FINISH SCREEN" && <FinishScreen verseGameStore={gameStore} />}
@@ -39,6 +39,6 @@ export const VerseGameManager: React.FC = () => {
                   gameStore.nextScreen()
             }}>{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</button>}
          </div>
-      </>
+      </div>
    )
 }

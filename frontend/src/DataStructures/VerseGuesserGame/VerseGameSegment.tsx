@@ -152,14 +152,18 @@ export class VerseGameSegment extends Subscribable {
       }
       this.guessScores = []
       for (let i = 0; i < this.previousGuesses.length; i++) {
-         this.guessScores.push(Math.round(
+
+         var preHintScore = Math.round(
             // Actual High Score
             (this.versesInBible -
                // Reduction due to distance
-               Math.abs((this.verseToGuess?.getGlobalVerseNumber() as number) - (this.previousGuesses[i].getGlobalVerseNumber())) -
-               // Reduction due to hints
-               ((1 / 3) * this.hintHistory[i]))));
+               Math.abs((this.verseToGuess?.getGlobalVerseNumber() as number) - (this.previousGuesses[i].getGlobalVerseNumber()))))
+
+         preHintScore -= (preHintScore * (1 / 3) * this.hintHistory[i])
+
+         this.guessScores.push(Math.floor(preHintScore));
          console.log("VerseGameSegment | calculateScore | Previous guess " + this.previousGuesses[i].getVerseIdentifier() +" Scored " + this.guessScores[i]);
+         console.log("VerseGameSegment | calculateScore | Previous guess Hint: "+this.hintHistory[i])
       }
       this.finalRoundScore = Math.max(...this.guessScores);
       console.log("VerseGameSegment | calculateScore | " + this.getVerseToGuess()?.getVerseIdentifier()+" round score was "+this.finalRoundScore);
