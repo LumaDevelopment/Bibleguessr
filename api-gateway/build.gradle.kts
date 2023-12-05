@@ -7,6 +7,10 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
+application {
+    mainClass.set("gg.bibleguessr.api_gateway.APIGateway")
+}
+
 group = "gg.bibleguessr"
 version = "1.0-SNAPSHOT"
 

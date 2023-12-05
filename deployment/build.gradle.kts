@@ -3,7 +3,12 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     java
+    application
     id("com.github.johnrengelman.shadow") version "7.1.2"
+}
+
+application{
+    mainClass.set("gg.bibleguessr.deployment.Deployment")
 }
 
 group = "gg.bibleguessr.deployment"

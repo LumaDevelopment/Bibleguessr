@@ -1,6 +1,4 @@
-import { useMemo, useSyncExternalStore } from "react"
-import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
-import { BibleData } from "../../../DataStructures/Global/BibleData"
+import { useSyncExternalStore } from "react"
 import "./InitialSettings.css"
 import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
 

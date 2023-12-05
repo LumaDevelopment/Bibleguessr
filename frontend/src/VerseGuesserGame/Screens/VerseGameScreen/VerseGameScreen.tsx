@@ -1,12 +1,10 @@
-import { forwardRef, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
+import { useMemo, useRef, useState, useSyncExternalStore } from "react"
 import { VerseGameSegment } from "../../../DataStructures/VerseGuesserGame/VerseGameSegment"
 import "./VerseGameScreen.css"
 import { Verse } from "../../../DataStructures/Global/Verse"
-import { BibleData } from "../../../DataStructures/Global/BibleData"
 import { VerseGameStore } from "../../VerseGameManager/VerseGameStore"
-import { getRandomVerseGameSegment, increaseCount, setGlobalIndexFromVerse } from "../../../AppRoutes/Middlelayer"
+import { increaseCount, setGlobalIndexFromVerse } from "../../../AppRoutes/Middlelayer"
 import "../../../DataStructures/Global/Buttons.css"
-import { useNavigate, useNavigation } from "react-router-dom"
 
 interface VerseGameScreenVerseTextProps {
    verse: Verse
