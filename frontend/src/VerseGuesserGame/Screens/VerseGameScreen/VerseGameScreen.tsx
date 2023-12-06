@@ -10,6 +10,9 @@ interface VerseGameScreenVerseTextProps {
    verse: Verse
    verseHasBeenGuessed: boolean
    shouldBeBolded: boolean
+   /**
+    * Only the verse to guess needs a REF, which allows for the jump to verse function to work.
+    */
    innerRef: React.RefObject<HTMLParagraphElement> | undefined
 }
 
