@@ -17,7 +17,7 @@ export class Verse extends Subscribable {
       this.text = text;
    }
 
-   // Setters
+   // Setters. Notice each one calls emit change.
 
    setBibleVersion = (bibleVersion: string) => {
       this.bibleVersion = bibleVersion
@@ -48,7 +48,7 @@ export class Verse extends Subscribable {
       this.text = text;
    }
 
-   // Getters
+   // Getters, these are used to subscribe to changes.
 
    getBibleVersion = (): string => {
       return this.bibleVersion

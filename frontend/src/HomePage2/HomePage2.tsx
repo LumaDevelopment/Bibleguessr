@@ -5,6 +5,7 @@ import { getCount } from "../AppRoutes/Middlelayer"
 export const HomePage2: React.FC = () => {
    const [count, setCount] = useState<number>(0);
    useEffect(() => {
+      // Grabs the count from the backend, stores it in the internal component state.
       getCount().then((value) => {
          if (value !== undefined) {
             setCount(value)

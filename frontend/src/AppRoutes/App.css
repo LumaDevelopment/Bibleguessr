@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
 
+/*
+* Global CSS for the entire application.
+*/
+
 .App-container {
     /* display: flex; */
     margin: none;

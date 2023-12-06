@@ -45,10 +45,10 @@ export const getServerBibleData = async (): Promise<BibleData | undefined> => {
 
 
 /**
+ * Inits a game segment with random verse data based on its context.
+ * 
  * Note: The context is not guaranteed. If you request 5 context, you expect 11 verses back. However, if the random verse is at the start of the book (genesis: 1, 1), then
  * it will return genesis chapter 1 as the verse to guess and 10 verse below and zero verses above.
- * 
- * This function is designed to be blocking, hence why it doesn't return a promise.
  * 
  * @returns 
  */
@@ -105,6 +105,13 @@ export const getRandomVerseGameSegment = async (currentSegment: VerseGameSegment
 }
 
 
+/**
+ * Sets the global index of a verse object. Sets it as -1 if it is not found.
+ * 
+ * @param verse 
+ * @param bibleData 
+ * @returns 
+ */
 export const setGlobalIndexFromVerse = async (verse: Verse, bibleData: BibleData): Promise<number> => {
    console.log("Middlelayer | setGlobalIndexFromVerse | Called For " + verse.getVerseIdentifier());
    const bookIndex = bibleData.getBookIndex(verse.getBibleVersion(), verse.getBookName())
@@ -131,6 +138,11 @@ export const setGlobalIndexFromVerse = async (verse: Verse, bibleData: BibleData
 }
 
 
+/**
+ * Gets the global verse count from the server.
+ * 
+ * @returns 
+ */
 export const getCount = async (): Promise<number | undefined> => {
    return await fetch(SERVER_URL + "/guess-counter/get-count", {
       headers: {
@@ -149,6 +161,9 @@ export const getCount = async (): Promise<number | undefined> => {
    })
 }
 
+/**
+ * Increases the global verse count.
+ */
 export const increaseCount = async (): Promise<void> => {
    await fetch(SERVER_URL + "/guess-counter/increment-count", {
       headers: {

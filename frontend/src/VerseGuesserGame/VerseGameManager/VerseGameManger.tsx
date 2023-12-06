@@ -10,9 +10,16 @@ import { FinishScreen } from "../Screens/FinishScreen/FinishScreen"
 import { useNavigate } from 'react-router-dom';
 
 
+/**
+ * Manages what screen the user is on in the main gameplay loop.
+ */
 export const VerseGameManager: React.FC = () => {
+   /**
+    * Creates an instance of the store that all game screens will have access to.
+    */
    const gameStore = useMemo(() => {
       let store = new VerseGameStore();
+      // Creates the very first segment.
       let firstSegment = new VerseGameSegment(store.getDefaultBibleVersion(), store.getDefaultContextVerses())
       store.addNewGameSegment(firstSegment)
       return store;
@@ -37,6 +44,9 @@ export const VerseGameManager: React.FC = () => {
                   gameStore.previousScreen()
                }
             }}>{currentUserScreen === "INITIAL SETTINGS" ? "Home" : "Exit"}</button>
+            {/**
+             * The user can not go to the finish screen while the active game segment is processing vere data.
+             */}
             {!isLoading && !isError && currentUserScreen !== "FINISH SCREEN" && <button className={nextButtonColor} onClick={() => {
                gameStore.nextScreen()
             }}>{currentUserScreen === "INITIAL SETTINGS" ? "Next" : "Finish"}</button>}

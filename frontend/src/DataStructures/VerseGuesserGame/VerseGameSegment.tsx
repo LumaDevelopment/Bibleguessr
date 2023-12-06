@@ -3,13 +3,7 @@ import { Verse } from "../Global/Verse";
 import { getRandomVerseGameSegment } from "../../../src/AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/../AppRoutes/Middlelayer"
 
 /**
- * Since the user will have the ability to change the settings during a play sesson, then 
- * each time the user does a guessing segment, it will save there settings at that  point.
- * Every part of the game loop will create a new segment.
- * 
- * For example, the user can request more guesses for a  game segment, while keeping the other segments intact.
- * 
- * Every GameSegment must also be subscribable. This allows for the active game instance to keep the UI and the data structure in sync.
+ * This represnts a single round, where a single round is the user attempting to guess a single verse.
  */
 export class VerseGameSegment extends Subscribable {
    private bibleVersion: string = "King James Version"
@@ -25,12 +19,31 @@ export class VerseGameSegment extends Subscribable {
     */
    private contextVersesBelow: Verse[] = [];
    private previousGuesses: Verse[] = []
+   /**
+    * Stores the score of every guess in this round
+    */
    private guessScores: number[] = [];
    private verseToGuess: Verse | undefined;
+   /**
+    * Is this verse game segment busy fetching the random verses from the backend
+    */
    private isLoadingVerses: boolean = false;
+   /**
+    * Did the fetch to the backend compelte successfully.
+    */
    private errorLoadingVerses: boolean = false;
+   /**
+    * Did this game segment end by the user successfully guessing the verse?
+    */
    private hasSuccessfullyGuessed: boolean = false;
+   /**
+    * The current hint count for this game segment
+    */
    private hintCount: number = 0;
+   /**
+    * The amount of hints for each guess in the previousGuesses array.
+    * 
+    */
    private hintHistory: number[] = [];
    private finalRoundScore: number = 0;
    constructor(bibleVersion: string, contextVerseDefault: number) {
@@ -38,9 +51,19 @@ export class VerseGameSegment extends Subscribable {
       this.bibleVersion = bibleVersion;
       this.contextVerseDefault = contextVerseDefault;
    }
+   /**
+    * Gets a random group of verses from the backend, automatically sets all of the
+    * context verses.
+    */
    initVerses = () => {
       getRandomVerseGameSegment(this)
    }
+   /**
+    * Checks if the user has already guessed this verse.
+    * 
+    * @param other 
+    * @returns 
+    */
    previousGuessesContainsVerse = (other: Verse): boolean => {
       if (other.getGlobalVerseNumber() === -1) {
          console.warn("VerseGameSegment | previousGuessesContainsVerse | Verse global number is -1: ", other)
@@ -91,6 +114,11 @@ export class VerseGameSegment extends Subscribable {
       this.contextVersesBelow = [...below]
       this.emitChange();
    }
+   /**
+    * Adds this verse to the guessed array. Automatically updates hint history and guess count.
+    * 
+    * @param verseUserGuessed 
+    */
    addPreviousGuess = (verseUserGuessed: Verse) => {
       if (verseUserGuessed.getGlobalVerseNumber() === -1) {
          console.warn("VerseGameSegment | addPreviousGuess | Added previous user guess but the global index is -1")
@@ -142,6 +170,11 @@ export class VerseGameSegment extends Subscribable {
    getFinalRoundScore = () => {
       return this.finalRoundScore;
    }
+   /**
+    * Calculautes the score for this round and stores it in guessScores.
+    * 
+    * Chooses the highest guess score and stores it in the finalRoundScore variable.
+    */
    calculateScore = () => {
       if (this.guesses === 0) {
          console.log("VerseGameSegment | calculateScore | " + this.getVerseToGuess()?.getVerseIdentifier()+" round score was 0");

@@ -13,7 +13,12 @@ interface VerseGameScreenVerseTextProps {
    innerRef: React.RefObject<HTMLParagraphElement> | undefined
 }
 
-// Hold a "If verse is on screen and it has been guessed boolean array"
+/**
+ * Generates the UI for a single verse on the screen.
+ * 
+ * @param props 
+ * @returns 
+ */
 const VerseGameScreenVerseText: React.FC<VerseGameScreenVerseTextProps> = (props) => {
    const { verse, verseHasBeenGuessed, shouldBeBolded } = props;
    const text = useSyncExternalStore(verse.subscribe, verse.getText)
@@ -41,6 +46,8 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
 
    const { verseGameStore } = props
 
+   // Subscribes to the central verse game store to get the active game segment
+
    const activeGameSegment: VerseGameSegment = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getActiveGameSegment)
    const hintCount = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getHints)
    const bibleData = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getBibleData)
@@ -50,18 +57,30 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    const verseToGuess = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getVerseToGuess)
    const guesses = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getGuesses)
    const isProcessingUserGuess = useSyncExternalStore(verseGameStore.subscribe, verseGameStore.getIsProcessingUserGuess)
-
    const errorLoadingSegment: boolean = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getErrorLoadingVerses)
    const isLoadingVerses: boolean = useSyncExternalStore(activeGameSegment.subscribe, activeGameSegment.getIsLoadingVerses)
+
+   // These are the internal states for this component
 
    const [bookGuess, setBookGuess] = useState((bibleData.bibleBookNames.get(bibleVersion) as string[])[0] as string)
    const [chapterGuess, setChapterGuess] = useState(1)
    const [verseNumberGuess, setVerseNumberGuess] = useState(1)
+   
+   // The max values for the input boxes.
+
    const [maxVerseCount, setMaxVerseCount] = useState(bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess))
    const [maxChapterCount, setMaxChapterCount] = useState(bibleData.getChapterCountForBook(bibleVersion, bookGuess))
 
+   /**
+    * Stores the component reference for the verse to guess so the "jump to verse" button can navigate to it.
+    */
    const verseRef = useRef<HTMLParagraphElement>(null)
 
+   /**
+    * Checks if the current user verse that the user has inputted is already been guessed,
+    * preventing them from guessing the same verse multiple times.
+    * Memorizes the result between component re-renders unless values of the guess states have changed
+    */
    const hasUserAlreadyGuessedThisVerse: boolean = useMemo(() => {
       if (guesses === 0) {
          return false;
@@ -77,6 +96,10 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
       return false;
    }, [bookGuess, chapterGuess, verseNumberGuess, guesses])
 
+   // Here is the start of the component rendering.
+   // It's important to note that the return statements must be the last item in the function.
+   // No hook can be done between return statement declaration.
+
    if (bibleData === undefined || verseToGuess === undefined) {
       return (
          <div className="VerseGameScreen-container">
@@ -87,6 +110,9 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
          </div>
       )
    }
+
+   // For example, here I could not put useMemo, a useState or any other hook code.
+   // This is causes a fatal differing hook count rendering error.
 
    if (isLoadingVerses) {
       return (<div className="VerseGameScreen-container">
@@ -106,6 +132,9 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
       </div>)
    }
 
+   // Since these values are not hook calls, and are re-computed on every re-render of the component,
+   // They are allowed to be between the component return statements.
+
    const shouldDisplayHint1 = (hintCount >= 1) && (bookGuess !== verseToGuess.getBookName())
    const shouldDisplayHint2 = (hintCount >= 2) && (chapterGuess !== verseToGuess.getChapter())
    const shouldDisplayHint3 = (hintCount >= 3) && (verseNumberGuess !== verseToGuess.getVerseNumber())
@@ -118,6 +147,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
          <div className="Block-button-wrapper">
             <button className="Block-button Block-button-blue Block-button-extended" onClick={() => {
                if (verseRef.current) {
+                  // Make sure to use .current to access the html object from a ref object.
                   verseRef.current.scrollIntoView({ behavior: 'smooth', block: "center" })
                }
             }}>Jump To Verse</button>
@@ -134,11 +164,16 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                <select
                   className={"VerseGameScreen-select " + (shouldDisplayHint1 ? "VerseGameScreen-select-border" : "")}
                   onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+
+                     // Re-calculates the max chapters and make verses for the input fields whenever the book changes
+                     // Since different books have different chapter and verse counts.
+
                      const maxChapters =  bibleData.getChapterCountForBook(bibleVersion, event.target.value)
                      if (maxChapters === undefined) {
                         console.error("VerseGameScreen | Book Guess | Unable to find max chapters for: "+bibleVersion+", "+event.target.value)
                      }
                      setMaxChapterCount(maxChapters)
+                     // Resets the chapter guess if it exceeds the max from the re-calculation.
                      if (chapterGuess > maxChapters) {
                         setChapterGuess(maxChapters)
                      }
@@ -162,6 +197,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                   className={"VerseGameScreen-number " + (shouldDisplayHint2 ? "VerseGameScreen-select-border" : "")}
                   min={1}
                   max={maxChapterCount} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                     // Only re-calculates the max verses whenever the chapter changes.
                      const maxVerses = bibleData.getVerseCountForChapter(bibleVersion, bookGuess, Number(event.target.value)-1)
                      if (maxVerses === undefined) {
                         console.error("VerseGameScreen | Book Guess | Unable to find max verses for: "+bibleVersion+", "+event.target.value+", and chapter: "+maxChapterCount)
