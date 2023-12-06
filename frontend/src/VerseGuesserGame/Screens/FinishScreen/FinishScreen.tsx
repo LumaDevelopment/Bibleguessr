@@ -32,7 +32,7 @@ const SegmentBreakdown: React.FC<SegmentBreakdown> = (props) => {
          style={{ "backgroundColor": (props.roundIndex % 2 === 0 ? "#FFFFFF" : "#EFEFEF") }}>
          <h2 className="SegmentBreakdown-verse">{verseToGuess.getVerseIdentifier()}</h2>
          <p>Round {props.roundIndex + 1} Score: <b>{finalRoundScore}</b></p>
-         <p>Context Verses: <b>{props.gameSegment.getContextVersesBelow().length}, {props.gameSegment.getContextVersesAbove().length}</b></p>
+         <p>Context Verses: <b>{props.gameSegment.getContextVersesBelow().length + props.gameSegment.getContextVersesAbove().length}</b></p>
          {guesses > 1 && <div className="SegmentBreakdown-guess-list-wrapper"><p>Guesses:</p>
             <ol>
                {pastGuesses.map((value: Verse, index: number) => {

@@ -30,6 +30,13 @@ export class BibleData {
    getChapterCountForBook = (bibleVersion: string, bookName: string): number => {
       return this.dataMatrix[(this.bibleBookNames.get(bibleVersion) as string[])?.indexOf(bookName)].length
    }
+   /**
+    * 
+    * @param bibleVersion 
+    * @param bookName 
+    * @param chapter The chapter number index. Note that this is an index, where the first chapter number is zero and not one.
+    * @returns 
+    */
    getVerseCountForChapter = (bibleVersion: string, bookName: string, chapter: number) => {
       return this.dataMatrix[(this.bibleBookNames.get(bibleVersion) as string[])?.indexOf(bookName)][chapter]
    }

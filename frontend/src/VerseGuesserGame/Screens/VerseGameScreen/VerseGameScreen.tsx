@@ -57,6 +57,8 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
    const [bookGuess, setBookGuess] = useState((bibleData.bibleBookNames.get(bibleVersion) as string[])[0] as string)
    const [chapterGuess, setChapterGuess] = useState(1)
    const [verseNumberGuess, setVerseNumberGuess] = useState(1)
+   const [maxVerseCount, setMaxVerseCount] = useState(bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess))
+   const [maxChapterCount, setMaxChapterCount] = useState(bibleData.getChapterCountForBook(bibleVersion, bookGuess))
 
    const verseRef = useRef<HTMLParagraphElement>(null)
 
@@ -132,6 +134,22 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                <select
                   className={"VerseGameScreen-select " + (shouldDisplayHint1 ? "VerseGameScreen-select-border" : "")}
                   onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                     const maxChapters =  bibleData.getChapterCountForBook(bibleVersion, event.target.value)
+                     if (maxChapters === undefined) {
+                        console.error("VerseGameScreen | Book Guess | Unable to find max chapters for: "+bibleVersion+", "+event.target.value)
+                     }
+                     setMaxChapterCount(maxChapters)
+                     if (chapterGuess > maxChapters) {
+                        setChapterGuess(maxChapters)
+                     }
+                     const maxVerses = bibleData.getVerseCountForChapter(bibleVersion, event.target.value, maxChapters-1)
+                     if (maxVerses === undefined) {
+                        console.error("VerseGameScreen | Book Guess | Unable to find max verses for: "+bibleVersion+", "+event.target.value+", and chapter: "+maxChapters)
+                     }
+                     setMaxVerseCount(maxVerses)
+                     if (verseNumberGuess > maxVerses) {
+                        setVerseNumberGuess(maxVerses)
+                     }
                      setBookGuess(event.target.value)
                   }}>
                   {bibleData.bibleBookNames.get(bibleVersion)?.map((name: string, i: number) => <option key={"VerseGameScreen_bible_version_option_" + i}>{name}</option>)}
@@ -140,18 +158,28 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
             <div>
                <p>Chapter</p>
                <input
+                  type="number"
                   className={"VerseGameScreen-number " + (shouldDisplayHint2 ? "VerseGameScreen-select-border" : "")}
                   min={1}
-                  max={bibleData.getChapterCountForBook(bibleVersion, bookGuess)} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  max={maxChapterCount} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                     const maxVerses = bibleData.getVerseCountForChapter(bibleVersion, bookGuess, Number(event.target.value)-1)
+                     if (maxVerses === undefined) {
+                        console.error("VerseGameScreen | Book Guess | Unable to find max verses for: "+bibleVersion+", "+event.target.value+", and chapter: "+maxChapters)
+                     }
+                     setMaxVerseCount(maxVerses)
+                     if (verseNumberGuess > maxVerses) {
+                        setVerseNumberGuess(maxVerses)
+                     }
                      setChapterGuess(Number(event.target.value))
                   }} />
             </div>
             <div>
                <p>Verse</p>
                <input
+                  type="number"
                   className={"VerseGameScreen-number " + (shouldDisplayHint3 ? "VerseGameScreen-select-border" : "")}
                   min={1}
-                  max={bibleData.getVerseCountForChapter(bibleVersion, bookGuess, chapterGuess)} value={verseNumberGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  max={maxVerseCount} value={verseNumberGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                      setVerseNumberGuess(Number(event.target.value))
                   }} />
             </div>
