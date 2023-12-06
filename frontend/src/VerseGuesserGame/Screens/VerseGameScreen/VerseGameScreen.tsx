@@ -164,7 +164,7 @@ export const VerseGameScreen: React.FC<VerseGameScreenProps> = (props) => {
                   max={maxChapterCount} value={chapterGuess} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                      const maxVerses = bibleData.getVerseCountForChapter(bibleVersion, bookGuess, Number(event.target.value)-1)
                      if (maxVerses === undefined) {
-                        console.error("VerseGameScreen | Book Guess | Unable to find max verses for: "+bibleVersion+", "+event.target.value+", and chapter: "+maxChapters)
+                        console.error("VerseGameScreen | Book Guess | Unable to find max verses for: "+bibleVersion+", "+event.target.value+", and chapter: "+maxChapterCount)
                      }
                      setMaxVerseCount(maxVerses)
                      if (verseNumberGuess > maxVerses) {
